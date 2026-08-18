@@ -20,10 +20,13 @@ test("server-renders the Rizal Arcade home page", async () => {
 
   const html = await response.text();
   assert.match(html, /<title>Rizal Arcade — History You Can Play<\/title>/i);
-  assert.match(html, /Meet Rizal beyond the textbook\./i);
-  assert.match(html, /Values in Motion/);
+  assert.match(html, /Press play on/i);
+  assert.match(html, /Philippine history\./i);
+  assert.match(html, /Rizal River Quest/);
   assert.match(html, /Novel Case Files/);
   assert.match(html, /Rizal Codebreaker/);
-  assert.match(html, /http:\/\/localhost\/og\.jpg/);
+  assert.match(html, /Classroom high scores/i);
+  assert.match(html, /\/art\/rizal-portrait\.webp/);
+  assert.match(html, /http:\/\/localhost\/og-arcade\.png/);
   assert.doesNotMatch(html, /codex-preview|SkeletonPreview|Your site is taking shape/i);
 });

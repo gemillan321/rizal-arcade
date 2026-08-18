@@ -10,9 +10,13 @@ import tseslint from "typescript-eslint";
 const eslintConfig = defineConfig([
   globalIgnores([
     ".next/**",
+    ".open-next/**",
+    ".vinext/**",
+    ".wrangler/**",
     "dist/**",
     "out/**",
     "build/**",
+    "vercel-dist/**",
     "next-env.d.ts",
   ]),
   eslint.configs.recommended,
