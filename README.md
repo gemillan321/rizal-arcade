@@ -37,6 +37,14 @@ Validate the production build with:
 npm test
 ```
 
+For Vercel, import the repository as a new project. The included `vercel.json` uses the dedicated static build:
+
+```bash
+npm run build:vercel
+```
+
+The generated site is written to `vercel-dist/`; no environment variables or paid services are required.
+
 ## Technology
 
 React 19, TypeScript, Tailwind CSS, and vinext. Scores are stored only in the player’s browser; the prototype has no accounts, database, ads, or tracking.
