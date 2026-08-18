@@ -1,8 +1,21 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+/* Local archive artwork is intentionally served as static files in the Vercel/Vite build. */
+/* eslint-disable @next/next/no-img-element */
 
-type GameId = "values" | "novels" | "codebreaker";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import {
+  getSavedPlayerName,
+  leaderboardConfigured,
+  loadLeaderboard,
+  normalizePlayerName,
+  submitLeaderboardScore,
+  validatePlayerName,
+  type LeaderboardGame,
+  type LeaderboardState,
+} from "./leaderboard";
+
+type GameId = LeaderboardGame;
 type Feedback = { correct: boolean; title: string; rationale: string; source: string; sourceUrl: string };
 
 const gameCards: Array<{
@@ -18,39 +31,39 @@ const gameCards: Array<{
   {
     id: "values",
     number: "01",
-    title: "Values in Motion",
-    description: "Sort present-day choices through ideas found in Rizal’s writings and civic work.",
-    meta: "Sort & decide · 3 min",
+    title: "Rizal River Quest",
+    description: "Guide a frog across the river by landing on the value that best fits each present-day scenario.",
+    meta: "Frog hop · 3 min",
     tone: "burgundy",
-    symbol: "V",
-    skill: "Evidence-based judgment",
+    symbol: "🐸",
+    skill: "Values & evidence",
   },
   {
     id: "novels",
     number: "02",
     title: "Novel Case Files",
-    description: "Follow the clues. Identify characters from Noli Me Tángere and El Filibusterismo.",
-    meta: "Mystery · 5 min",
+    description: "Flip character and evidence cards to solve six pairs from Noli and El Fili.",
+    meta: "Memory match · 5 min",
     tone: "indigo",
-    symbol: "N",
+    symbol: "✦",
     skill: "Character & theme recall",
   },
   {
     id: "codebreaker",
     number: "03",
     title: "Rizal Codebreaker",
-    description: "Decode works, places, and turning points hidden inside an archive cipher.",
-    meta: "Cipher puzzle · 4 min",
+    description: "Turn the decoder wheel, reveal the archive slip, then file it in the right historical drawer.",
+    meta: "Decoder wheel · 4 min",
     tone: "ochre",
-    symbol: "C",
+    symbol: "⌁",
     skill: "Chronology & context",
   },
 ];
 
 const comingSoon = [
-  { title: "Scholar’s Memory", label: "Education & travels", symbol: "M" },
-  { title: "Hearts & Horizons", label: "Letters & relationships", symbol: "H" },
-  { title: "Masterpiece Museum", label: "Works & genres", symbol: "A" },
+  { title: "Scholar’s Memory", label: "Education & travels", symbol: "M", art: "/art/calamba-shrine.webp", alt: "Rizal Shrine in Calamba" },
+  { title: "Hearts & Horizons", label: "Letters & relationships", symbol: "H", art: "/art/rizal-letter.webp", alt: "A handwritten letter by José Rizal" },
+  { title: "Masterpiece Museum", label: "Works & genres", symbol: "A", art: "/art/rizal-poster.webp", alt: "Historic public-domain José Rizal poster" },
 ];
 
 const valuesData = [
@@ -223,29 +236,89 @@ function shuffle<T>(input: T[], salt = 0): T[] {
   return result;
 }
 
-function normalizeAnswer(value: string) {
-  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
-}
-
-function cipher(value: string) {
+function shiftText(value: string, amount: number) {
   return value.toUpperCase().replace(/[A-Z]/g, (letter) =>
-    String.fromCharCode(((letter.charCodeAt(0) - 65 + 3) % 26) + 65),
+    String.fromCharCode(((letter.charCodeAt(0) - 65 + amount + 26) % 26) + 65),
   );
 }
 
-function useHighScore(game: GameId, score: number, finished: boolean) {
-  const [best, setBest] = useState(0);
-  useEffect(() => {
-    const saved = Number(window.localStorage.getItem(`rizal-arcade-${game}`) || 0);
-    setBest(saved);
-  }, [game]);
-  useEffect(() => {
-    if (finished && score > best) {
-      window.localStorage.setItem(`rizal-arcade-${game}`, String(score));
-      setBest(score);
+function useHighScore(game: GameId) {
+  const [best, setBest] = useState(() => {
+    if (typeof window === "undefined") return 0;
+    try {
+      const stored = Number(window.localStorage.getItem(`rizal-arcade-${game}`) || 0);
+      return Number.isFinite(stored) && stored > 0 ? stored : 0;
+    } catch {
+      return 0;
     }
-  }, [best, finished, game, score]);
-  return best;
+  });
+  const saveBest = useCallback((nextScore: number) => {
+    setBest((currentBest) => Math.max(currentBest, nextScore));
+    try {
+      const storedBest = Number(window.localStorage.getItem(`rizal-arcade-${game}`) || 0);
+      if (!Number.isFinite(storedBest) || nextScore > storedBest) window.localStorage.setItem(`rizal-arcade-${game}`, String(nextScore));
+    } catch {
+      // High scores are optional on storage-restricted school devices.
+    }
+  }, [game]);
+  return [best, saveBest] as const;
+}
+
+function useModalLifecycle(active: boolean, onClose: () => void, dialogRef: RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!active || !dialog) return;
+
+    const modalRoot = dialog.closest<HTMLElement>("[role='dialog']") ?? dialog;
+    const siblings = modalRoot.parentElement
+      ? Array.from(modalRoot.parentElement.children).filter((element): element is HTMLElement => element instanceof HTMLElement && element !== modalRoot)
+      : [];
+    const previousInert = siblings.map((element) => element.hasAttribute("inert"));
+    const previousOverflow = document.body.style.overflow;
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const focusableSelector = "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])";
+
+    siblings.forEach((element) => element.setAttribute("inert", ""));
+    document.body.style.overflow = "hidden";
+    const focusFrame = window.requestAnimationFrame(() => {
+      (dialog.querySelector<HTMLElement>("[data-dialog-close]") ?? dialog).focus({ preventScroll: true });
+    });
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(focusableSelector)).filter((element) => element.getClientRects().length > 0);
+      if (focusable.length === 0) {
+        event.preventDefault();
+        dialog.focus({ preventScroll: true });
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      window.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      siblings.forEach((element, index) => {
+        if (!previousInert[index]) element.removeAttribute("inert");
+      });
+      previousFocus?.focus({ preventScroll: true });
+    };
+  }, [active, dialogRef, onClose]);
 }
 
 function FeedbackPanel({ feedback, onNext, isLast }: { feedback: Feedback; onNext: () => void; isLast: boolean }) {
@@ -264,33 +337,113 @@ function FeedbackPanel({ feedback, onNext, isLast }: { feedback: Feedback; onNex
   );
 }
 
-function Results({ title, score, best, onReplay, onClose }: { title: string; score: number; best: number; onReplay: () => void; onClose: () => void }) {
-  const takeaway = score >= 650 ? "Archive expert" : score >= 400 ? "Sharp researcher" : "Curious explorer";
+function LeaderboardPanel({ game, score, compact = false }: { game: GameId; score?: number; compact?: boolean }) {
+  const [board, setBoard] = useState<LeaderboardState | null>(null);
+  const [name, setName] = useState(() => getSavedPlayerName());
+  const [message, setMessage] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    loadLeaderboard(game).then((next) => { if (active) setBoard(next); });
+    return () => { active = false; };
+  }, [game]);
+
+  async function saveScore(event: FormEvent) {
+    event.preventDefault();
+    if (score === undefined) return;
+    const error = validatePlayerName(name);
+    if (error) { setMessage(error); return; }
+    setSaving(true);
+    setMessage("");
+    try {
+      const next = await submitLeaderboardScore(game, normalizePlayerName(name), score);
+      setBoard(next);
+      setMessage(next.mode === "global" ? "Your personal best is on the class board." : "Saved on this device. The class board can be connected next.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Score could not be saved.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const boardMessage = board?.status === "failed"
+    ? "The class board is unavailable right now, so this device’s scores are shown."
+    : board?.mode === "global"
+      ? "Live class leaderboard"
+      : "Device leaderboard · Supabase connection pending";
+
   return (
-    <section className="results-card" aria-labelledby="results-title">
-      <span className="results-seal">R</span>
-      <p className="eyebrow">Round complete</p>
-      <h2 id="results-title">{takeaway}</h2>
-      <p>You finished <strong>{title}</strong>. Review the explanations and try again—the order and answer choices will change.</p>
-      <div className="score-pair">
-        <div><span>Score</span><strong>{score}</strong></div>
-        <div><span>Best on this device</span><strong>{Math.max(score, best)}</strong></div>
+    <section className={`leaderboard-panel ${compact ? "compact-board" : ""}`} aria-label="Leaderboard">
+      <div className="leaderboard-heading">
+        <div><span className="score-live-dot" />{board?.mode === "global" ? "Live scores" : "Practice scores"}</div>
+        <strong>Top players</strong>
       </div>
-      <div className="results-actions">
-        <button className="button button-primary" type="button" onClick={onReplay}>Play again</button>
-        <button className="button button-outline" type="button" onClick={onClose}>Back to arcade</button>
-      </div>
+      {score !== undefined && (
+        <form className="score-submit" onSubmit={saveScore}>
+          <label htmlFor={`player-name-${game}`}>Put this score on the board</label>
+          <div><input id={`player-name-${game}`} value={name} onChange={(event) => setName(event.target.value)} maxLength={24} placeholder="First name or nickname" /><button type="submit" disabled={saving}>{saving ? "Saving…" : "Save score"}</button></div>
+          <small>Use a nickname or first name only. It will be visible on the {leaderboardConfigured ? "class" : "device"} board.</small>
+        </form>
+      )}
+      <p className="board-mode">{boardMessage}</p>
+      <ol className="leaderboard-list">
+        {board === null ? <li className="board-empty">Loading scores…</li> : board.entries.length === 0 ? <li className="board-empty">No scores yet. Claim the first spot.</li> : board.entries.map((entry, index) => (
+          <li key={`${entry.player_name}-${entry.achieved_at}`}><span>{String(index + 1).padStart(2, "0")}</span><strong>{entry.player_name}</strong><b>{entry.score}</b></li>
+        ))}
+      </ol>
+      {message && <p className="score-message" aria-live="polite">{message}</p>}
     </section>
   );
 }
 
-function GameHeader({ title, round, total, score, onClose }: { title: string; round: number; total: number; score: number; onClose: () => void }) {
+function Results({ game, title, score, best, maxScore, onReplay, onClose }: { game: GameId; title: string; score: number; best: number; maxScore: number; onReplay: () => void; onClose: () => void }) {
+  const progress = score / maxScore;
+  const takeaway = progress >= .75 ? "Arcade legend" : progress >= .45 ? "History high-scorer" : "Curious explorer";
+  const resultsRef = useRef<HTMLElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    resultsRef.current?.closest<HTMLElement>(".game-overlay")?.scrollTo({ top: 0, behavior: "auto" });
+    titleRef.current?.focus({ preventScroll: true });
+  }, []);
+  return (
+    <section className="results-shell" aria-labelledby="results-title" ref={resultsRef}>
+      <div className="results-card">
+        <span className="results-seal">★</span>
+        <p className="eyebrow">Round complete</p>
+        <h2 id="results-title" ref={titleRef} tabIndex={-1}>{takeaway}</h2>
+        <p>You finished <strong>{title}</strong>. Replay to meet a new order of cases, cards, and archive clues.</p>
+        <div className="score-pair">
+          <div><span>Score</span><strong>{score}</strong></div>
+          <div><span>Best on this device</span><strong>{Math.max(score, best)}</strong></div>
+        </div>
+        <div className="results-actions">
+          <button className="button button-primary" type="button" onClick={onReplay}>Play again</button>
+          <button className="button button-outline" type="button" onClick={onClose}>Back to arcade</button>
+        </div>
+      </div>
+      <LeaderboardPanel game={game} score={score} />
+    </section>
+  );
+}
+
+function GameHeader({ title, status, onClose }: { title: string; status: Array<{ label: string; value: string }>; onClose: () => void }) {
   return (
     <header className="game-header">
-      <button className="icon-button" type="button" onClick={onClose} aria-label="Close game">×</button>
+      <button className="icon-button" data-dialog-close type="button" onClick={onClose} aria-label="Close game">×</button>
       <div className="game-header-title"><span>Rizal Arcade</span><strong>{title}</strong></div>
-      <div className="game-hud"><span>{Math.min(round + 1, total)} / {total}</span><strong>{score} pts</strong></div>
+      <div className="game-hud">{status.map((item) => <span key={item.label}><small>{item.label}</small><strong>{item.value}</strong></span>)}</div>
     </header>
+  );
+}
+
+function FrogAvatar({ target, splashed }: { target: number | null; splashed: boolean }) {
+  return (
+    <div className={`frog-avatar ${target === null ? "frog-home" : `frog-pad-${target}`} ${splashed ? "frog-splashed" : ""}`} aria-hidden="true">
+      <span className="frog-eye frog-eye-left"><i /></span><span className="frog-eye frog-eye-right"><i /></span>
+      <span className="frog-smile" /><span className="frog-belly">R</span>
+      <span className="frog-foot frog-foot-left" /><span className="frog-foot frog-foot-right" />
+    </div>
   );
 }
 
@@ -300,89 +453,234 @@ function ValuesGame({ onClose }: { onClose: () => void }) {
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [lives, setLives] = useState(3);
+  const [phase, setPhase] = useState<"ready" | "jumping" | "feedback">("ready");
+  const [selectedPad, setSelectedPad] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const jumpTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const feedbackRef = useRef<HTMLDivElement>(null);
+  const questionRef = useRef<HTMLDivElement>(null);
+  const returnToQuestion = useRef(false);
   const finished = round >= deck.length;
-  const best = useHighScore("values", score, finished);
+  const [best, saveBest] = useHighScore("values");
   const current = deck[Math.min(round, deck.length - 1)];
-  const choices = useMemo(() => shuffle([current.value, ...shuffle(valuesData.filter((item) => item.value !== current.value), round + run).slice(0, 3).map((item) => item.value)], round), [current, round, run]);
+  const choices = useMemo(() => shuffle([current.value, ...shuffle(valuesData.filter((item) => item.value !== current.value), round + run).slice(0, 2).map((item) => item.value)], round + run), [current, round, run]);
 
-  function answer(choice: string) {
-    if (feedback) return;
+  const answer = useCallback((choice: string, index: number) => {
+    if (phase !== "ready") return;
     const correct = choice === current.value;
-    if (correct) { setScore((value) => value + 100 + streak * 15); setStreak((value) => value + 1); }
-    else setStreak(0);
-    setFeedback({ correct, title: correct ? current.value : `Best fit: ${current.value}`, rationale: current.rationale, source: current.source, sourceUrl: current.sourceUrl });
+    setSelectedPad(index);
+    setPhase("jumping");
+    jumpTimer.current = setTimeout(() => {
+      if (correct) {
+        setScore((value) => value + 100 + streak * 20);
+        setStreak((value) => value + 1);
+      } else {
+        setLives((value) => Math.max(0, value - 1));
+        setStreak(0);
+      }
+      setFeedback({ correct, title: correct ? current.value : `Best fit: ${current.value}`, rationale: current.rationale, source: current.source, sourceUrl: current.sourceUrl });
+      setPhase("feedback");
+    }, 620);
+  }, [current, phase, streak]);
+
+  useEffect(() => () => { if (jumpTimer.current) clearTimeout(jumpTimer.current); }, []);
+  useEffect(() => {
+    if (phase !== "feedback" || !feedbackRef.current) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    feedbackRef.current.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
+    feedbackRef.current.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
+  }, [phase]);
+  useEffect(() => {
+    if (phase !== "ready" || !returnToQuestion.current || !questionRef.current) return;
+    returnToQuestion.current = false;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    questionRef.current.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+    window.requestAnimationFrame(() => questionRef.current?.parentElement?.querySelector<HTMLButtonElement>(".lily-pad")?.focus({ preventScroll: true }));
+  }, [phase, round]);
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      const index = Number(event.key) - 1;
+      if (phase === "ready" && index >= 0 && index < choices.length) answer(choices[index], index);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [answer, choices, phase]);
+
+  function next() {
+    if (round === deck.length - 1 || lives <= 0) saveBest(score);
+    returnToQuestion.current = true;
+    setFeedback(null);
+    setSelectedPad(null);
+    setPhase("ready");
+    setRound((value) => lives <= 0 ? deck.length : value + 1);
+  }
+  function replay() {
+    saveBest(score);
+    setRun((value) => value + 1);
+    setRound(0);
+    setScore(0);
+    setStreak(0);
+    setLives(3);
+    setSelectedPad(null);
+    setPhase("ready");
+    setFeedback(null);
   }
 
-  function next() { setFeedback(null); setRound((value) => value + 1); }
-  function replay() { setRun((value) => value + 1); setRound(0); setScore(0); setStreak(0); setFeedback(null); }
-
-  if (finished) return <><GameHeader title="Values in Motion" round={deck.length - 1} total={deck.length} score={score} onClose={onClose} /><Results title="Values in Motion" score={score} best={best} onReplay={replay} onClose={onClose} /></>;
+  if (finished) return <><GameHeader title="Rizal River Quest" status={[{ label: "Lives", value: `${"♥".repeat(lives)}${"♡".repeat(3 - lives)}` }, { label: "Score", value: String(score) }]} onClose={onClose} /><Results game="values" title="Rizal River Quest" score={score} best={best} maxScore={900} onReplay={replay} onClose={onClose} /></>;
   return (
     <>
-      <GameHeader title="Values in Motion" round={round} total={deck.length} score={score} onClose={onClose} />
-      <section className="play-layout values-play">
-        <div className="play-intro">
-          <span className="case-index">Case {current.id}</span>
-          <p className="eyebrow">Interpretive value</p>
+      <GameHeader title="Rizal River Quest" status={[{ label: "Lives", value: `${"♥".repeat(lives)}${"♡".repeat(3 - lives)}` }, { label: "Question", value: `${round + 1} / ${deck.length}` }, { label: "Score", value: String(score) }]} onClose={onClose} />
+      <section className="river-game">
+        <div className="river-question" ref={questionRef}>
+          <span>Interpretive value · Case {current.id}</span>
           <h2>Which idea is most clearly in motion?</h2>
-          <p>These are modern scenarios—not quotations or events from Rizal’s life. Choose the strongest evidence-based connection.</p>
+          <p>{current.scenario}</p>
         </div>
-        <div className="scenario-card"><span>Present-day scenario</span><p>{current.scenario}</p></div>
-        <div className="choice-grid" aria-label="Answer choices">
-          {choices.map((choice, index) => <button key={choice} disabled={Boolean(feedback)} onClick={() => answer(choice)} type="button"><span>{String.fromCharCode(65 + index)}</span>{choice}</button>)}
+        <div className="pond-stage">
+          <div className="pond-sun" /><div className="pond-reeds reeds-left" /><div className="pond-reeds reeds-right" />
+          <div className="lily-lane" aria-label="Answer lily pads">
+            {choices.map((choice, index) => {
+              const correctPad = feedback && choice === current.value;
+              const selectedWrong = feedback && selectedPad === index && choice !== current.value;
+              return <button className={`lily-pad ${correctPad ? "correct-pad" : ""} ${selectedWrong ? "wrong-pad" : ""}`} key={choice} disabled={phase !== "ready"} onClick={() => answer(choice, index)} type="button"><small>{index + 1}</small><span>{choice}</span></button>;
+            })}
+          </div>
+          <FrogAvatar target={selectedPad} splashed={Boolean(feedback && !feedback.correct)} />
+          <div className="water-ripple ripple-one" /><div className="water-ripple ripple-two" />
+          <div className="river-tip">Tap a lily pad or press 1, 2, or 3</div>
         </div>
-        {feedback && <FeedbackPanel feedback={feedback} onNext={next} isLast={round === deck.length - 1} />}
+        {feedback && <div className="river-feedback" ref={feedbackRef}><FeedbackPanel feedback={feedback} onNext={next} isLast={round === deck.length - 1 || lives <= 0} /></div>}
       </section>
     </>
   );
 }
 
+type MemoryCard = {
+  uid: string;
+  pairId: string;
+  face: "character" | "evidence";
+  text: string;
+  novel: string;
+  rationale: string;
+  source: string;
+  sourceUrl: string;
+};
+
+function buildMemoryDeck(run: number): MemoryCard[] {
+  const pairs = shuffle(novelData, run).slice(0, 6);
+  return shuffle(pairs.flatMap((item) => [
+    { uid: `${item.id}-character`, pairId: item.id, face: "character" as const, text: item.character, novel: item.novel, rationale: item.rationale, source: item.source, sourceUrl: item.sourceUrl },
+    { uid: `${item.id}-evidence`, pairId: item.id, face: "evidence" as const, text: item.clues[2], novel: item.novel, rationale: item.rationale, source: item.source, sourceUrl: item.sourceUrl },
+  ]), run + 11);
+}
+
 function NovelsGame({ onClose }: { onClose: () => void }) {
   const [run, setRun] = useState(0);
-  const deck = useMemo(() => shuffle(novelData, run).slice(0, 6), [run]);
-  const [round, setRound] = useState(0);
+  const [cards, setCards] = useState<MemoryCard[]>(() => buildMemoryDeck(0));
+  const [openIds, setOpenIds] = useState<string[]>([]);
+  const [matchedPairs, setMatchedPairs] = useState<string[]>([]);
+  const [moves, setMoves] = useState(0);
   const [score, setScore] = useState(0);
-  const [revealed, setRevealed] = useState(1);
-  const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const finished = round >= deck.length;
-  const best = useHighScore("novels", score, finished);
-  const current = deck[Math.min(round, deck.length - 1)];
-  const choices = useMemo(() => shuffle([current.character, ...shuffle(novelData.filter((item) => item.character !== current.character), round + run).slice(0, 3).map((item) => item.character)], round + 4), [current, round, run]);
+  const [streak, setStreak] = useState(0);
+  const [boardLocked, setBoardLocked] = useState(false);
+  const [matchedFact, setMatchedFact] = useState<Feedback | null>(null);
+  const [announcement, setAnnouncement] = useState("Find a character and the evidence that belongs to them.");
+  const flipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const boardRef = useRef<HTMLDivElement>(null);
+  const matchNoteRef = useRef<HTMLElement>(null);
+  const finished = matchedPairs.length === 6 && matchedFact === null;
+  const [best, saveBest] = useHighScore("novels");
 
-  function answer(choice: string) {
-    if (feedback) return;
-    const correct = choice === current.character;
-    if (correct) setScore((value) => value + 150 - (revealed - 1) * 25);
-    setFeedback({ correct, title: correct ? current.character : `Case solved: ${current.character}`, rationale: current.rationale, source: current.source, sourceUrl: current.sourceUrl });
+  useEffect(() => () => { if (flipTimer.current) clearTimeout(flipTimer.current); }, []);
+  useEffect(() => {
+    if (matchedFact) matchNoteRef.current?.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
+  }, [matchedFact]);
+
+  function flipCard(card: MemoryCard) {
+    if (boardLocked || openIds.includes(card.uid) || matchedPairs.includes(card.pairId)) return;
+    const nextOpen = [...openIds, card.uid];
+    setOpenIds(nextOpen);
+    if (nextOpen.length < 2) return;
+    const first = cards.find((item) => item.uid === nextOpen[0]);
+    const isMatch = first?.pairId === card.pairId && first.face !== card.face;
+    setMoves((value) => value + 1);
+    setBoardLocked(true);
+    flipTimer.current = setTimeout(() => {
+      if (isMatch) {
+        const character = [first, card].find((item) => item?.face === "character");
+        const characterName = character?.text ?? card.text;
+        const nextScore = score + 120 + streak * 10;
+        setMatchedPairs((value) => [...value, card.pairId]);
+        setScore(nextScore);
+        if (matchedPairs.length === 5) saveBest(nextScore);
+        setStreak((value) => value + 1);
+        setMatchedFact({ correct: true, title: `${characterName} · ${card.novel}`, rationale: card.rationale, source: card.source, sourceUrl: card.sourceUrl });
+        setAnnouncement(`Matched ${characterName} in ${card.novel}.`);
+      } else {
+        setStreak(0);
+        setAnnouncement("Those cards do not belong to the same case. Try again.");
+        setBoardLocked(false);
+      }
+      setOpenIds([]);
+    }, isMatch ? 420 : 760);
   }
-  function next() { setFeedback(null); setRevealed(1); setRound((value) => value + 1); }
-  function replay() { setRun((value) => value + 1); setRound(0); setScore(0); setRevealed(1); setFeedback(null); }
 
-  if (finished) return <><GameHeader title="Novel Case Files" round={deck.length - 1} total={deck.length} score={score} onClose={onClose} /><Results title="Novel Case Files" score={score} best={best} onReplay={replay} onClose={onClose} /></>;
+  function dismissMatchedFact() {
+    setMatchedFact(null);
+    setBoardLocked(false);
+    window.requestAnimationFrame(() => boardRef.current?.querySelector<HTMLButtonElement>(".memory-card:not(.is-matched)")?.focus());
+  }
+
+  function replay() {
+    saveBest(score);
+    const nextRun = run + 1;
+    setRun(nextRun);
+    setCards(buildMemoryDeck(nextRun));
+    setOpenIds([]);
+    setMatchedPairs([]);
+    setMoves(0);
+    setScore(0);
+    setStreak(0);
+    setBoardLocked(false);
+    setMatchedFact(null);
+    setAnnouncement("Find a character and the evidence that belongs to them.");
+  }
+
+  if (finished) return <><GameHeader title="Novel Case Files" status={[{ label: "Pairs", value: "6 / 6" }, { label: "Moves", value: String(moves) }, { label: "Score", value: String(score) }]} onClose={onClose} /><Results game="novels" title="Novel Case Files" score={score} best={best} maxScore={870} onReplay={replay} onClose={onClose} /></>;
   return (
     <>
-      <GameHeader title="Novel Case Files" round={round} total={deck.length} score={score} onClose={onClose} />
-      <section className="play-layout novels-play">
-        <div className="dossier-head">
-          <div><span className="case-index">File {current.id}</span><p className="eyebrow">{current.novel}</p><h2>Who fits this case file?</h2></div>
-          <span className="confidence">{revealed === 1 ? "150" : revealed === 2 ? "125" : "100"} pts available</span>
+      <GameHeader title="Novel Case Files" status={[{ label: "Pairs", value: `${matchedPairs.length} / 6` }, { label: "Moves", value: String(moves) }, { label: "Score", value: String(score) }]} onClose={onClose} />
+      <section className="memory-game play-layout">
+        <div className="memory-title"><div><p className="eyebrow">Noli + El Fili memory room</p><h2>Match every character to their evidence.</h2></div><img src="/art/noli-cover.jpg" alt="Historic cover of Noli Me Tangere" /></div>
+        <p className="memory-instructions">Flip two cards. A character pairs with one distinctive clue from their case file.</p>
+        <div className="memory-board" aria-label="Character memory cards" ref={boardRef}>
+          {cards.map((card, index) => {
+            const faceUp = openIds.includes(card.uid) || matchedPairs.includes(card.pairId);
+            return (
+              <button key={card.uid} className={`memory-card ${faceUp ? "is-flipped" : ""} ${matchedPairs.includes(card.pairId) ? "is-matched" : ""}`} type="button" onClick={() => flipCard(card)} aria-label={`Card ${index + 1}, ${faceUp ? `${card.face}: ${card.text}` : "face down"}`} aria-pressed={faceUp}>
+                <span className="memory-card-inner">
+                  <span className="memory-card-back"><img src="/art/rizal-signature.svg" alt="" /><b>{String(index + 1).padStart(2, "0")}</b></span>
+                  <span className="memory-card-front"><small>{card.face === "character" ? "Character" : "Evidence"}</small><strong>{card.text}</strong><em>{card.novel}</em></span>
+                </span>
+              </button>
+            );
+          })}
         </div>
-        <div className="clue-board">
-          {current.clues.map((clue, index) => (
-            <div className={index < revealed ? "clue revealed" : "clue locked"} key={clue}>
-              <span>{index + 1}</span><p>{index < revealed ? clue : "Clue sealed"}</p>
-            </div>
-          ))}
-        </div>
-        {revealed < current.clues.length && !feedback && <button className="text-button" type="button" onClick={() => setRevealed((value) => value + 1)}>Reveal another clue (−25 pts)</button>}
-        <div className="choice-grid compact" aria-label="Suspects">
-          {choices.map((choice, index) => <button key={choice} disabled={Boolean(feedback)} onClick={() => answer(choice)} type="button"><span>{String(index + 1).padStart(2, "0")}</span>{choice}</button>)}
-        </div>
-        {feedback && <FeedbackPanel feedback={feedback} onNext={next} isLast={round === deck.length - 1} />}
+        <p className="sr-announcement" aria-live="polite">{announcement}</p>
+        {matchedFact && <aside className="match-note" ref={matchNoteRef} role="status"><span>Case ledger updated</span><strong>{matchedFact.title}</strong><p>{matchedFact.rationale}</p><div><a href={matchedFact.sourceUrl} target="_blank" rel="noreferrer">Read the source: {matchedFact.source} ↗</a><button className="button button-dark" type="button" onClick={dismissMatchedFact}>Keep matching</button></div></aside>}
       </section>
     </>
   );
+}
+
+type ArchiveGroup = "Places" | "Written works" | "Civic life";
+const archiveGroups: ArchiveGroup[] = ["Places", "Written works", "Civic life"];
+
+function archiveGroupFor(item: (typeof codeData)[number]): ArchiveGroup {
+  if (item.category.toLowerCase().includes("place")) return "Places";
+  if (item.category.toLowerCase().includes("organization")) return "Civic life";
+  return "Written works";
 }
 
 function CodebreakerGame({ onClose }: { onClose: () => void }) {
@@ -391,84 +689,232 @@ function CodebreakerGame({ onClose }: { onClose: () => void }) {
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
   const [revealed, setRevealed] = useState(1);
-  const [input, setInput] = useState("");
+  const [phase, setPhase] = useState<"decoding" | "filing" | "feedback">("decoding");
+  const [dialShift, setDialShift] = useState(0);
+  const [attempts, setAttempts] = useState(0);
+  const [slipSelected, setSlipSelected] = useState(false);
+  const [wrongDrawer, setWrongDrawer] = useState<ArchiveGroup | null>(null);
+  const [dialWrong, setDialWrong] = useState(false);
+  const [announcement, setAnnouncement] = useState("Rotate the wheel until the archive title becomes readable.");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const decoderTopRef = useRef<HTMLDivElement>(null);
+  const archiveSlipRef = useRef<HTMLButtonElement>(null);
+  const archiveDrawersRef = useRef<HTMLDivElement>(null);
+  const codeFeedbackRef = useRef<HTMLDivElement>(null);
+  const returnToDecoder = useRef(false);
   const finished = round >= deck.length;
-  const best = useHighScore("codebreaker", score, finished);
+  const [best, saveBest] = useHighScore("codebreaker");
   const current = deck[Math.min(round, deck.length - 1)];
-  const inputRef = useRef<HTMLInputElement>(null);
-  useEffect(() => { inputRef.current?.focus(); }, [round]);
+  const targetShift = 2 + ((round + run * 3) % 5);
+  const encoded = shiftText(current.answer, targetShift);
+  const decodedPreview = shiftText(encoded, -dialShift);
+  const correctGroup = archiveGroupFor(current);
 
-  function submit(event: FormEvent) {
-    event.preventDefault();
-    if (feedback || !input.trim()) return;
-    const candidate = normalizeAnswer(input);
-    const correct = current.variants.map(normalizeAnswer).includes(candidate);
-    if (correct) setScore((value) => value + 175 - (revealed - 1) * 30);
-    setFeedback({ correct, title: correct ? current.answer : `Decoded: ${current.answer}`, rationale: current.rationale, source: current.source, sourceUrl: current.sourceUrl });
+  const turnDial = useCallback((amount: number) => {
+    setDialShift((value) => Math.max(0, Math.min(6, value + amount)));
+    setDialWrong(false);
+  }, []);
+
+  useEffect(() => () => { if (resetTimer.current) clearTimeout(resetTimer.current); }, []);
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (phase !== "decoding") return;
+      if (event.key === "ArrowLeft") { event.preventDefault(); turnDial(-1); }
+      if (event.key === "ArrowRight") { event.preventDefault(); turnDial(1); }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [phase, turnDial]);
+  useEffect(() => {
+    if (phase !== "filing") return;
+    const target = slipSelected
+      ? archiveDrawersRef.current?.querySelector<HTMLButtonElement>("button:not([disabled])")
+      : archiveSlipRef.current;
+    if (!target) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    target.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
+    target.focus({ preventScroll: true });
+  }, [phase, slipSelected]);
+  useEffect(() => {
+    if (phase !== "feedback" || !codeFeedbackRef.current) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    codeFeedbackRef.current.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
+    codeFeedbackRef.current.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
+  }, [phase]);
+  useEffect(() => {
+    if (phase !== "decoding" || !returnToDecoder.current || !decoderTopRef.current) return;
+    returnToDecoder.current = false;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    decoderTopRef.current.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
+    window.requestAnimationFrame(() => decoderTopRef.current?.querySelector<HTMLButtonElement>(".decoder-wheel button:last-of-type")?.focus({ preventScroll: true }));
+  }, [phase, round]);
+
+  function lockDial() {
+    if (dialShift === targetShift) {
+      setScore((value) => value + Math.max(90, 150 - attempts * 15 - (revealed - 1) * 15));
+      setPhase("filing");
+      setAnnouncement("Code cracked. Select the archive slip, then choose its drawer.");
+      return;
+    }
+    setAttempts((value) => value + 1);
+    setDialWrong(true);
+    setAnnouncement("The letters still look scrambled. Turn the wheel again.");
+    resetTimer.current = setTimeout(() => setDialWrong(false), 430);
   }
-  function revealAnswer() { if (!feedback) setFeedback({ correct: false, title: `Decoded: ${current.answer}`, rationale: current.rationale, source: current.source, sourceUrl: current.sourceUrl }); }
-  function next() { setFeedback(null); setRevealed(1); setInput(""); setRound((value) => value + 1); }
-  function replay() { setRun((value) => value + 1); setRound(0); setScore(0); setRevealed(1); setInput(""); setFeedback(null); }
 
-  if (finished) return <><GameHeader title="Rizal Codebreaker" round={deck.length - 1} total={deck.length} score={score} onClose={onClose} /><Results title="Rizal Codebreaker" score={score} best={best} onReplay={replay} onClose={onClose} /></>;
+  function fileSlip(group: ArchiveGroup) {
+    if (phase !== "filing" || !slipSelected) return;
+    if (group === correctGroup) {
+      setScore((value) => value + 50);
+      setFeedback({ correct: true, title: `${current.answer} filed`, rationale: current.rationale, source: current.source, sourceUrl: current.sourceUrl });
+      setPhase("feedback");
+      setAnnouncement(`${current.answer} filed under ${group}.`);
+      return;
+    }
+    setWrongDrawer(group);
+    setAnnouncement(`${group} is not the right drawer. Try another.`);
+    resetTimer.current = setTimeout(() => setWrongDrawer(null), 470);
+  }
+
+  function next() {
+    if (round === deck.length - 1) saveBest(score);
+    returnToDecoder.current = true;
+    setFeedback(null);
+    setRevealed(1);
+    setDialShift(0);
+    setAttempts(0);
+    setSlipSelected(false);
+    setWrongDrawer(null);
+    setPhase("decoding");
+    setAnnouncement("Rotate the wheel until the archive title becomes readable.");
+    setRound((value) => value + 1);
+  }
+  function replay() {
+    saveBest(score);
+    setRun((value) => value + 1);
+    setRound(0);
+    setScore(0);
+    setRevealed(1);
+    setDialShift(0);
+    setAttempts(0);
+    setSlipSelected(false);
+    setWrongDrawer(null);
+    setDialWrong(false);
+    setPhase("decoding");
+    setFeedback(null);
+    setAnnouncement("Rotate the wheel until the archive title becomes readable.");
+  }
+
+  if (finished) return <><GameHeader title="Rizal Codebreaker" status={[{ label: "Files", value: "6 / 6" }, { label: "Score", value: String(score) }]} onClose={onClose} /><Results game="codebreaker" title="Rizal Codebreaker" score={score} best={best} maxScore={1200} onReplay={replay} onClose={onClose} /></>;
   return (
     <>
-      <GameHeader title="Rizal Codebreaker" round={round} total={deck.length} score={score} onClose={onClose} />
-      <section className="play-layout code-play">
-        <div className="cipher-card">
-          <div className="cipher-meta"><span>{current.category}</span><strong>{current.year}</strong></div>
-          <p className="eyebrow">Caesar shift · move each letter back 3</p>
-          <div className="cipher-text" aria-label={`Encoded answer: ${cipher(current.answer)}`}>{cipher(current.answer)}</div>
-        </div>
-        <div className="code-workbench">
-          <div className="clue-stack">
-            <h2>Decode the archive entry.</h2>
-            {current.clues.slice(0, revealed).map((clue, index) => <p key={clue}><span>{index + 1}</span>{clue}</p>)}
-            {revealed < current.clues.length && !feedback && <button className="text-button" type="button" onClick={() => setRevealed((value) => value + 1)}>Open another clue (−30 pts)</button>}
+      <GameHeader title="Rizal Codebreaker" status={[{ label: "File", value: `${round + 1} / ${deck.length}` }, { label: "Stage", value: phase === "decoding" ? "Decode" : phase === "filing" ? "File" : "Solved" }, { label: "Score", value: String(score) }]} onClose={onClose} />
+      <section className="decoder-game play-layout">
+        <div className="decoder-heading"><div><p className="eyebrow">Archive cipher room · {current.year}</p><h2>Turn the wheel. File the truth.</h2></div><span>File {current.id}</span></div>
+        <div className="cipher-console" ref={decoderTopRef}>
+          <div className="cipher-readout"><small>Encrypted transmission</small><strong>{encoded}</strong></div>
+          <div className={`decoder-wheel ${dialWrong ? "wheel-wrong" : ""}`}>
+            <span className="wheel-label">SHIFT</span><strong>{dialShift}</strong><div className="wheel-ticks" aria-hidden="true">• • • • • • • • • • • •</div>
+            <button type="button" onClick={() => turnDial(-1)} disabled={phase !== "decoding" || dialShift === 0} aria-label="Turn decoder left">‹</button>
+            <button type="button" onClick={() => turnDial(1)} disabled={phase !== "decoding" || dialShift === 6} aria-label="Turn decoder right">›</button>
           </div>
-          <form className="code-form" onSubmit={submit}>
-            <label htmlFor="decoded-answer">Your decoded answer</label>
-            <input ref={inputRef} id="decoded-answer" value={input} onChange={(event) => setInput(event.target.value)} disabled={Boolean(feedback)} autoComplete="off" placeholder="Type the title, place, or name" />
-            <div><button className="button button-primary" type="submit" disabled={Boolean(feedback) || !input.trim()}>Submit answer</button><button className="text-button" type="button" onClick={revealAnswer} disabled={Boolean(feedback)}>Reveal answer</button></div>
-          </form>
+          <div className={`decoded-window ${dialShift === targetShift ? "is-readable" : ""}`}><small>Decoder preview</small><strong>{decodedPreview}</strong></div>
+          {phase === "decoding" && <button className="lock-code-button" type="button" onClick={lockDial}>Lock decoded title</button>}
         </div>
-        {feedback && <FeedbackPanel feedback={feedback} onNext={next} isLast={round === deck.length - 1} />}
+
+        <div className="telegram-and-files">
+          <aside className="clue-telegram">
+            <span>Clue telegram</span>
+            {current.clues.slice(0, revealed).map((clue, index) => <p key={clue}><b>{index + 1}</b>{clue}</p>)}
+            {revealed < current.clues.length && phase === "decoding" && <button type="button" onClick={() => setRevealed((value) => value + 1)}>Open another clue (−15 pts)</button>}
+          </aside>
+          <div className={`filing-station ${phase === "decoding" ? "station-locked" : ""}`}>
+            <button className={`archive-slip ${slipSelected ? "is-selected" : ""}`} ref={archiveSlipRef} type="button" disabled={phase === "decoding" || phase === "feedback"} onClick={() => setSlipSelected(true)}><small>Decoded archive slip</small><strong>{phase === "decoding" ? "CLASSIFIED" : current.answer}</strong><span>{slipSelected ? "Selected — choose a drawer" : "Tap to pick up"}</span></button>
+            <div className="archive-drawers" ref={archiveDrawersRef}>
+              {archiveGroups.map((group, index) => <button key={group} className={wrongDrawer === group ? "wrong-drawer" : ""} type="button" disabled={phase !== "filing" || !slipSelected} onClick={() => fileSlip(group)}><span>0{index + 1}</span><strong>{group}</strong><i /></button>)}
+            </div>
+          </div>
+        </div>
+        <p className="decoder-announcement" aria-live="polite">{announcement}</p>
+        {feedback && <div ref={codeFeedbackRef}><FeedbackPanel feedback={feedback} onNext={next} isLast={round === deck.length - 1} /></div>}
       </section>
     </>
   );
 }
 
 function GameOverlay({ game, onClose }: { game: GameId; onClose: () => void }) {
-  useEffect(() => {
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    return () => { document.body.style.overflow = previous; window.removeEventListener("keydown", onKey); };
-  }, [onClose]);
-  return <div className={`game-overlay game-${game}`} role="dialog" aria-modal="true" aria-label={`${game} game`}>{game === "values" ? <ValuesGame onClose={onClose} /> : game === "novels" ? <NovelsGame onClose={onClose} /> : <CodebreakerGame onClose={onClose} />}</div>;
+  const overlayRef = useRef<HTMLDivElement>(null);
+  useModalLifecycle(true, onClose, overlayRef);
+  return <div ref={overlayRef} tabIndex={-1} className={`game-overlay game-${game}`} role="dialog" aria-modal="true" aria-label={`${game} game`}>{game === "values" ? <ValuesGame onClose={onClose} /> : game === "novels" ? <NovelsGame onClose={onClose} /> : <CodebreakerGame onClose={onClose} />}</div>;
+}
+
+function GameCardScene({ game }: { game: GameId }) {
+  if (game === "values") return <div className="card-scene pond-card-scene"><span className="mini-cloud" /><span className="mini-lily lily-a" /><span className="mini-lily lily-b" /><span className="mini-lily lily-c" /><span className="mini-frog">●</span><strong>HOP!</strong></div>;
+  if (game === "novels") return <div className="card-scene memory-card-scene"><img src="/art/noli-cover.jpg" alt="" /><span className="mini-card card-a">MC</span><span className="mini-card card-b">?</span><span className="mini-card card-c">IB</span><strong>Match the file</strong></div>;
+  return <div className="card-scene code-card-scene"><span className="mini-code">ULCDO</span><span className="mini-wheel">3</span><span className="mini-drawer">ARCHIVE</span><strong>Turn · Decode · File</strong></div>;
+}
+
+function LeaderboardDrawer({ onClose }: { onClose: () => void }) {
+  const [game, setGame] = useState<GameId>("values");
+  const drawerRef = useRef<HTMLElement>(null);
+  useModalLifecycle(true, onClose, drawerRef);
+  return (
+    <div className="source-overlay leaderboard-overlay" role="dialog" aria-modal="true" aria-labelledby="leaderboard-title">
+      <button className="source-backdrop" aria-label="Close leaderboard" type="button" onClick={onClose} />
+      <section className="source-drawer leaderboard-drawer" ref={drawerRef} tabIndex={-1}>
+        <button className="icon-button" data-dialog-close type="button" onClick={onClose} aria-label="Close leaderboard">×</button>
+        <p className="eyebrow">Hall of history</p>
+        <h2 id="leaderboard-title">Classroom leaderboard.</h2>
+        <p>Choose a game to see its top scores. Students can add a nickname after completing a round.</p>
+        <div className="leaderboard-tabs" role="group" aria-label="Choose leaderboard">
+          {gameCards.map((item) => <button key={item.id} type="button" aria-pressed={game === item.id} className={game === item.id ? "active" : ""} onClick={() => setGame(item.id)}>{item.title}</button>)}
+        </div>
+        <LeaderboardPanel key={game} game={game} compact />
+      </section>
+    </div>
+  );
 }
 
 export default function RizalArcade() {
   const [activeGame, setActiveGame] = useState<GameId | null>(null);
   const [showSources, setShowSources] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const sourceDrawerRef = useRef<HTMLElement>(null);
+  const closeGame = useCallback(() => setActiveGame(null), []);
+  const closeLeaderboard = useCallback(() => setShowLeaderboard(false), []);
+  const closeSources = useCallback(() => setShowSources(false), []);
+  useModalLifecycle(showSources, closeSources, sourceDrawerRef);
   return (
     <main>
       <header className="site-header">
-        <a className="brand" href="#top" aria-label="Rizal Arcade home"><span className="brand-mark">R</span><span>Rizal Arcade</span></a>
-        <nav aria-label="Primary navigation"><a href="#games">Games</a><a href="#classroom">Classroom</a><button className="nav-link" type="button" onClick={() => setShowSources(true)}>Sources</button><a className="nav-cta" href="#games">Play now</a></nav>
+        <a className="brand" href="#top" aria-label="Rizal Arcade home"><span className="brand-mark">RA</span><span>Rizal Arcade</span><small>Est. 1861</small></a>
+        <nav aria-label="Primary navigation"><a href="#games">Games</a><button className="nav-link" type="button" onClick={() => setShowLeaderboard(true)}>Leaderboard</button><a href="#classroom">Classroom</a><button className="nav-link" type="button" onClick={() => setShowSources(true)}>Sources</button><a className="nav-cta" href="#games">Play now</a></nav>
       </header>
 
       <section className="hero" id="top">
         <div className="hero-copy">
-          <p className="eyebrow">History you can play</p>
-          <h1>Meet Rizal beyond the textbook.</h1>
-          <p className="hero-intro">Quick games. Sharp stories. A living archive of José Rizal’s ideas, journeys, works, and world.</p>
-          <div className="hero-actions"><button className="button button-primary" type="button" onClick={() => setActiveGame("novels")}>Play a featured game <span>→</span></button><span>No account · Free to play</span></div>
+          <div className="hero-kicker"><span className="live-dot" />Now open for curious minds</div>
+          <p className="eyebrow">The José Rizal history arcade</p>
+          <h1>Press play on <em>Philippine history.</em></h1>
+          <p className="hero-intro">Hop across ideas, match characters, and crack archive codes in quick games built from Rizal’s life, works, and world.</p>
+          <div className="hero-actions"><button className="button button-primary" type="button" onClick={() => setActiveGame("values")}>Start playing <span>▶</span></button><span>3 games · No account · Free</span></div>
           <div className="hero-proof"><span><strong>3</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>24</strong> sourced prompts</span></div>
         </div>
-        <div className="hero-art" aria-hidden="true"><div className="sun-disc" /><div className="portrait-frame"><span className="portrait-monogram">JR</span><span className="portrait-caption">1861 — 1896</span></div><span className="stamp stamp-one">CALAMBA</span><span className="stamp stamp-two">MANILA</span><span className="route-line" /><span className="folio-note">Ideas travel.<br />History moves.</span></div>
+        <div className="hero-art arcade-cabinet-wrap">
+          <div className="arcade-cabinet">
+            <div className="cabinet-marquee"><span>★</span> RIZAL QUEST <span>★</span></div>
+            <div className="cabinet-screen">
+              <img src="/art/rizal-portrait.webp" alt="1883 portrait of José Rizal painted by Félix Resurrección Hidalgo" fetchPriority="high" />
+              <span className="screen-scanlines" aria-hidden="true" />
+              <span className="screen-label">PLAYER ONE · JOSÉ RIZAL</span>
+            </div>
+            <div className="cabinet-controls" aria-hidden="true"><span className="joystick" /><i /><i /><i /></div>
+          </div>
+          <img className="rizal-signature" src="/art/rizal-signature.svg" alt="" />
+          <span className="arcade-ticket ticket-one">CALAMBA · 1861</span>
+          <span className="arcade-ticket ticket-two">HISTORY + PLAY</span>
+        </div>
       </section>
 
       <section className="games-section" id="games">
@@ -477,7 +923,7 @@ export default function RizalArcade() {
           {gameCards.map((game) => (
             <article className={`game-card ${game.tone}`} key={game.title}>
               <button className="game-launch-visual" type="button" onClick={() => setActiveGame(game.id)} aria-label={`Play ${game.title}`}>
-                <div className="game-visual"><span className="game-number">{game.number}</span><span className="game-skill">{game.skill}</span><span className="game-symbol">{game.symbol}</span><span className="game-gridline" /><span className="play-medallion">Play</span></div>
+                <div className={`game-visual game-visual-${game.id}`}><span className="game-number">GAME {game.number}</span><span className="game-skill">{game.skill}</span><GameCardScene game={game.id} /><span className="game-gridline" /><span className="play-medallion">Play</span></div>
               </button>
               <div className="game-copy"><span className="game-meta">{game.meta}</span><h3>{game.title}</h3><p>{game.description}</p><button type="button" onClick={() => setActiveGame(game.id)} aria-label={`Play ${game.title}`}>Enter game <span>→</span></button></div>
             </article>
@@ -485,22 +931,29 @@ export default function RizalArcade() {
         </div>
       </section>
 
+      <section className="leaderboard-band">
+        <div><span className="score-live-dot" /><p>Classroom high scores</p><h2>Make history.<br />Make the board.</h2></div>
+        <div className="scoreboard-preview" aria-hidden="true"><span>RANK</span><span>PLAYER</span><span>SCORE</span><b>01</b><strong>YOUR NAME</strong><em>---</em><b>02</b><strong>RIZALISTA</strong><em>---</em><b>03</b><strong>HISTORY ACE</strong><em>---</em></div>
+        <button className="button leaderboard-button" type="button" onClick={() => setShowLeaderboard(true)}>Open leaderboard <span>→</span></button>
+      </section>
+
       <section className="classroom-section" id="classroom">
-        <div className="classroom-copy"><p className="eyebrow">Made for real class time</p><h2>Open. Play. Discuss.</h2><p>Students can start without an account on a phone, laptop, or classroom screen. Short rounds leave time for the conversation that matters.</p><ul><li><span>01</span>Instant guest play</li><li><span>02</span>Keyboard and touch friendly</li><li><span>03</span>Evidence after every answer</li><li><span>04</span>Scores saved only on this device</li></ul></div>
-        <div className="classroom-panel"><span className="panel-label">A typical five-minute round</span><div className="timeline-row"><strong>00:00</strong><span>Choose a game</span></div><div className="timeline-row"><strong>00:30</strong><span>Read, decide, decode</span></div><div className="timeline-row"><strong>04:00</strong><span>Review the evidence</span></div><div className="timeline-row"><strong>05:00</strong><span>Discuss what changed your mind</span></div><button className="button button-light" type="button" onClick={() => setActiveGame("values")}>Start a classroom round</button></div>
+        <div className="classroom-copy"><p className="eyebrow">Made for real class time</p><h2>Open. Play. Discuss.</h2><p>Students can start without an account on a phone, laptop, or classroom screen. Short rounds leave time for the conversation that matters.</p><ul><li><span>01</span>Instant guest play</li><li><span>02</span>Keyboard and touch friendly</li><li><span>03</span>Evidence after every answer</li><li><span>04</span>Optional nickname leaderboards</li></ul></div>
+        <div className="classroom-panel"><span className="panel-label">A typical five-minute round</span><div className="timeline-row"><strong>00:00</strong><span>Choose a game room</span></div><div className="timeline-row"><strong>00:30</strong><span>Hop, match, or decode</span></div><div className="timeline-row"><strong>04:00</strong><span>Review the historical evidence</span></div><div className="timeline-row"><strong>05:00</strong><span>Post a score and discuss</span></div><button className="button button-light" type="button" onClick={() => setActiveGame("values")}>Start River Quest</button></div>
       </section>
 
       <section className="coming-section">
         <div className="section-heading"><div><p className="eyebrow">Next in the archive</p><h2>The arcade can keep growing.</h2></div><p>A modular format makes it easy to add new games after your instructor reviews the learning content.</p></div>
-        <div className="coming-grid">{comingSoon.map((game, index) => <article key={game.title}><div><span>{game.symbol}</span><small>0{index + 4}</small></div><p>{game.label}</p><h3>{game.title}</h3><span className="soon-pill">Concept queued</span></article>)}</div>
+        <div className="coming-grid">{comingSoon.map((game, index) => <article key={game.title}><div><img src={game.art} alt={game.alt} loading="lazy" /><span>{game.symbol}</span><small>0{index + 4}</small></div><p>{game.label}</p><h3>{game.title}</h3><span className="soon-pill">Next cabinet</span></article>)}</div>
       </section>
 
-      <section className="manifesto"><p className="eyebrow">A new way into history</p><p>Not a quiz wearing a costume. Every round turns evidence, context, and interpretation into something you can explore.</p><button type="button" onClick={() => setShowSources(true)}>How we handle historical accuracy <span>→</span></button></section>
+      <section className="manifesto"><img src="/art/rizal-poster.webp" alt="Public-domain poster reading Rizal died for you—be worthy of him" loading="lazy" /><div><p className="eyebrow">A new way into history</p><p>Not a quiz wearing a costume. Every room gives history a rule, a rhythm, and a reason to try again.</p><button type="button" onClick={() => setShowSources(true)}>How we handle historical accuracy <span>→</span></button></div></section>
 
-      <footer><a className="brand footer-brand" href="#top"><span className="brand-mark">R</span><span>Rizal Arcade</span></a><p>An educational prototype about José Rizal’s life, works, and ideas.</p><button type="button" onClick={() => setShowSources(true)}>Sources & accuracy</button><span>Prototype · 2026</span></footer>
+      <footer><a className="brand footer-brand" href="#top"><span className="brand-mark">RA</span><span>Rizal Arcade</span></a><p>An educational arcade about José Rizal’s life, works, and ideas.</p><button type="button" onClick={() => setShowLeaderboard(true)}>Leaderboard</button><button type="button" onClick={() => setShowSources(true)}>Sources & credits</button><span>Prototype · 2026</span></footer>
 
-      {activeGame && <GameOverlay game={activeGame} onClose={() => setActiveGame(null)} />}
-      {showSources && <div className="source-overlay" role="dialog" aria-modal="true" aria-labelledby="source-title"><button className="source-backdrop" aria-label="Close sources" type="button" onClick={() => setShowSources(false)} /><section className="source-drawer"><button className="icon-button" type="button" onClick={() => setShowSources(false)} aria-label="Close sources">×</button><p className="eyebrow">Source desk</p><h2 id="source-title">Playful format. Careful history.</h2><p>Prototype prompts are grounded in primary texts, public-domain translations, and National Historical Commission of the Philippines markers. Every Values in Motion scenario is explicitly an interpretive, present-day application—not a quotation or historical event.</p><h3>Core references</h3><ul><li><a href="https://philhistoricsites.nhcp.gov.ph/registry_database/jose-rizal-1861-1896-9/" target="_blank" rel="noreferrer">NHCP Registry: José Rizal ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/6737" target="_blank" rel="noreferrer">Noli Me Tangere / The Social Cancer ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/10676" target="_blank" rel="noreferrer">El Filibusterismo / The Reign of Greed ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/17116" target="_blank" rel="noreferrer">Letter to the Young Women of Malolos ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/6885" target="_blank" rel="noreferrer">The Indolence of the Filipino ↗</a></li><li><a href="https://philhistoricsites.nhcp.gov.ph/registry_database/la-liga-filipina/" target="_blank" rel="noreferrer">NHCP Registry: La Liga Filipina ↗</a></li></ul><div className="review-note"><strong>Before formal classroom release</strong><p>A Rizal Life instructor should review translations, wording, interpretations, and accepted answers. The game records are structured so content can be updated without redesigning each game.</p></div></section></div>}
+      {activeGame && <GameOverlay game={activeGame} onClose={closeGame} />}
+      {showLeaderboard && <LeaderboardDrawer onClose={closeLeaderboard} />}
+      {showSources && <div className="source-overlay" role="dialog" aria-modal="true" aria-labelledby="source-title"><button className="source-backdrop" aria-label="Close sources" type="button" onClick={closeSources} /><section className="source-drawer" ref={sourceDrawerRef} tabIndex={-1}><button className="icon-button" data-dialog-close type="button" onClick={closeSources} aria-label="Close sources">×</button><p className="eyebrow">Source desk</p><h2 id="source-title">Playful format. Careful history.</h2><p>Prompts are grounded in primary texts, public-domain translations, and National Historical Commission of the Philippines markers. Every River Quest scenario is explicitly an interpretive, present-day application—not a quotation or historical event.</p><h3>Core references</h3><ul><li><a href="https://philhistoricsites.nhcp.gov.ph/registry_database/jose-rizal-1861-1896-9/" target="_blank" rel="noreferrer">NHCP Registry: José Rizal ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/6737" target="_blank" rel="noreferrer">Noli Me Tangere / The Social Cancer ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/10676" target="_blank" rel="noreferrer">El Filibusterismo / The Reign of Greed ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/17116" target="_blank" rel="noreferrer">Letter to the Young Women of Malolos ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/6885" target="_blank" rel="noreferrer">The Indolence of the Filipino ↗</a></li><li><a href="https://philhistoricsites.nhcp.gov.ph/registry_database/la-liga-filipina/" target="_blank" rel="noreferrer">NHCP Registry: La Liga Filipina ↗</a></li></ul><h3 className="visual-credit-title">Visual archive</h3><ul><li><a href="https://commons.wikimedia.org/wiki/File:Portrait_of_Jos%C3%A9_Rizal_(1883)_with_frame.jpg" target="_blank" rel="noreferrer">1883 Rizal portrait · public domain / CC0 ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Manila_and_suburbs_1898.jpg" target="_blank" rel="noreferrer">1898 Manila map · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Noli_Me_Tangere.jpg" target="_blank" rel="noreferrer">Historic Noli cover · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Rizal_letter.png" target="_blank" rel="noreferrer">1889 Rizal letter · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Rizal_Died_for_You-_Be_Worthy_of_Him_-_NARA_-_5730063.jpg" target="_blank" rel="noreferrer">Historic Rizal poster · public domain ↗</a></li></ul><div className="review-note"><strong>Before formal classroom release</strong><p>A Rizal Life instructor should review translations, wording, interpretations, and accepted answers. The game records are structured so content can be updated without redesigning each game.</p></div></section></div>}
     </main>
   );
 }
