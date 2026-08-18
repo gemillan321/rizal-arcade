@@ -12,6 +12,8 @@ Rizal Arcade uses locally hosted historical images whose source pages explicitly
 
 The generated `og-arcade.png` social preview was created for this project using the public-domain portrait, map, and book cover above as reference material.
 
+The generated `novel-character-sprite-v2.webp` contains artistic interpretations of six fictional characters from *Noli Me Tangere* and *El Filibusterismo*. These illustrations are not historical photographs or canonical portraits; the game labels them accordingly and uses source-backed text clues for identification.
+
 ## Fonts
 
 Cormorant Garamond and DM Sans are self-hosted from the Google Fonts collection under the SIL Open Font License 1.1. Their license texts are included beside the font files in `public/fonts/`.

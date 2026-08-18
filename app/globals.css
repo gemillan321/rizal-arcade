@@ -581,7 +581,7 @@ main { background-color: var(--paper); background-image: none; }
 
 .mini-code { position: absolute; left: 25px; top: 79px; padding: 10px; border: 3px solid var(--night); background: #fff7db; box-shadow: 5px 6px 0 var(--night); font: 950 clamp(22px, 3vw, 35px)/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .13em; transform: rotate(-4deg); }
 .mini-wheel { position: absolute; width: 118px; height: 118px; right: 28px; top: 45px; display: grid; place-items: center; border: 12px double var(--night); border-radius: 50%; background: var(--electric); box-shadow: 8px 9px 0 rgba(6,25,35,.45); font: 950 47px/1 ui-monospace, SFMono-Regular, Consolas, monospace; transform: rotate(8deg); }
-.mini-wheel::after { content: "SHIFT"; position: absolute; bottom: 14px; font-size: 8px; letter-spacing: .12em; }
+.mini-wheel::after { content: "KEY"; position: absolute; bottom: 14px; font-size: 8px; letter-spacing: .12em; }
 .mini-drawer { position: absolute; left: 28px; bottom: 36px; min-width: 150px; padding: 12px 16px; border: 4px solid var(--night); color: #fff7db; background: #963049; box-shadow: 6px 7px 0 var(--night); font: 900 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .16em; }
 .code-card-scene > strong { background: var(--electric); }
 
@@ -988,4 +988,279 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .wheel-wrong,
   .wrong-drawer { animation: none !important; }
   .memory-card-inner { transition-duration: .01ms !important; }
+}
+
+/* Tablet-first gameplay pass: every active game fits an iPad viewport. */
+.sound-toggle {
+  min-width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 2px;
+  padding: 0 7px;
+  border: 2px solid rgba(255,247,219,.4);
+  border-radius: 8px;
+  color: #fff7db;
+  background: rgba(255,255,255,.06);
+  cursor: pointer;
+}
+.sound-toggle > span { color: var(--brass); font: 900 20px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.sound-toggle > small { color: var(--electric); font: 800 6px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; }
+.sound-toggle[aria-pressed="false"] { opacity: .58; }
+
+/* River Quest now has a real start-to-finish route. */
+.river-game {
+  height: calc(100svh - 88px);
+  min-height: 650px;
+  display: grid;
+  grid-template-rows: 88px auto minmax(280px, 1fr);
+  gap: 10px;
+  padding: 12px clamp(12px, 3vw, 42px) 16px;
+  overflow: hidden;
+}
+.river-course {
+  position: relative;
+  z-index: 7;
+  width: min(1080px, 100%);
+  height: 88px;
+  margin: 0 auto;
+  border: 3px solid var(--night);
+  border-radius: 16px;
+  overflow: hidden;
+  background:
+    repeating-radial-gradient(ellipse at center, rgba(255,255,255,.13) 0 2px, transparent 3px 18px),
+    #25b9d1;
+  box-shadow: 6px 7px 0 rgba(6,25,35,.32);
+}
+.river-course::before { content: ""; position: absolute; left: 7%; right: 7%; top: 50%; border-top: 3px dashed rgba(255,247,219,.62); transform: translateY(-50%); }
+.course-pad {
+  position: absolute;
+  z-index: 2;
+  width: 30px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #073b2b;
+  border-radius: 50%;
+  color: #fff7db;
+  background: #286f45;
+  transform: translate(-50%, -50%);
+  font: 900 8px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  transition: background .25s, box-shadow .25s;
+}
+.course-pad.is-crossed { background: var(--brass); color: var(--night); }
+.course-pad.is-current { box-shadow: 0 0 0 5px rgba(255,247,219,.72); }
+.course-pad.is-finish { width: 37px; height: 28px; background: var(--burgundy); font-size: 15px; }
+.course-frog {
+  position: absolute;
+  z-index: 4;
+  font-size: 26px;
+  line-height: 1;
+  transform: translate(-50%, -78%);
+  filter: drop-shadow(2px 3px 0 rgba(6,25,35,.32));
+  transition: left .58s cubic-bezier(.22,.88,.27,1.2), top .58s cubic-bezier(.22,.88,.27,1.2);
+}
+.course-label { position: absolute; z-index: 3; bottom: 4px; color: #fff7db; font: 900 7px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .09em; text-transform: uppercase; }
+.course-start { left: 7px; }
+.course-finish { right: 7px; }
+.river-question { padding: 14px clamp(16px, 3vw, 30px); }
+.river-question > span { padding: 5px 8px; font-size: 7px; }
+.river-question h2 { margin: 8px 0 5px; font-size: clamp(27px, 3.2vw, 39px); }
+.river-question p { font-size: clamp(13px, 1.5vw, 17px); line-height: 1.3; }
+.pond-stage { width: min(1120px, 100%); height: 100%; min-height: 280px; margin: 0 auto; border-top: 4px solid var(--night); border-radius: 24px; }
+.lily-lane { top: 29%; }
+.lily-pad { min-height: clamp(105px, 15vh, 145px); padding-top: 25px; }
+.frog-avatar { top: 82%; }
+.river-feedback,
+.code-feedback {
+  position: fixed;
+  z-index: 30;
+  left: 50%;
+  bottom: 18px;
+  width: min(760px, calc(100% - 30px));
+  max-height: calc(100svh - 110px);
+  overflow-y: auto;
+  transform: translateX(-50%);
+}
+
+/* Portrait + name memory board. Four columns keep all 12 cards visible on tablets. */
+.memory-game {
+  height: calc(100svh - 88px);
+  min-height: 650px;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 10px;
+  padding: 18px 0 20px;
+  overflow: hidden;
+}
+.memory-title { align-items: center; gap: 16px; }
+.memory-title .eyebrow { margin-bottom: 7px; }
+.memory-title h2 { max-width: 920px; font-size: clamp(30px, 3.5vw, 45px); line-height: .98; }
+.memory-title img { width: 66px; height: 86px; border-width: 3px; box-shadow: 5px 6px 0 var(--burgundy); }
+.memory-instructions { margin: 0; font-size: 12px; line-height: 1.35; }
+.memory-board {
+  min-height: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  gap: clamp(6px, 1vw, 12px);
+  padding: clamp(8px, 1.3vw, 15px);
+  box-shadow: 8px 9px 0 var(--burgundy);
+}
+.memory-card { height: 100%; min-height: 0; aspect-ratio: auto; }
+.memory-card-back,
+.memory-card-front { border-width: 3px; border-radius: 8px; }
+.memory-card-back::after { width: 45px; height: 45px; font-size: 13px; }
+.memory-card-front { justify-content: flex-start; padding: 0; }
+.memory-card-front small { z-index: 4; left: 6px; top: 6px; padding: 4px 5px; font-size: 6px; }
+.character-portrait {
+  width: 100%;
+  min-height: 0;
+  flex: 1 1 58%;
+  display: block;
+  border-bottom: 2px solid var(--night);
+  background-image: url("/art/novel-character-sprite-v2.webp");
+  background-size: 300% 200%;
+  background-repeat: no-repeat;
+}
+.portrait-hint {
+  flex: 1 1 42%;
+  display: grid;
+  place-items: center;
+  padding: 7px 8px 17px;
+  font: 750 clamp(8px, 1vw, 12px)/1.18 var(--font-sans), Arial, sans-serif !important;
+}
+.memory-name { justify-content: center; padding: 14px 10px 22px; background: radial-gradient(circle at center, #fff9e6, #efd59f); }
+.name-card-title { font-size: clamp(18px, 2.2vw, 31px) !important; }
+.name-card-prompt { max-width: 180px; margin-top: 10px; color: #59665f; font-size: clamp(8px, .9vw, 11px); line-height: 1.25; }
+.memory-card-front em { left: 6px; right: 6px; bottom: 5px; font-size: 6px; line-height: 1.1; }
+
+/* Manual cipher workbench replaces the self-solving wheel. */
+.decoder-game {
+  height: calc(100svh - 88px);
+  min-height: 650px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 14px;
+  padding: 20px 0 16px;
+  overflow: hidden;
+}
+.decoder-heading { align-items: center; }
+.decoder-heading .eyebrow { margin-bottom: 7px; }
+.decoder-heading h2 { font-size: clamp(32px, 4vw, 52px); }
+.manual-code-grid {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(270px, .8fr);
+  gap: clamp(14px, 2vw, 24px);
+  align-items: stretch;
+}
+.cipher-workbench {
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto auto auto auto;
+  gap: 12px;
+  align-content: center;
+  padding: clamp(16px, 2.4vw, 28px);
+  border: 5px solid #020b10;
+  border-radius: 18px;
+  color: #fff7db;
+  background:
+    linear-gradient(rgba(78,224,208,.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(78,224,208,.07) 1px, transparent 1px),
+    var(--night);
+  background-size: 25px 25px;
+  box-shadow: 9px 10px 0 var(--burgundy);
+}
+.cipher-workbench.answer-wrong { animation: drawer-shake .38s ease; }
+.cipher-workbench .cipher-readout { min-height: 88px; padding: 13px 16px; }
+.cipher-workbench .cipher-readout small { margin-bottom: 9px; }
+.cipher-workbench .cipher-readout strong { font-size: clamp(21px, 3vw, 34px); }
+.cipher-key { padding: 12px 14px; border: 2px solid rgba(255,247,219,.45); background: rgba(255,255,255,.06); }
+.cipher-key > span { display: block; margin-bottom: 8px; color: var(--electric); font: 900 8px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .12em; text-transform: uppercase; }
+.cipher-key > div { min-width: 0; display: grid; grid-template-columns: 38px minmax(0, 1fr); align-items: center; gap: 8px; margin: 4px 0; }
+.cipher-key b { color: var(--brass); font: 900 7px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.cipher-key code { overflow: hidden; font: 800 clamp(8px, 1.15vw, 13px)/1.2 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .075em; white-space: nowrap; }
+.cipher-key p { margin: 9px 0 0; color: rgba(255,247,219,.72); font-size: 10px; }
+.cipher-key p strong { color: #fff7db; }
+.decode-answer { display: grid; gap: 6px; }
+.decode-answer > span { color: var(--brass); font-size: 10px; font-weight: 850; }
+.decode-answer input { width: 100%; height: 49px; padding: 0 13px; border: 3px solid #fff7db; border-radius: 6px; color: var(--night); background: #fff7db; font-size: 17px; font-weight: 750; }
+.check-code-button { min-height: 48px; border: 3px solid #fff7db; border-radius: 6px; color: var(--night); background: var(--brass); box-shadow: 5px 5px 0 var(--burgundy); cursor: pointer; font-weight: 900; }
+.manual-code-grid .clue-telegram { min-height: 0; padding: 31px 21px 18px; overflow-y: auto; transform: none; }
+.manual-code-grid .clue-telegram > span { margin-bottom: 14px; font-size: 29px; }
+.manual-code-grid .clue-telegram p { margin: 10px 0; font-size: 12px; }
+.manual-file-stage {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(220px, .65fr) minmax(0, 1.35fr);
+  gap: clamp(18px, 3vw, 36px);
+  align-items: center;
+}
+.decoded-stamp,
+.solved-file-summary { padding: 30px; border: 5px solid var(--night); border-radius: 16px; color: var(--night); background: #fff0bc; box-shadow: 9px 10px 0 var(--burgundy); text-align: center; }
+.decoded-stamp span,
+.solved-file-summary span { display: block; color: var(--burgundy); font: 900 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .12em; text-transform: uppercase; }
+.decoded-stamp strong,
+.solved-file-summary strong { display: block; margin: 15px 0; font: 700 clamp(30px, 4vw, 53px)/.95 var(--font-display), Georgia, serif; overflow-wrap: anywhere; }
+.decoded-stamp small,
+.solved-file-summary small { color: #5c6256; font-weight: 750; }
+.manual-file-stage .filing-station { height: min(500px, 100%); grid-template-columns: .82fr 1.18fr; align-items: stretch; }
+.manual-file-stage .archive-slip { min-height: 0; height: 100%; }
+.solved-file-summary { width: min(720px, 100%); margin: auto; }
+.decoder-announcement { min-height: 17px; margin: 0; }
+
+@media (max-width: 900px) and (min-width: 651px) {
+  .game-header { height: 76px; padding-inline: 12px; }
+  .river-game,
+  .memory-game,
+  .decoder-game { height: calc(100svh - 76px); min-height: 620px; }
+  .river-game { grid-template-rows: 80px auto minmax(270px, 1fr); }
+  .river-course { height: 80px; }
+  .memory-game,
+  .decoder-game { width: min(100% - 22px, 1180px); }
+  .memory-title img { display: none; }
+  .memory-board { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(3, minmax(0, 1fr)); }
+  .portrait-hint { font-size: clamp(8px, 1.35vw, 11px) !important; }
+  .memory-card-front em { font-size: 5.5px; }
+  .manual-code-grid { grid-template-columns: minmax(0, 1.12fr) minmax(245px, .88fr); }
+  .cipher-key code { font-size: clamp(7px, 1.35vw, 11px); letter-spacing: .035em; }
+  .manual-file-stage { grid-template-columns: .58fr 1.42fr; }
+  .manual-file-stage .filing-station { grid-template-columns: .8fr 1.2fr; }
+}
+
+@media (max-width: 650px) {
+  .game-hud .sound-toggle { display: grid; width: 40px; min-width: 40px; height: 40px; padding: 0; }
+  .game-hud .sound-toggle > small { display: none; }
+  .river-game { height: auto; min-height: calc(100svh - 72px); grid-template-rows: 76px auto 390px; overflow-y: auto; }
+  .river-course { height: 76px; }
+  .course-frog { font-size: 22px; }
+  .river-question h2 { font-size: 27px; }
+  .pond-stage { min-height: 390px; }
+  .memory-game { height: auto; min-height: calc(100svh - 72px); display: block; padding-bottom: 55px; overflow-y: auto; }
+  .memory-title h2 { font-size: 34px; }
+  .memory-instructions { margin: 12px 0; }
+  .memory-board { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: none; gap: 8px; }
+  .memory-card { aspect-ratio: .9; }
+  .portrait-hint { font-size: 9px !important; }
+  .decoder-game { height: auto; min-height: calc(100svh - 72px); display: block; padding-bottom: 55px; overflow-y: auto; }
+  .decoder-heading { margin-bottom: 18px; }
+  .manual-code-grid,
+  .manual-file-stage { grid-template-columns: 1fr; }
+  .manual-code-grid .clue-telegram { max-height: none; margin-top: 18px; }
+  .manual-file-stage .filing-station { height: auto; grid-template-columns: 1fr; }
+  .manual-file-stage .archive-slip { min-height: 180px; }
+  .decoder-announcement { margin-top: 18px; }
+}
+
+@media (max-height: 760px) and (min-width: 651px) {
+  .memory-title h2,
+  .decoder-heading h2 { font-size: 30px; }
+  .memory-instructions { display: none; }
+  .memory-game,
+  .decoder-game { padding-top: 10px; padding-bottom: 10px; }
+  .river-game { grid-template-rows: 70px auto minmax(235px, 1fr); }
+  .river-course { height: 70px; }
+  .river-question h2 { font-size: 25px; }
+  .river-question p { font-size: 12px; }
 }

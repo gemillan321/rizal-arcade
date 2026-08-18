@@ -6,9 +6,11 @@ The prototype takes the familiar pick-and-play feel of Friv or Y8 and gives it a
 
 ## Playable games
 
-- **Rizal River Quest** — make a frog hop onto the lily pad whose value best fits a modern scenario grounded in Rizal’s writings and La Liga Filipina. Every mapping is clearly labeled as an interpretation.
-- **Novel Case Files** — play a 12-card memory game that pairs characters from *Noli Me Tángere* and *El Filibusterismo* with distinctive evidence.
-- **Rizal Codebreaker** — turn a decoder wheel to reveal a historical title, then file its archive slip into the correct drawer.
+- **Rizal River Quest** — move a frog along a six-jump river route by choosing the value that best fits each modern scenario. Wrong answers cost a life and do not advance the frog. Every mapping is clearly labeled as an interpretation.
+- **Novel Case Files** — play a 12-card memory game that pairs clearly labeled artistic character portraits and specific clues with names from *Noli Me Tángere* and *El Filibusterismo*.
+- **Rizal Codebreaker** — manually decode an Atbash substitution cipher with the supplied alphabet key, then file the archive slip into the correct drawer.
+
+All three games include optional, locally synthesized sound effects. They do not download audio or contact an external audio service while students play.
 
 The home page also previews future modules for Rizal’s education and travels, documented relationships, and literary works.
 
@@ -17,7 +19,7 @@ The home page also previews future modules for Rizal’s education and travels, 
 - Facts and explanations link to primary texts, public-domain translations, or National Historical Commission of the Philippines markers.
 - Interpretive claims are labeled instead of presented as direct quotations or uncontested facts.
 - Alternate spellings and common translated titles are accepted in the codebreaker.
-- The Basilio prompt specifies his adult role in *El Filibusterismo*, avoiding the misleading question of which single novel contains him.
+- Memory clues name the relevant person, relationship, and event directly instead of relying on unclear pronouns.
 - A Rizal Life instructor should review wording, translations, and interpretations before formal classroom release.
 
 ## Local development

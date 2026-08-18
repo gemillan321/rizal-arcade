@@ -32,8 +32,8 @@ const gameCards: Array<{
     id: "values",
     number: "01",
     title: "Rizal River Quest",
-    description: "Guide a frog across the river by landing on the value that best fits each present-day scenario.",
-    meta: "Frog hop · 3 min",
+    description: "Answer correctly to move the frog pad by pad toward the finish line before its lives run out.",
+    meta: "River route · 3 min",
     tone: "burgundy",
     symbol: "🐸",
     skill: "Values & evidence",
@@ -42,8 +42,8 @@ const gameCards: Array<{
     id: "novels",
     number: "02",
     title: "Novel Case Files",
-    description: "Flip character and evidence cards to solve six pairs from Noli and El Fili.",
-    meta: "Memory match · 5 min",
+    description: "Match illustrated clue cards to six clearly identified characters from Noli and El Fili.",
+    meta: "Portrait memory · 5 min",
     tone: "indigo",
     symbol: "✦",
     skill: "Character & theme recall",
@@ -52,8 +52,8 @@ const gameCards: Array<{
     id: "codebreaker",
     number: "03",
     title: "Rizal Codebreaker",
-    description: "Turn the decoder wheel, reveal the archive slip, then file it in the right historical drawer.",
-    meta: "Decoder wheel · 4 min",
+    description: "Use a substitution formula to decode each archive title by hand, then file it by historical type.",
+    meta: "Manual cipher · 4 min",
     tone: "ochre",
     symbol: "⌁",
     skill: "Chronology & context",
@@ -136,50 +136,44 @@ const valuesData = [
 const novelData = [
   {
     id: "N01", character: "Crisóstomo Ibarra", novel: "Noli Me Tángere",
-    clues: ["I have recently returned from Europe.", "I learn of my father’s death.", "I pursue a plan to build a school in San Diego."],
+    portraitIndex: 0,
+    hint: "Don Rafael’s son · returns from Europe · plans a school in San Diego",
     rationale: "Don Rafael’s son returns from Europe, and his school project drives a major part of Noli Me Tángere.",
     source: "Noli Me Tangere / The Social Cancer", sourceUrl: "https://www.gutenberg.org/ebooks/6737",
   },
   {
     id: "N02", character: "Sisa", novel: "Noli Me Tángere",
-    clues: ["I am a mother in San Diego.", "My sons are sacristans.", "I search for Basilio and Crispin after they fail to return."],
+    portraitIndex: 2,
+    hint: "Mother of Basilio and Crispin · searches San Diego for her missing sons",
     rationale: "Chapter XVI centers on Sisa’s loss and her search for her two sons.",
     source: "Noli Me Tangere / The Social Cancer", sourceUrl: "https://www.gutenberg.org/ebooks/6737",
   },
   {
     id: "N03", character: "Elias", novel: "Noli Me Tángere",
-    clues: ["I first appear as a pilot and boatman.", "I warn Ibarra about his enemies.", "I later help him escape pursuit."],
-    rationale: "The mysterious pilot becomes Ibarra’s ally and warns him of danger.",
+    portraitIndex: 3,
+    hint: "Boatman and pilot · warns Crisóstomo Ibarra · helps Ibarra escape the guards pursuing him",
+    rationale: "Elias, the mysterious pilot and boatman, becomes Crisóstomo Ibarra’s ally, warns him about danger, and helps him escape from pursuing guards.",
     source: "Noli Me Tangere / The Social Cancer", sourceUrl: "https://www.gutenberg.org/ebooks/6737",
   },
   {
     id: "N04", character: "María Clara", novel: "Noli Me Tángere",
-    clues: ["I was raised in Capitán Tiago’s household.", "I sing during a lakeside outing.", "I am Ibarra’s intended bride."],
+    portraitIndex: 1,
+    hint: "Raised in Capitán Tiago’s home · Crisóstomo Ibarra’s fiancée · sings during the lake outing",
     rationale: "These details identify María Clara without relying on the novel’s later parentage revelation.",
     source: "Noli Me Tangere / The Social Cancer", sourceUrl: "https://www.gutenberg.org/ebooks/6737",
   },
   {
     id: "F01", character: "Simoun", novel: "El Filibusterismo",
-    clues: ["I wear blue spectacles.", "I am a wealthy jeweler with influence over the Captain-General.", "I conceal an identity from the earlier novel."],
+    portraitIndex: 4,
+    hint: "Wealthy jeweler · wears blue spectacles · influences the Captain-General",
     rationale: "Simoun is the jeweler at the center of El Filibusterismo; his identity is revealed in Chapter VII.",
     source: "El Filibusterismo / The Reign of Greed", sourceUrl: "https://www.gutenberg.org/ebooks/10676",
   },
   {
-    id: "F02", character: "Basilio", novel: "El Filibusterismo",
-    clues: ["I appeared as a child in the earlier novel.", "I am now a medical student.", "Thirteen years later, I visit my mother’s grave."],
-    rationale: "This case asks for Basilio’s adult role in El Filibusterismo; he also appears as a child in Noli Me Tángere.",
-    source: "El Filibusterismo / The Reign of Greed", sourceUrl: "https://www.gutenberg.org/ebooks/10676",
-  },
-  {
     id: "F03", character: "Isagani", novel: "El Filibusterismo",
-    clues: ["I am known as an idealistic student-poet.", "I support an academy for teaching Spanish.", "Padre Florentino is my uncle."],
+    portraitIndex: 5,
+    hint: "Idealistic student-poet · Padre Florentino’s nephew · supports the Spanish academy",
     rationale: "The proposed academy and relationship to Padre Florentino identify Isagani.",
-    source: "El Filibusterismo / The Reign of Greed", sourceUrl: "https://www.gutenberg.org/ebooks/10676",
-  },
-  {
-    id: "F04", character: "Cabesang Tales", novel: "El Filibusterismo",
-    clues: ["I clear and cultivate difficult land.", "I dispute a friar estate’s claim to it.", "I later become the outlaw Matanglawin."],
-    rationale: "His land conflict and transformation form a major subplot in El Filibusterismo.",
     source: "El Filibusterismo / The Reign of Greed", sourceUrl: "https://www.gutenberg.org/ebooks/10676",
   },
 ];
@@ -187,42 +181,42 @@ const novelData = [
 const codeData = [
   {
     id: "C01", answer: "Calamba", variants: ["calamba", "calamba laguna"], category: "Place", year: "1861",
-    clues: ["A town in Laguna.", "José Rizal was born here on June 19, 1861.", "His birthplace is preserved as a national shrine."],
+    clues: ["This answer is a town in Laguna.", "José Rizal was born in this town on June 19, 1861.", "Rizal’s birthplace in this town is preserved as a national shrine."],
     rationale: "Rizal was born in Calamba, Laguna, on June 19, 1861.", source: "NHCP: Rizal Shrine, Calamba", sourceUrl: "https://philhistoricsites.nhcp.gov.ph/registry_database/rizal-shrine-calamba/",
   },
   {
     id: "C02", answer: "Noli Me Tangere", variants: ["noli me tangere", "the social cancer"], category: "Novel", year: "1887",
-    clues: ["Ibarra returns from Europe in this novel.", "Much of its story centers on San Diego.", "It was printed in Berlin in 1887."],
+    clues: ["Crisóstomo Ibarra returns from Europe in this novel.", "Much of this novel’s story centers on the fictional town of San Diego.", "This novel was printed in Berlin in 1887."],
     rationale: "Noli Me Tángere was published in Berlin in 1887.", source: "NHCP: José Rizal historical marker", sourceUrl: "https://philhistoricsites.nhcp.gov.ph/registry_database/jose-rizal-1861-1896-9/",
   },
   {
     id: "C03", answer: "El Filibusterismo", variants: ["el filibusterismo", "el fili", "the reign of greed"], category: "Novel", year: "1891",
-    clues: ["I continue Noli Me Tángere.", "Simoun the jeweler drives my central plot.", "My original title page reads Gent, 1891."],
+    clues: ["This novel continues the story begun in Noli Me Tángere.", "Simoun, a wealthy jeweler, drives this novel’s central plot.", "The original title page of this novel reads Gent, 1891."],
     rationale: "El Filibusterismo, the sequel to Noli, was published in Ghent in 1891.", source: "El Filibusterismo, original edition", sourceUrl: "https://www.gutenberg.org/ebooks/30903",
   },
   {
     id: "C04", answer: "La Liga Filipina", variants: ["la liga filipina", "liga filipina"], category: "Civic organization", year: "1892",
-    clues: ["Rizal founded me in Manila on July 3.", "My aims included unity and mutual protection.", "I promoted education, agriculture, industry, commerce, and reform."],
+    clues: ["Rizal founded this civic organization in Manila on July 3, 1892.", "Its aims included unity and mutual protection.", "It promoted education, agriculture, industry, commerce, and reform."],
     rationale: "Rizal founded La Liga Filipina on July 3, 1892, as a civic organization for unity and mutual aid.", source: "NHCP: La Liga Filipina", sourceUrl: "https://philhistoricsites.nhcp.gov.ph/registry_database/la-liga-filipina/",
   },
   {
     id: "C05", answer: "Dapitan", variants: ["dapitan", "dapitan city"], category: "Place / exile", year: "1892–1896",
-    clues: ["I am in present-day Zamboanga del Norte.", "Rizal lived here in exile for more than four years.", "He taught, practiced medicine, and worked on community projects here."],
+    clues: ["This place is in present-day Zamboanga del Norte.", "Rizal lived in exile in this place for more than four years.", "In this place, Rizal taught, practiced medicine, and worked on community projects."],
     rationale: "Rizal lived in exile in Dapitan from 1892 to 1896.", source: "NHCP: Liwasan ng Dapitan", sourceUrl: "https://philhistoricsites.nhcp.gov.ph/registry_database/liwasan-ng-dapitan/",
   },
   {
     id: "C06", answer: "Mi Ultimo Adios", variants: ["mi ultimo adios", "my last farewell"], category: "Poem", year: "1896",
-    clues: ["Rizal finished this untitled poem in his prison cell.", "He hid it in an alcohol stove before his execution.", "It became known by a Spanish title meaning ‘My Last Farewell.’"],
+    clues: ["Rizal completed this untitled farewell poem in his prison cell.", "He hid the poem in an alcohol stove before his execution.", "The poem later became known by a Spanish title meaning ‘My Last Farewell.’"],
     rationale: "The untitled farewell poem hidden in an alcohol stove became known as Mi Último Adiós.", source: "Museo ni Rizal, Fort Santiago", sourceUrl: "https://intramuros.gov.ph/mnr/",
   },
   {
     id: "C07", answer: "The Indolence of the Filipino", variants: ["the indolence of the filipino", "la indolencia de los filipinos", "sobre la indolencia de los filipinos"], category: "Essay", year: "1890",
-    clues: ["I answer claims about Filipino ‘laziness.’", "I examine historical and social causes.", "I argue that education and liberty are necessary remedies."],
+    clues: ["This essay answers colonial claims about Filipino ‘laziness.’", "The essay examines historical and social causes instead of racial inheritance.", "It argues that education and liberty are necessary remedies."],
     rationale: "The essay challenges racial explanations and investigates the historical conditions behind indolence.", source: "The Indolence of the Filipino", sourceUrl: "https://www.gutenberg.org/ebooks/6885",
   },
   {
     id: "C08", answer: "Young Women of Malolos", variants: ["young women of malolos", "to the young women of malolos", "letter to the young women of malolos", "sa mga kababayang dalaga sa malolos"], category: "Letter", year: "1889",
-    clues: ["I am dated February 1889.", "I address women in a Bulacan town.", "I praise education, moral courage, and independent judgment."],
+    clues: ["This letter is dated February 1889.", "Rizal addressed it to women in a Bulacan town.", "The letter praises education, moral courage, and independent judgment."],
     rationale: "Rizal’s letter responds to the women of Malolos and their effort to pursue education.", source: "Letter to the Young Women of Malolos", sourceUrl: "https://www.gutenberg.org/ebooks/17116",
   },
 ];
@@ -236,10 +230,73 @@ function shuffle<T>(input: T[], salt = 0): T[] {
   return result;
 }
 
-function shiftText(value: string, amount: number) {
+function atbashText(value: string) {
   return value.toUpperCase().replace(/[A-Z]/g, (letter) =>
-    String.fromCharCode(((letter.charCodeAt(0) - 65 + amount + 26) % 26) + 65),
+    String.fromCharCode(90 - (letter.charCodeAt(0) - 65)),
   );
+}
+
+function normalizeCodeAnswer(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+type SoundCue = "jump" | "correct" | "wrong" | "flip" | "match" | "decode" | "pickup" | "file" | "finish";
+
+function useArcadeSound() {
+  const [enabled, setEnabled] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try { return window.localStorage.getItem("rizal-arcade-sound") !== "off"; } catch { return true; }
+  });
+  const contextRef = useRef<AudioContext | null>(null);
+
+  const play = useCallback((cue: SoundCue, force = false) => {
+    if ((!enabled && !force) || typeof window === "undefined") return;
+    const AudioContextClass = window.AudioContext ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const context = contextRef.current ?? new AudioContextClass();
+    contextRef.current = context;
+    if (context.state === "suspended") void context.resume();
+    const patterns: Record<SoundCue, Array<[number, number, OscillatorType]>> = {
+      jump: [[330, .07, "sine"], [520, .11, "sine"]],
+      correct: [[523, .08, "triangle"], [659, .08, "triangle"], [784, .14, "triangle"]],
+      wrong: [[220, .12, "sawtooth"], [165, .18, "sawtooth"]],
+      flip: [[610, .055, "triangle"]],
+      match: [[440, .08, "triangle"], [660, .15, "triangle"]],
+      decode: [[392, .07, "square"], [523, .07, "square"], [784, .14, "square"]],
+      pickup: [[680, .07, "sine"], [820, .09, "sine"]],
+      file: [[294, .08, "triangle"], [392, .13, "triangle"]],
+      finish: [[523, .09, "triangle"], [659, .09, "triangle"], [784, .09, "triangle"], [1047, .22, "triangle"]],
+    };
+    let start = context.currentTime + .01;
+    patterns[cue].forEach(([frequency, duration, type]) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = type;
+      oscillator.frequency.setValueAtTime(frequency, start);
+      gain.gain.setValueAtTime(.0001, start);
+      gain.gain.exponentialRampToValueAtTime(.08, start + .012);
+      gain.gain.exponentialRampToValueAtTime(.0001, start + duration);
+      oscillator.connect(gain).connect(context.destination);
+      oscillator.start(start);
+      oscillator.stop(start + duration + .02);
+      start += duration * .78;
+    });
+  }, [enabled]);
+
+  const toggle = useCallback(() => {
+    const next = !enabled;
+    setEnabled(next);
+    try { window.localStorage.setItem("rizal-arcade-sound", next ? "on" : "off"); } catch { /* Optional preference. */ }
+    if (next) window.setTimeout(() => play("correct", true), 0);
+  }, [enabled, play]);
+
+  useEffect(() => () => { void contextRef.current?.close(); }, []);
+  return { enabled, play, toggle };
 }
 
 function useHighScore(game: GameId) {
@@ -427,12 +484,15 @@ function Results({ game, title, score, best, maxScore, onReplay, onClose }: { ga
   );
 }
 
-function GameHeader({ title, status, onClose }: { title: string; status: Array<{ label: string; value: string }>; onClose: () => void }) {
+function GameHeader({ title, status, onClose, soundEnabled, onToggleSound }: { title: string; status: Array<{ label: string; value: string }>; onClose: () => void; soundEnabled?: boolean; onToggleSound?: () => void }) {
   return (
     <header className="game-header">
       <button className="icon-button" data-dialog-close type="button" onClick={onClose} aria-label="Close game">×</button>
       <div className="game-header-title"><span>Rizal Arcade</span><strong>{title}</strong></div>
-      <div className="game-hud">{status.map((item) => <span key={item.label}><small>{item.label}</small><strong>{item.value}</strong></span>)}</div>
+      <div className="game-hud">
+        {onToggleSound && <button className="sound-toggle" type="button" onClick={onToggleSound} aria-pressed={soundEnabled} aria-label={`${soundEnabled ? "Mute" : "Turn on"} game sounds`}><span aria-hidden="true">{soundEnabled ? "♪" : "×"}</span><small>Sound</small></button>}
+        {status.map((item) => <span key={item.label}><small>{item.label}</small><strong>{item.value}</strong></span>)}
+      </div>
     </header>
   );
 }
@@ -447,10 +507,27 @@ function FrogAvatar({ target, splashed }: { target: number | null; splashed: boo
   );
 }
 
+function RiverCourse({ progress, goal }: { progress: number; goal: number }) {
+  return (
+    <div className="river-course" role="img" aria-label={`The frog has completed ${progress} of ${goal} jumps toward the finish line.`}>
+      <span className="course-label course-start">Start</span>
+      {Array.from({ length: goal + 1 }, (_, index) => {
+        const left = 7 + (index * 86) / goal;
+        const top = index % 2 === 0 ? 58 : 20;
+        return <i key={index} className={`course-pad ${index < progress ? "is-crossed" : ""} ${index === progress ? "is-current" : ""} ${index === goal ? "is-finish" : ""}`} style={{ left: `${left}%`, top: `${top}%` }}>{index === goal ? "⚑" : index + 1}</i>;
+      })}
+      <span className="course-frog" aria-hidden="true" style={{ left: `${7 + (progress * 86) / goal}%`, top: `${progress % 2 === 0 ? 58 : 20}%` }}>🐸</span>
+      <span className="course-label course-finish">Finish</span>
+    </div>
+  );
+}
+
 function ValuesGame({ onClose }: { onClose: () => void }) {
   const [run, setRun] = useState(0);
-  const deck = useMemo(() => shuffle(valuesData, run).slice(0, 6), [run]);
-  const [round, setRound] = useState(0);
+  const deck = useMemo(() => shuffle(valuesData, run), [run]);
+  const goal = 6;
+  const [caseIndex, setCaseIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [lives, setLives] = useState(3);
@@ -461,43 +538,43 @@ function ValuesGame({ onClose }: { onClose: () => void }) {
   const feedbackRef = useRef<HTMLDivElement>(null);
   const questionRef = useRef<HTMLDivElement>(null);
   const returnToQuestion = useRef(false);
-  const finished = round >= deck.length;
+  const finished = progress >= goal || lives <= 0;
   const [best, saveBest] = useHighScore("values");
-  const current = deck[Math.min(round, deck.length - 1)];
-  const choices = useMemo(() => shuffle([current.value, ...shuffle(valuesData.filter((item) => item.value !== current.value), round + run).slice(0, 2).map((item) => item.value)], round + run), [current, round, run]);
+  const { enabled: soundEnabled, play, toggle: toggleSound } = useArcadeSound();
+  const current = deck[caseIndex % deck.length];
+  const choices = useMemo(() => shuffle([current.value, ...shuffle(valuesData.filter((item) => item.value !== current.value), caseIndex + run).slice(0, 2).map((item) => item.value)], caseIndex + run), [caseIndex, current, run]);
 
   const answer = useCallback((choice: string, index: number) => {
     if (phase !== "ready") return;
     const correct = choice === current.value;
     setSelectedPad(index);
     setPhase("jumping");
+    play("jump");
     jumpTimer.current = setTimeout(() => {
       if (correct) {
         setScore((value) => value + 100 + streak * 20);
         setStreak((value) => value + 1);
+        play("correct");
       } else {
         setLives((value) => Math.max(0, value - 1));
         setStreak(0);
+        play("wrong");
       }
       setFeedback({ correct, title: correct ? current.value : `Best fit: ${current.value}`, rationale: current.rationale, source: current.source, sourceUrl: current.sourceUrl });
       setPhase("feedback");
     }, 620);
-  }, [current, phase, streak]);
+  }, [current, phase, play, streak]);
 
   useEffect(() => () => { if (jumpTimer.current) clearTimeout(jumpTimer.current); }, []);
   useEffect(() => {
     if (phase !== "feedback" || !feedbackRef.current) return;
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    feedbackRef.current.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
     feedbackRef.current.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
   }, [phase]);
   useEffect(() => {
     if (phase !== "ready" || !returnToQuestion.current || !questionRef.current) return;
     returnToQuestion.current = false;
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    questionRef.current.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
     window.requestAnimationFrame(() => questionRef.current?.parentElement?.querySelector<HTMLButtonElement>(".lily-pad")?.focus({ preventScroll: true }));
-  }, [phase, round]);
+  }, [caseIndex, phase]);
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       const index = Number(event.key) - 1;
@@ -508,17 +585,27 @@ function ValuesGame({ onClose }: { onClose: () => void }) {
   }, [answer, choices, phase]);
 
   function next() {
-    if (round === deck.length - 1 || lives <= 0) saveBest(score);
+    if (feedback?.correct) {
+      const nextProgress = progress + 1;
+      setProgress(nextProgress);
+      if (nextProgress >= goal) {
+        saveBest(score);
+        play("finish");
+      }
+    } else if (lives <= 0) {
+      saveBest(score);
+    }
     returnToQuestion.current = true;
     setFeedback(null);
     setSelectedPad(null);
     setPhase("ready");
-    setRound((value) => lives <= 0 ? deck.length : value + 1);
+    setCaseIndex((value) => value + 1);
   }
   function replay() {
     saveBest(score);
     setRun((value) => value + 1);
-    setRound(0);
+    setCaseIndex(0);
+    setProgress(0);
     setScore(0);
     setStreak(0);
     setLives(3);
@@ -527,14 +614,15 @@ function ValuesGame({ onClose }: { onClose: () => void }) {
     setFeedback(null);
   }
 
-  if (finished) return <><GameHeader title="Rizal River Quest" status={[{ label: "Lives", value: `${"♥".repeat(lives)}${"♡".repeat(3 - lives)}` }, { label: "Score", value: String(score) }]} onClose={onClose} /><Results game="values" title="Rizal River Quest" score={score} best={best} maxScore={900} onReplay={replay} onClose={onClose} /></>;
+  if (finished) return <><GameHeader title="Rizal River Quest" status={[{ label: "Lives", value: `${"♥".repeat(lives)}${"♡".repeat(3 - lives)}` }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} /><Results game="values" title="Rizal River Quest" score={score} best={best} maxScore={900} onReplay={replay} onClose={onClose} /></>;
   return (
     <>
-      <GameHeader title="Rizal River Quest" status={[{ label: "Lives", value: `${"♥".repeat(lives)}${"♡".repeat(3 - lives)}` }, { label: "Question", value: `${round + 1} / ${deck.length}` }, { label: "Score", value: String(score) }]} onClose={onClose} />
+      <GameHeader title="Rizal River Quest" status={[{ label: "Lives", value: `${"♥".repeat(lives)}${"♡".repeat(3 - lives)}` }, { label: "To finish", value: `${progress} / ${goal}` }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} />
       <section className="river-game">
+        <RiverCourse progress={progress} goal={goal} />
         <div className="river-question" ref={questionRef}>
           <span>Interpretive value · Case {current.id}</span>
-          <h2>Which idea is most clearly in motion?</h2>
+          <h2>Choose the value that best fits this action.</h2>
           <p>{current.scenario}</p>
         </div>
         <div className="pond-stage">
@@ -550,7 +638,7 @@ function ValuesGame({ onClose }: { onClose: () => void }) {
           <div className="water-ripple ripple-one" /><div className="water-ripple ripple-two" />
           <div className="river-tip">Tap a lily pad or press 1, 2, or 3</div>
         </div>
-        {feedback && <div className="river-feedback" ref={feedbackRef}><FeedbackPanel feedback={feedback} onNext={next} isLast={round === deck.length - 1 || lives <= 0} /></div>}
+        {feedback && <div className="river-feedback" ref={feedbackRef}><FeedbackPanel feedback={feedback} onNext={next} isLast={(feedback.correct && progress === goal - 1) || lives <= 0} /></div>}
       </section>
     </>
   );
@@ -559,8 +647,9 @@ function ValuesGame({ onClose }: { onClose: () => void }) {
 type MemoryCard = {
   uid: string;
   pairId: string;
-  face: "character" | "evidence";
+  face: "portrait" | "name";
   text: string;
+  portraitIndex?: number;
   novel: string;
   rationale: string;
   source: string;
@@ -570,8 +659,8 @@ type MemoryCard = {
 function buildMemoryDeck(run: number): MemoryCard[] {
   const pairs = shuffle(novelData, run).slice(0, 6);
   return shuffle(pairs.flatMap((item) => [
-    { uid: `${item.id}-character`, pairId: item.id, face: "character" as const, text: item.character, novel: item.novel, rationale: item.rationale, source: item.source, sourceUrl: item.sourceUrl },
-    { uid: `${item.id}-evidence`, pairId: item.id, face: "evidence" as const, text: item.clues[2], novel: item.novel, rationale: item.rationale, source: item.source, sourceUrl: item.sourceUrl },
+    { uid: `${item.id}-portrait`, pairId: item.id, face: "portrait" as const, text: item.hint, portraitIndex: item.portraitIndex, novel: item.novel, rationale: item.rationale, source: item.source, sourceUrl: item.sourceUrl },
+    { uid: `${item.id}-name`, pairId: item.id, face: "name" as const, text: item.character, novel: item.novel, rationale: item.rationale, source: item.source, sourceUrl: item.sourceUrl },
   ]), run + 11);
 }
 
@@ -585,12 +674,13 @@ function NovelsGame({ onClose }: { onClose: () => void }) {
   const [streak, setStreak] = useState(0);
   const [boardLocked, setBoardLocked] = useState(false);
   const [matchedFact, setMatchedFact] = useState<Feedback | null>(null);
-  const [announcement, setAnnouncement] = useState("Find a character and the evidence that belongs to them.");
+  const [announcement, setAnnouncement] = useState("Find an illustrated clue card and the matching character name.");
   const flipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const matchNoteRef = useRef<HTMLElement>(null);
   const finished = matchedPairs.length === 6 && matchedFact === null;
   const [best, saveBest] = useHighScore("novels");
+  const { enabled: soundEnabled, play, toggle: toggleSound } = useArcadeSound();
 
   useEffect(() => () => { if (flipTimer.current) clearTimeout(flipTimer.current); }, []);
   useEffect(() => {
@@ -599,6 +689,7 @@ function NovelsGame({ onClose }: { onClose: () => void }) {
 
   function flipCard(card: MemoryCard) {
     if (boardLocked || openIds.includes(card.uid) || matchedPairs.includes(card.pairId)) return;
+    play("flip");
     const nextOpen = [...openIds, card.uid];
     setOpenIds(nextOpen);
     if (nextOpen.length < 2) return;
@@ -608,7 +699,7 @@ function NovelsGame({ onClose }: { onClose: () => void }) {
     setBoardLocked(true);
     flipTimer.current = setTimeout(() => {
       if (isMatch) {
-        const character = [first, card].find((item) => item?.face === "character");
+        const character = [first, card].find((item) => item?.face === "name");
         const characterName = character?.text ?? card.text;
         const nextScore = score + 120 + streak * 10;
         setMatchedPairs((value) => [...value, card.pairId]);
@@ -617,16 +708,19 @@ function NovelsGame({ onClose }: { onClose: () => void }) {
         setStreak((value) => value + 1);
         setMatchedFact({ correct: true, title: `${characterName} · ${card.novel}`, rationale: card.rationale, source: card.source, sourceUrl: card.sourceUrl });
         setAnnouncement(`Matched ${characterName} in ${card.novel}.`);
+        play("match");
       } else {
         setStreak(0);
         setAnnouncement("Those cards do not belong to the same case. Try again.");
         setBoardLocked(false);
+        play("wrong");
       }
       setOpenIds([]);
     }, isMatch ? 420 : 760);
   }
 
   function dismissMatchedFact() {
+    if (matchedPairs.length === 6) play("finish");
     setMatchedFact(null);
     setBoardLocked(false);
     window.requestAnimationFrame(() => boardRef.current?.querySelector<HTMLButtonElement>(".memory-card:not(.is-matched)")?.focus());
@@ -644,16 +738,16 @@ function NovelsGame({ onClose }: { onClose: () => void }) {
     setStreak(0);
     setBoardLocked(false);
     setMatchedFact(null);
-    setAnnouncement("Find a character and the evidence that belongs to them.");
+    setAnnouncement("Find an illustrated clue card and the matching character name.");
   }
 
-  if (finished) return <><GameHeader title="Novel Case Files" status={[{ label: "Pairs", value: "6 / 6" }, { label: "Moves", value: String(moves) }, { label: "Score", value: String(score) }]} onClose={onClose} /><Results game="novels" title="Novel Case Files" score={score} best={best} maxScore={870} onReplay={replay} onClose={onClose} /></>;
+  if (finished) return <><GameHeader title="Novel Case Files" status={[{ label: "Pairs", value: "6 / 6" }, { label: "Moves", value: String(moves) }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} /><Results game="novels" title="Novel Case Files" score={score} best={best} maxScore={870} onReplay={replay} onClose={onClose} /></>;
   return (
     <>
-      <GameHeader title="Novel Case Files" status={[{ label: "Pairs", value: `${matchedPairs.length} / 6` }, { label: "Moves", value: String(moves) }, { label: "Score", value: String(score) }]} onClose={onClose} />
+      <GameHeader title="Novel Case Files" status={[{ label: "Pairs", value: `${matchedPairs.length} / 6` }, { label: "Moves", value: String(moves) }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} />
       <section className="memory-game play-layout">
-        <div className="memory-title"><div><p className="eyebrow">Noli + El Fili memory room</p><h2>Match every character to their evidence.</h2></div><img src="/art/noli-cover.jpg" alt="Historic cover of Noli Me Tangere" /></div>
-        <p className="memory-instructions">Flip two cards. A character pairs with one distinctive clue from their case file.</p>
+        <div className="memory-title"><div><p className="eyebrow">Noli + El Fili portrait room</p><h2>Match each illustrated clue card to the character’s name.</h2></div><img src="/art/noli-cover.jpg" alt="Historic cover of Noli Me Tangere" /></div>
+        <p className="memory-instructions">The portraits are artistic interpretations, not historical photographs. Use the specific clues printed below each portrait.</p>
         <div className="memory-board" aria-label="Character memory cards" ref={boardRef}>
           {cards.map((card, index) => {
             const faceUp = openIds.includes(card.uid) || matchedPairs.includes(card.pairId);
@@ -661,7 +755,13 @@ function NovelsGame({ onClose }: { onClose: () => void }) {
               <button key={card.uid} className={`memory-card ${faceUp ? "is-flipped" : ""} ${matchedPairs.includes(card.pairId) ? "is-matched" : ""}`} type="button" onClick={() => flipCard(card)} aria-label={`Card ${index + 1}, ${faceUp ? `${card.face}: ${card.text}` : "face down"}`} aria-pressed={faceUp}>
                 <span className="memory-card-inner">
                   <span className="memory-card-back"><img src="/art/rizal-signature.svg" alt="" /><b>{String(index + 1).padStart(2, "0")}</b></span>
-                  <span className="memory-card-front"><small>{card.face === "character" ? "Character" : "Evidence"}</small><strong>{card.text}</strong><em>{card.novel}</em></span>
+                  <span className={`memory-card-front memory-${card.face}`}>
+                    <small>{card.face === "portrait" ? "Portrait + clues" : "Character name"}</small>
+                    {card.face === "portrait" && card.portraitIndex !== undefined
+                      ? <><span className="character-portrait" aria-hidden="true" style={{ backgroundPosition: `${(card.portraitIndex % 3) * 50}% ${Math.floor(card.portraitIndex / 3) * 100}%` }} /><strong className="portrait-hint">{card.text}</strong></>
+                      : <><strong className="name-card-title">{card.text}</strong><span className="name-card-prompt">Match this name to its illustrated clue card.</span></>}
+                    <em>{card.face === "portrait" ? `Artistic interpretation · ${card.novel}` : card.novel}</em>
+                  </span>
                 </span>
               </button>
             );
@@ -690,77 +790,63 @@ function CodebreakerGame({ onClose }: { onClose: () => void }) {
   const [score, setScore] = useState(0);
   const [revealed, setRevealed] = useState(1);
   const [phase, setPhase] = useState<"decoding" | "filing" | "feedback">("decoding");
-  const [dialShift, setDialShift] = useState(0);
+  const [guess, setGuess] = useState("");
   const [attempts, setAttempts] = useState(0);
   const [slipSelected, setSlipSelected] = useState(false);
   const [wrongDrawer, setWrongDrawer] = useState<ArchiveGroup | null>(null);
-  const [dialWrong, setDialWrong] = useState(false);
-  const [announcement, setAnnouncement] = useState("Rotate the wheel until the archive title becomes readable.");
+  const [answerWrong, setAnswerWrong] = useState(false);
+  const [announcement, setAnnouncement] = useState("Use the substitution key to decode the archive title manually.");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const decoderTopRef = useRef<HTMLDivElement>(null);
+  const decodeInputRef = useRef<HTMLInputElement>(null);
   const archiveSlipRef = useRef<HTMLButtonElement>(null);
   const archiveDrawersRef = useRef<HTMLDivElement>(null);
   const codeFeedbackRef = useRef<HTMLDivElement>(null);
   const returnToDecoder = useRef(false);
   const finished = round >= deck.length;
   const [best, saveBest] = useHighScore("codebreaker");
+  const { enabled: soundEnabled, play, toggle: toggleSound } = useArcadeSound();
   const current = deck[Math.min(round, deck.length - 1)];
-  const targetShift = 2 + ((round + run * 3) % 5);
-  const encoded = shiftText(current.answer, targetShift);
-  const decodedPreview = shiftText(encoded, -dialShift);
+  const encoded = atbashText(current.answer);
   const correctGroup = archiveGroupFor(current);
 
-  const turnDial = useCallback((amount: number) => {
-    setDialShift((value) => Math.max(0, Math.min(6, value + amount)));
-    setDialWrong(false);
-  }, []);
-
   useEffect(() => () => { if (resetTimer.current) clearTimeout(resetTimer.current); }, []);
-  useEffect(() => {
-    function onKey(event: KeyboardEvent) {
-      if (phase !== "decoding") return;
-      if (event.key === "ArrowLeft") { event.preventDefault(); turnDial(-1); }
-      if (event.key === "ArrowRight") { event.preventDefault(); turnDial(1); }
-    }
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [phase, turnDial]);
   useEffect(() => {
     if (phase !== "filing") return;
     const target = slipSelected
       ? archiveDrawersRef.current?.querySelector<HTMLButtonElement>("button:not([disabled])")
       : archiveSlipRef.current;
     if (!target) return;
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    target.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
     target.focus({ preventScroll: true });
   }, [phase, slipSelected]);
   useEffect(() => {
     if (phase !== "feedback" || !codeFeedbackRef.current) return;
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    codeFeedbackRef.current.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
     codeFeedbackRef.current.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
   }, [phase]);
   useEffect(() => {
     if (phase !== "decoding" || !returnToDecoder.current || !decoderTopRef.current) return;
     returnToDecoder.current = false;
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    decoderTopRef.current.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
-    window.requestAnimationFrame(() => decoderTopRef.current?.querySelector<HTMLButtonElement>(".decoder-wheel button:last-of-type")?.focus({ preventScroll: true }));
+    window.requestAnimationFrame(() => decodeInputRef.current?.focus({ preventScroll: true }));
   }, [phase, round]);
 
-  function lockDial() {
-    if (dialShift === targetShift) {
+  function submitDecode(event: FormEvent) {
+    event.preventDefault();
+    const normalized = normalizeCodeAnswer(guess);
+    const accepted = current.variants.map(normalizeCodeAnswer);
+    if (accepted.includes(normalized)) {
       setScore((value) => value + Math.max(90, 150 - attempts * 15 - (revealed - 1) * 15));
       setPhase("filing");
-      setAnnouncement("Code cracked. Select the archive slip, then choose its drawer.");
+      setAnswerWrong(false);
+      setAnnouncement(`Code cracked: ${current.answer}. Pick up the archive slip, then choose its drawer.`);
+      play("decode");
       return;
     }
     setAttempts((value) => value + 1);
-    setDialWrong(true);
-    setAnnouncement("The letters still look scrambled. Turn the wheel again.");
-    resetTimer.current = setTimeout(() => setDialWrong(false), 430);
+    setAnswerWrong(true);
+    setAnnouncement(normalized ? "That decoding does not match the transmission. Check each letter against the key." : "Type your decoded answer before checking it.");
+    play("wrong");
+    resetTimer.current = setTimeout(() => setAnswerWrong(false), 430);
   }
 
   function fileSlip(group: ArchiveGroup) {
@@ -770,10 +856,12 @@ function CodebreakerGame({ onClose }: { onClose: () => void }) {
       setFeedback({ correct: true, title: `${current.answer} filed`, rationale: current.rationale, source: current.source, sourceUrl: current.sourceUrl });
       setPhase("feedback");
       setAnnouncement(`${current.answer} filed under ${group}.`);
+      play("file");
       return;
     }
     setWrongDrawer(group);
     setAnnouncement(`${group} is not the right drawer. Try another.`);
+    play("wrong");
     resetTimer.current = setTimeout(() => setWrongDrawer(null), 470);
   }
 
@@ -782,12 +870,12 @@ function CodebreakerGame({ onClose }: { onClose: () => void }) {
     returnToDecoder.current = true;
     setFeedback(null);
     setRevealed(1);
-    setDialShift(0);
+    setGuess("");
     setAttempts(0);
     setSlipSelected(false);
     setWrongDrawer(null);
     setPhase("decoding");
-    setAnnouncement("Rotate the wheel until the archive title becomes readable.");
+    setAnnouncement("Use the substitution key to decode the archive title manually.");
     setRound((value) => value + 1);
   }
   function replay() {
@@ -796,48 +884,58 @@ function CodebreakerGame({ onClose }: { onClose: () => void }) {
     setRound(0);
     setScore(0);
     setRevealed(1);
-    setDialShift(0);
+    setGuess("");
     setAttempts(0);
     setSlipSelected(false);
     setWrongDrawer(null);
-    setDialWrong(false);
+    setAnswerWrong(false);
     setPhase("decoding");
     setFeedback(null);
-    setAnnouncement("Rotate the wheel until the archive title becomes readable.");
+    setAnnouncement("Use the substitution key to decode the archive title manually.");
   }
 
-  if (finished) return <><GameHeader title="Rizal Codebreaker" status={[{ label: "Files", value: "6 / 6" }, { label: "Score", value: String(score) }]} onClose={onClose} /><Results game="codebreaker" title="Rizal Codebreaker" score={score} best={best} maxScore={1200} onReplay={replay} onClose={onClose} /></>;
+  if (finished) return <><GameHeader title="Rizal Codebreaker" status={[{ label: "Files", value: "6 / 6" }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} /><Results game="codebreaker" title="Rizal Codebreaker" score={score} best={best} maxScore={1200} onReplay={replay} onClose={onClose} /></>;
   return (
     <>
-      <GameHeader title="Rizal Codebreaker" status={[{ label: "File", value: `${round + 1} / ${deck.length}` }, { label: "Stage", value: phase === "decoding" ? "Decode" : phase === "filing" ? "File" : "Solved" }, { label: "Score", value: String(score) }]} onClose={onClose} />
+      <GameHeader title="Rizal Codebreaker" status={[{ label: "File", value: `${round + 1} / ${deck.length}` }, { label: "Stage", value: phase === "decoding" ? "Decode" : phase === "filing" ? "File" : "Solved" }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} />
       <section className="decoder-game play-layout">
-        <div className="decoder-heading"><div><p className="eyebrow">Archive cipher room · {current.year}</p><h2>Turn the wheel. File the truth.</h2></div><span>File {current.id}</span></div>
-        <div className="cipher-console" ref={decoderTopRef}>
-          <div className="cipher-readout"><small>Encrypted transmission</small><strong>{encoded}</strong></div>
-          <div className={`decoder-wheel ${dialWrong ? "wheel-wrong" : ""}`}>
-            <span className="wheel-label">SHIFT</span><strong>{dialShift}</strong><div className="wheel-ticks" aria-hidden="true">• • • • • • • • • • • •</div>
-            <button type="button" onClick={() => turnDial(-1)} disabled={phase !== "decoding" || dialShift === 0} aria-label="Turn decoder left">‹</button>
-            <button type="button" onClick={() => turnDial(1)} disabled={phase !== "decoding" || dialShift === 6} aria-label="Turn decoder right">›</button>
-          </div>
-          <div className={`decoded-window ${dialShift === targetShift ? "is-readable" : ""}`}><small>Decoder preview</small><strong>{decodedPreview}</strong></div>
-          {phase === "decoding" && <button className="lock-code-button" type="button" onClick={lockDial}>Lock decoded title</button>}
-        </div>
+        <div className="decoder-heading"><div><p className="eyebrow">Archive cipher room · {current.year}</p><h2>Use the key. Decode it yourself.</h2></div><span>File {current.id}</span></div>
 
-        <div className="telegram-and-files">
+        {phase === "decoding" && <div className="manual-code-grid" ref={decoderTopRef}>
+          <form className={`cipher-workbench ${answerWrong ? "answer-wrong" : ""}`} onSubmit={submitDecode}>
+            <div className="cipher-readout"><small>Encrypted transmission</small><strong>{encoded}</strong></div>
+            <div className="cipher-key" aria-label="Atbash substitution key">
+              <span>Substitution formula</span>
+              <div><b>CODE</b><code>ABCDEFGHIJKLMNOPQRSTUVWXYZ</code></div>
+              <div><b>TEXT</b><code>ZYXWVUTSRQPONMLKJIHGFEDCBA</code></div>
+              <p><strong>A = Z</strong>, <strong>B = Y</strong>, <strong>C = X</strong> … Decode every letter manually.</p>
+            </div>
+            <label className="decode-answer" htmlFor={`decode-answer-${current.id}`}>
+              <span>Your decoded title or place</span>
+              <input ref={decodeInputRef} id={`decode-answer-${current.id}`} value={guess} onChange={(event) => setGuess(event.target.value)} autoComplete="off" autoCapitalize="words" spellCheck={false} placeholder="Type the complete answer" />
+            </label>
+            <button className="check-code-button" type="submit">Check my decoding</button>
+          </form>
           <aside className="clue-telegram">
             <span>Clue telegram</span>
             {current.clues.slice(0, revealed).map((clue, index) => <p key={clue}><b>{index + 1}</b>{clue}</p>)}
-            {revealed < current.clues.length && phase === "decoding" && <button type="button" onClick={() => setRevealed((value) => value + 1)}>Open another clue (−15 pts)</button>}
+            {revealed < current.clues.length && <button type="button" onClick={() => { setRevealed((value) => value + 1); play("flip"); }}>Open another clue (−15 pts)</button>}
           </aside>
-          <div className={`filing-station ${phase === "decoding" ? "station-locked" : ""}`}>
-            <button className={`archive-slip ${slipSelected ? "is-selected" : ""}`} ref={archiveSlipRef} type="button" disabled={phase === "decoding" || phase === "feedback"} onClick={() => setSlipSelected(true)}><small>Decoded archive slip</small><strong>{phase === "decoding" ? "CLASSIFIED" : current.answer}</strong><span>{slipSelected ? "Selected — choose a drawer" : "Tap to pick up"}</span></button>
+        </div>}
+
+        {phase === "filing" && <div className="manual-file-stage">
+          <div className="decoded-stamp"><span>Code cracked</span><strong>{current.answer}</strong><small>Now file this item by historical type.</small></div>
+          <div className="filing-station">
+            <button className={`archive-slip ${slipSelected ? "is-selected" : ""}`} ref={archiveSlipRef} type="button" onClick={() => { setSlipSelected(true); play("pickup"); }}><small>Decoded archive slip</small><strong>{current.answer}</strong><span>{slipSelected ? "Selected — choose a drawer" : "Tap to pick up"}</span></button>
             <div className="archive-drawers" ref={archiveDrawersRef}>
-              {archiveGroups.map((group, index) => <button key={group} className={wrongDrawer === group ? "wrong-drawer" : ""} type="button" disabled={phase !== "filing" || !slipSelected} onClick={() => fileSlip(group)}><span>0{index + 1}</span><strong>{group}</strong><i /></button>)}
+              {archiveGroups.map((group, index) => <button key={group} className={wrongDrawer === group ? "wrong-drawer" : ""} type="button" disabled={!slipSelected} onClick={() => fileSlip(group)}><span>0{index + 1}</span><strong>{group}</strong><i /></button>)}
             </div>
           </div>
-        </div>
+        </div>}
+
+        {phase === "feedback" && <div className="solved-file-summary" aria-hidden="true"><span>Archive filed</span><strong>{current.answer}</strong><small>{current.year} · {correctGroup}</small></div>}
         <p className="decoder-announcement" aria-live="polite">{announcement}</p>
-        {feedback && <div ref={codeFeedbackRef}><FeedbackPanel feedback={feedback} onNext={next} isLast={round === deck.length - 1} /></div>}
+        {feedback && <div className="code-feedback" ref={codeFeedbackRef}><FeedbackPanel feedback={feedback} onNext={next} isLast={round === deck.length - 1} /></div>}
       </section>
     </>
   );
@@ -852,7 +950,7 @@ function GameOverlay({ game, onClose }: { game: GameId; onClose: () => void }) {
 function GameCardScene({ game }: { game: GameId }) {
   if (game === "values") return <div className="card-scene pond-card-scene"><span className="mini-cloud" /><span className="mini-lily lily-a" /><span className="mini-lily lily-b" /><span className="mini-lily lily-c" /><span className="mini-frog">●</span><strong>HOP!</strong></div>;
   if (game === "novels") return <div className="card-scene memory-card-scene"><img src="/art/noli-cover.jpg" alt="" /><span className="mini-card card-a">MC</span><span className="mini-card card-b">?</span><span className="mini-card card-c">IB</span><strong>Match the file</strong></div>;
-  return <div className="card-scene code-card-scene"><span className="mini-code">ULCDO</span><span className="mini-wheel">3</span><span className="mini-drawer">ARCHIVE</span><strong>Turn · Decode · File</strong></div>;
+  return <div className="card-scene code-card-scene"><span className="mini-code">MROL</span><span className="mini-wheel">A=Z</span><span className="mini-drawer">ARCHIVE</span><strong>Read · Decode · File</strong></div>;
 }
 
 function LeaderboardDrawer({ onClose }: { onClose: () => void }) {
@@ -899,7 +997,7 @@ export default function RizalArcade() {
           <h1>Press play on <em>Philippine history.</em></h1>
           <p className="hero-intro">Hop across ideas, match characters, and crack archive codes in quick games built from Rizal’s life, works, and world.</p>
           <div className="hero-actions"><button className="button button-primary" type="button" onClick={() => setActiveGame("values")}>Start playing <span>▶</span></button><span>3 games · No account · Free</span></div>
-          <div className="hero-proof"><span><strong>3</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>24</strong> sourced prompts</span></div>
+          <div className="hero-proof"><span><strong>3</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>22</strong> sourced prompts</span></div>
         </div>
         <div className="hero-art arcade-cabinet-wrap">
           <div className="arcade-cabinet">
