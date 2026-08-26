@@ -26,6 +26,8 @@ test("server-renders the Rizal Arcade home page", async () => {
   assert.match(html, /Novel Case Files/);
   assert.match(html, /Rizal Codebreaker/);
   assert.match(html, /Classroom high scores/i);
+  assert.match(html, /Student sign-in/i);
+  assert.match(html, /Private section leaderboards/i);
   assert.match(html, /\/art\/rizal-portrait\.webp/);
   assert.match(html, /http:\/\/localhost\/og-arcade\.png/);
   assert.doesNotMatch(html, /codex-preview|SkeletonPreview|Your site is taking shape/i);

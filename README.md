@@ -2,7 +2,7 @@
 
 **History you can play.** Rizal Arcade is a mobile-friendly educational game portal about José Rizal’s life, novels, writings, civic ideas, and historical world.
 
-The prototype takes the familiar pick-and-play feel of Friv or Y8 and gives it a distinctly Filipino “historical arcade” identity for college Rizal Life classes. Students can play instantly without an account, complete a round in two to five minutes, and see a short explanation plus a source after every answer.
+The classroom edition takes the familiar pick-and-play feel of Friv or Y8 and gives it a distinctly Filipino “historical arcade” identity for college Rizal Life classes. Official roster accounts connect each two-to-five-minute round to the correct student and section, while every answer still opens a short explanation plus a source.
 
 ## Playable games
 
@@ -45,24 +45,29 @@ For Vercel, import the repository as a project. The included `vercel.json` uses 
 npm run build:vercel
 ```
 
-The generated site is written to `vercel-dist/`. Games, device high scores, and device leaderboards work without environment variables or a paid service.
+The generated site is written to `vercel-dist/`. The public landing page builds without environment variables, but student sign-in, roster import, score saving, and leaderboards require the Supabase configuration below.
 
-## Optional class leaderboard with Supabase
+## Classroom accounts and section leaderboards with Supabase
 
 The site can reuse an existing Supabase project; a second project is not required.
 
-1. Open the Supabase SQL Editor and run [`supabase/rizal_arcade_scores.sql`](supabase/rizal_arcade_scores.sql).
-2. Copy `.env.example` to `.env.local` for local development.
-3. Set `VITE_SUPABASE_URL` to the project URL and `VITE_SUPABASE_PUBLISHABLE_KEY` to the public publishable key.
-4. Add the same two variables to the Vercel project and redeploy.
+1. Open the Supabase SQL Editor and run [`supabase/rizal_arcade_scores.sql`](supabase/rizal_arcade_scores.sql). This replaces the old prototype nickname leaderboard and removes its unverified scores.
+2. In Supabase Authentication, create the single administrator as an email/password user.
+3. In the SQL Editor, promote that user with `select public.promote_rizal_arcade_admin('professor@school.edu', 'Professor');`, replacing both values.
+4. Copy `.env.example` to `.env.local` for local development.
+5. Set the browser-safe `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` values.
+6. Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` for the protected roster-import functions.
+7. Add all four variables to the Vercel project. Mark `SUPABASE_SERVICE_ROLE_KEY` as sensitive, keep it server-only, and redeploy.
 
-The browser receives only the public publishable key—never add a service-role key. Score writes go through a narrowly validated database function, while public reads expose only player name, game, score, and date. If Supabase is absent or temporarily unavailable, the site automatically keeps a device-only leaderboard.
+The browser receives only the public publishable key. The service-role key exists only inside Vercel Functions and must never use the `VITE_` prefix. The protected import endpoint verifies the signed-in administrator before it creates accounts. Students sign in with Student ID plus a temporary password, change that password on first use, and can read only their assigned section’s scores through row-level security.
 
-This lightweight board is intended for friendly classroom play. Because each game runs in the student’s browser, it validates score ranges but is not cheat-proof; use server-verified gameplay and rate limiting before attaching grades or prizes to rankings.
+Uploading the same section again updates matching Student IDs without resetting their passwords. Newly created credentials are returned once for CSV download. Password resets generate a fresh temporary password and require another first-login change.
+
+The board is intended for friendly classroom play. Because each game runs in the student’s browser, score ranges and identity are validated but gameplay is not cheat-proof; add server-verified rounds before attaching grades or prizes to rankings.
 
 ## Technology
 
-React 19, TypeScript, Tailwind CSS, vinext, and an optional Supabase leaderboard. The prototype has no required accounts, ads, or tracking.
+React 19, TypeScript, Tailwind CSS, vinext, Vercel Functions, and Supabase Auth/Postgres. The classroom edition has no ads or tracking.
 
 ## Visual archive
 

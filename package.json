@@ -10,14 +10,16 @@
     "build": "vinext build",
     "build:vercel": "vite build --config vite.vercel.config.ts",
     "start": "vinext start",
-    "test": "npm run build && npm run build:vercel && node --test tests/rendered-html.test.mjs tests/vercel-output.test.mjs",
+    "test": "npm run build && npm run build:vercel && node --test tests/rendered-html.test.mjs tests/vercel-output.test.mjs tests/roster-parser.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.112.4",
     "drizzle-orm": "0.45.2",
     "react": "19.2.6",
-    "react-dom": "19.2.6"
+    "react-dom": "19.2.6",
+    "read-excel-file": "^9.3.10"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "1.37.1",
