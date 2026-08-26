@@ -56,15 +56,17 @@ export async function POST(request: Request) {
 
     const { data: existingProfiles, error: existingError } = await supabase
       .from("rizal_arcade_profiles")
-      .select("id,student_id")
+      .select("id,student_id,must_change_password")
       .in("student_id", students.map((student) => student.studentId));
     if (existingError) throw new Error(existingError.message);
-    const existingById = new Map((existingProfiles ?? []).map((profile) => [String(profile.student_id).toLowerCase(), String(profile.id)]));
+    const existingById = new Map((existingProfiles ?? []).map((profile) => [String(profile.student_id).toLowerCase(), profile]));
 
     const credentials: Array<{ studentId: string; displayName: string; sectionCode: string; temporaryPassword: string }> = [];
+    let createdCount = 0;
+    let recovered = 0;
     let updated = 0;
     for (const student of students) {
-      const profileId = existingById.get(student.studentId.toLowerCase());
+      const existingProfile = existingById.get(student.studentId.toLowerCase());
       const profile = {
         student_id: student.studentId,
         first_name: student.firstName,
@@ -77,9 +79,17 @@ export async function POST(request: Request) {
         role: "student",
         active: true,
       };
-      if (profileId) {
+      if (existingProfile) {
+        const profileId = String(existingProfile.id);
         const { error } = await supabase.from("rizal_arcade_profiles").update(profile).eq("id", profileId);
         if (error) throw new Error(`Could not update ${student.studentId}: ${error.message}`);
+        if (existingProfile.must_change_password) {
+          const password = temporaryPassword();
+          const { error: resetError } = await supabase.auth.admin.updateUserById(profileId, { password });
+          if (resetError) throw new Error(`Could not recover ${student.studentId}: ${resetError.message}`);
+          credentials.push({ studentId: student.studentId, displayName: profile.display_name, sectionCode: section.section_code, temporaryPassword: password });
+          recovered += 1;
+        }
         updated += 1;
         continue;
       }
@@ -111,15 +121,17 @@ export async function POST(request: Request) {
         throw new Error(`Could not save ${student.studentId}: ${profileError.message}`);
       }
       credentials.push({ studentId: student.studentId, displayName: profile.display_name, sectionCode: section.section_code, temporaryPassword: password });
+      createdCount += 1;
     }
 
     return json({
       section: section.section_code,
       total: students.length,
-      created: credentials.length,
+      created: createdCount,
+      recovered,
       updated,
       credentials,
-      message: credentials.length ? "New credentials were generated. Download them now; passwords will not be shown again." : "All students already existed, so their profiles were updated without changing passwords.",
+      message: credentials.length ? "Credentials were generated or safely refreshed. Download them now; passwords will not be shown again." : "All students already completed setup, so their profiles were updated without changing passwords.",
     });
   } catch (error) {
     return handleApiError(error);
