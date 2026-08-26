@@ -6,6 +6,7 @@
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import AdminPortal from "./AdminPortal";
 import { FirstPasswordPortal, LoginPortal } from "./AuthPortal";
+import { defineChallengeBank, drawChallengeSet, shuffleList } from "./challengeBank";
 import {
   getAuthSnapshot,
   signOutOfArcade,
@@ -226,14 +227,9 @@ const codeData = [
   },
 ];
 
-function shuffle<T>(input: T[], salt = 0): T[] {
-  const result = [...input];
-  for (let index = result.length - 1; index > 0; index -= 1) {
-    const swap = (index * 7 + salt * 5 + 3) % (index + 1);
-    [result[index], result[swap]] = [result[swap], result[index]];
-  }
-  return result;
-}
+const valuesBank = defineChallengeBank({ id: "values", topicId: "rizalian-values", contentVersion: 1, items: valuesData });
+const novelBank = defineChallengeBank({ id: "novels", topicId: "noli-and-el-fili-characters", contentVersion: 1, items: novelData });
+const codeBank = defineChallengeBank({ id: "codebreaker", topicId: "rizal-life-and-works-archive", contentVersion: 1, items: codeData });
 
 function atbashText(value: string) {
   return value.toUpperCase().replace(/[A-Z]/g, (letter) =>
@@ -529,9 +525,8 @@ function RiverCourse({ progress, goal }: { progress: number; goal: number }) {
 }
 
 function ValuesGame({ onClose }: { onClose: () => void }) {
-  const [run, setRun] = useState(0);
-  const deck = useMemo(() => shuffle(valuesData, run), [run]);
   const goal = 6;
+  const [deck, setDeck] = useState(() => drawChallengeSet(valuesBank, valuesBank.items.length));
   const [caseIndex, setCaseIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [score, setScore] = useState(0);
@@ -548,7 +543,7 @@ function ValuesGame({ onClose }: { onClose: () => void }) {
   const [best, saveBest] = useHighScore("values");
   const { enabled: soundEnabled, play, toggle: toggleSound } = useArcadeSound();
   const current = deck[caseIndex % deck.length];
-  const choices = useMemo(() => shuffle([current.value, ...shuffle(valuesData.filter((item) => item.value !== current.value), caseIndex + run).slice(0, 2).map((item) => item.value)], caseIndex + run), [caseIndex, current, run]);
+  const choices = useMemo(() => shuffleList([current.value, ...shuffleList(valuesBank.items.filter((item) => item.value !== current.value)).slice(0, 2).map((item) => item.value)]), [current]);
 
   const answer = useCallback((choice: string, index: number) => {
     if (phase !== "ready") return;
@@ -609,7 +604,7 @@ function ValuesGame({ onClose }: { onClose: () => void }) {
   }
   function replay() {
     saveBest(score);
-    setRun((value) => value + 1);
+    setDeck(drawChallengeSet(valuesBank, valuesBank.items.length));
     setCaseIndex(0);
     setProgress(0);
     setScore(0);
@@ -662,17 +657,16 @@ type MemoryCard = {
   sourceUrl: string;
 };
 
-function buildMemoryDeck(run: number): MemoryCard[] {
-  const pairs = shuffle(novelData, run).slice(0, 6);
-  return shuffle(pairs.flatMap((item) => [
+function buildMemoryDeck(): MemoryCard[] {
+  const pairs = drawChallengeSet(novelBank, 6);
+  return shuffleList(pairs.flatMap((item) => [
     { uid: `${item.id}-portrait`, pairId: item.id, face: "portrait" as const, text: item.hint, portraitIndex: item.portraitIndex, novel: item.novel, rationale: item.rationale, source: item.source, sourceUrl: item.sourceUrl },
     { uid: `${item.id}-name`, pairId: item.id, face: "name" as const, text: item.character, novel: item.novel, rationale: item.rationale, source: item.source, sourceUrl: item.sourceUrl },
-  ]), run + 11);
+  ]));
 }
 
 function NovelsGame({ onClose }: { onClose: () => void }) {
-  const [run, setRun] = useState(0);
-  const [cards, setCards] = useState<MemoryCard[]>(() => buildMemoryDeck(0));
+  const [cards, setCards] = useState<MemoryCard[]>(buildMemoryDeck);
   const [openIds, setOpenIds] = useState<string[]>([]);
   const [matchedPairs, setMatchedPairs] = useState<string[]>([]);
   const [moves, setMoves] = useState(0);
@@ -734,9 +728,7 @@ function NovelsGame({ onClose }: { onClose: () => void }) {
 
   function replay() {
     saveBest(score);
-    const nextRun = run + 1;
-    setRun(nextRun);
-    setCards(buildMemoryDeck(nextRun));
+    setCards(buildMemoryDeck());
     setOpenIds([]);
     setMatchedPairs([]);
     setMoves(0);
@@ -783,15 +775,14 @@ function NovelsGame({ onClose }: { onClose: () => void }) {
 type ArchiveGroup = "Places" | "Written works" | "Civic life";
 const archiveGroups: ArchiveGroup[] = ["Places", "Written works", "Civic life"];
 
-function archiveGroupFor(item: (typeof codeData)[number]): ArchiveGroup {
+function archiveGroupFor(item: (typeof codeBank.items)[number]): ArchiveGroup {
   if (item.category.toLowerCase().includes("place")) return "Places";
   if (item.category.toLowerCase().includes("organization")) return "Civic life";
   return "Written works";
 }
 
 function CodebreakerGame({ onClose }: { onClose: () => void }) {
-  const [run, setRun] = useState(0);
-  const deck = useMemo(() => shuffle(codeData, run).slice(0, 6), [run]);
+  const [deck, setDeck] = useState(() => drawChallengeSet(codeBank, 6));
   const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
   const [revealed, setRevealed] = useState(1);
@@ -886,7 +877,7 @@ function CodebreakerGame({ onClose }: { onClose: () => void }) {
   }
   function replay() {
     saveBest(score);
-    setRun((value) => value + 1);
+    setDeck(drawChallengeSet(codeBank, 6));
     setRound(0);
     setScore(0);
     setRevealed(1);
@@ -1009,7 +1000,7 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
         <div className="hero-copy">
           <div className="hero-kicker"><span className="live-dot" />Now open for curious minds</div>
           <p className="eyebrow">The José Rizal history arcade</p>
-          <h1>Press play on <em>Philippine history.</em></h1>
+          <h1>Press play through <em>José Rizal’s life, works, and legacy.</em></h1>
           <p className="hero-intro">Hop across ideas, match characters, and crack archive codes in quick games built from Rizal’s life, works, and world.</p>
           <div className="hero-actions"><button className="button button-primary" type="button" onClick={() => launchGame("values")}>Start playing <span>▶</span></button><span>3 games · Student sign-in · Section scores</span></div>
           <div className="hero-proof"><span><strong>3</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>22</strong> sourced prompts</span></div>

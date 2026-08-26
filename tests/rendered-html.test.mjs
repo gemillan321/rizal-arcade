@@ -20,8 +20,8 @@ test("server-renders the Rizal Arcade home page", async () => {
 
   const html = await response.text();
   assert.match(html, /<title>Rizal Arcade — History You Can Play<\/title>/i);
-  assert.match(html, /Press play on/i);
-  assert.match(html, /Philippine history\./i);
+  assert.match(html, /Press play through/i);
+  assert.match(html, /José Rizal’s life, works, and legacy\./i);
   assert.match(html, /Rizal River Quest/);
   assert.match(html, /Novel Case Files/);
   assert.match(html, /Rizal Codebreaker/);
