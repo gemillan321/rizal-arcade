@@ -57,6 +57,7 @@ export async function findAuthUserByEmail(supabase: SupabaseClient, email: strin
 
 export async function handleApiError(error: unknown) {
   if (error instanceof Response) return error;
+  console.error("[admin-api] request failed", error);
   const message = error instanceof Error ? error.message : "The request could not be completed.";
   return json({ error: message }, 500);
 }

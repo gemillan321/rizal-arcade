@@ -1,4 +1,4 @@
-import { handleApiError, json, requireAdmin, temporaryPassword } from "../_lib/supabaseAdmin";
+import { handleApiError, json, requireAdmin, temporaryPassword } from "../_lib/supabaseAdmin.js";
 
 export async function POST(request: Request) {
   try {

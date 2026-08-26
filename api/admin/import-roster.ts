@@ -1,5 +1,5 @@
-import type { ParsedRoster, RosterStudent } from "../../app/roster";
-import { findAuthUserByEmail, handleApiError, json, requireAdmin, studentAuthEmail, temporaryPassword } from "../_lib/supabaseAdmin";
+import type { ParsedRoster, RosterStudent } from "../../app/roster.js";
+import { findAuthUserByEmail, handleApiError, json, requireAdmin, studentAuthEmail, temporaryPassword } from "../_lib/supabaseAdmin.js";
 
 type ImportRequest = Omit<ParsedRoster, "fileName">;
 
