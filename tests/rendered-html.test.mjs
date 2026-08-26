@@ -25,7 +25,8 @@ test("server-renders the Rizal Arcade home page", async () => {
   assert.match(html, /Rizalian Values: River Quest/);
   assert.match(html, /Noli Case Files/);
   assert.match(html, /Rizal Roots: Codebreaker/);
-  assert.match(html, /150[\s\S]*sourced challenges/i);
+  assert.match(html, /Scholar’s Memory/);
+  assert.match(html, /200[\s\S]*sourced challenges/i);
   assert.match(html, /Classroom high scores/i);
   assert.match(html, /Student sign-in/i);
   assert.match(html, /Private section leaderboards/i);

@@ -1396,3 +1396,97 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .river-question h2 { font-size: 25px; }
   .river-question p { font-size: 12px; }
 }
+
+/* Scholar's Memory */
+.game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.game-visual-scholar { background: linear-gradient(145deg, #4ee0d0, #188f91); }
+.scholar-card-scene { overflow: hidden; }
+.scholar-card-scene::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(6,25,35,.76), rgba(6,25,35,.18)); }
+.scholar-card-scene > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: sepia(.26) saturate(.75) contrast(1.08); }
+.mini-passport { position: absolute; z-index: 2; width: 66px; height: 84px; display: grid; place-items: center; border: 3px solid var(--night); border-radius: 5px; color: var(--night); background: #fff4ce; box-shadow: 5px 6px 0 rgba(6,25,35,.65); font: 950 18px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.passport-a { left: 21%; top: 88px; transform: rotate(-8deg); }
+.passport-b { left: 45%; top: 112px; color: #fff4ce; background: var(--burgundy); transform: rotate(5deg); }
+.passport-c { right: 16%; top: 75px; background: var(--brass); transform: rotate(9deg); }
+.scholar-card-scene > strong { position: absolute; z-index: 3; left: 24px; right: 24px; bottom: 18px; color: #fff4ce; font: 900 15px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .06em; text-transform: uppercase; text-shadow: 2px 2px 0 var(--night); }
+
+.game-scholar { --scholar-teal: #138c8e; --scholar-paper: #fff1c4; background: #dff4df; }
+.game-scholar .game-header { background: #0a4f58; border-bottom-color: var(--electric); }
+.scholar-game { width: min(1100px, calc(100% - 32px)); padding: 22px 0 46px; }
+.scholar-heading { display: grid; grid-template-columns: minmax(0, 1fr) 220px; align-items: center; gap: 24px; margin-bottom: 12px; }
+.scholar-heading .eyebrow { margin-bottom: 6px; color: #0a7478; }
+.scholar-heading h2 { max-width: 760px; font-size: clamp(37px, 4.5vw, 58px); }
+.scholar-heading > img { width: 220px; height: 94px; object-fit: cover; border: 4px solid var(--night); border-radius: 10px; box-shadow: 7px 7px 0 var(--brass); filter: sepia(.3) saturate(.8); }
+.scholar-brief { min-height: 86px; display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; align-items: center; gap: 18px; margin-bottom: 12px; border: 3px solid var(--night); border-radius: 13px; padding: 12px 16px; background: var(--scholar-paper); box-shadow: 6px 7px 0 var(--scholar-teal); }
+.scholar-brief > div { display: grid; place-items: center; align-self: stretch; border-right: 2px solid rgba(6,25,35,.22); padding-right: 14px; text-transform: uppercase; }
+.scholar-brief > div span { font: 800 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .08em; }
+.scholar-brief > div strong { color: var(--burgundy); font: 950 36px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.scholar-brief > p { margin: 0; font-size: clamp(16px, 2vw, 21px); line-height: 1.25; font-weight: 750; text-wrap: balance; }
+.recall-brief { grid-template-columns: 92px minmax(0, 1fr); background: #fff8df; }
+.study-brief .button { min-height: 46px; padding: 10px 15px; white-space: nowrap; }
+
+.scholar-desk { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; border: 4px solid var(--night); border-radius: 18px; padding: 16px; background: linear-gradient(rgba(6,25,35,.13) 1px, transparent 1px), linear-gradient(90deg, rgba(6,25,35,.13) 1px, transparent 1px), linear-gradient(145deg, #bd7842, #754025); background-size: 30px 30px, 30px 30px, auto; box-shadow: 9px 10px 0 #4a2819; }
+.scholar-passport { position: relative; min-width: 0; min-height: clamp(132px, 18vh, 164px); overflow: hidden; border: 3px solid var(--night); border-radius: 10px; padding: 13px 12px 10px; color: var(--night); background: var(--scholar-paper); box-shadow: 4px 5px 0 rgba(6,25,35,.58); text-align: left; transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
+.scholar-passport:not(:disabled):hover { transform: translateY(-4px) rotate(-.5deg); box-shadow: 6px 9px 0 rgba(6,25,35,.62); }
+.scholar-passport:focus-visible { outline: 4px solid #fff; outline-offset: 2px; }
+.scholar-passport.is-closed { cursor: pointer; color: #fff4ce; background: #0a4f58; }
+.scholar-passport.is-open:disabled { opacity: 1; }
+.scholar-passport.is-wrong { animation: scholar-wrong .42s ease both; background: #f05d66; }
+.scholar-card-number { position: absolute; z-index: 3; right: 9px; top: 8px; border: 2px solid currentColor; border-radius: 999px; padding: 4px 6px; font: 900 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.scholar-card-face { height: 100%; display: grid; grid-template-columns: 48px minmax(0, 1fr); grid-template-rows: 18px auto auto; column-gap: 10px; align-content: center; }
+.scholar-card-face > i, .scholar-card-face > img { grid-row: 1 / 4; align-self: center; width: 48px; height: 58px; border: 2px solid var(--night); border-radius: 7px; object-fit: cover; }
+.scholar-card-face > i { display: grid; place-items: center; height: 48px; color: #fff4ce; background: var(--scholar-teal); font: 950 16px/1 ui-monospace, SFMono-Regular, Consolas, monospace; font-style: normal; box-shadow: 3px 3px 0 var(--brass); }
+.scholar-card-face small { color: #0a7478; font: 850 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; }
+.scholar-card-face strong { align-self: center; font-family: var(--font-display), Georgia, serif; font-size: clamp(17px, 2vw, 23px); line-height: .98; }
+.scholar-card-face em { margin-top: 5px; color: #4e5d5a; font-size: 11px; line-height: 1.15; font-style: normal; font-weight: 700; }
+.scholar-card-back { height: 100%; display: grid; place-items: center; align-content: center; gap: 4px; text-align: center; }
+.scholar-card-back img { width: min(128px, 72%); filter: invert(95%) sepia(22%) saturate(734%); }
+.scholar-card-back b { display: grid; place-items: center; width: 38px; height: 38px; border: 2px solid var(--brass); border-radius: 50%; color: var(--brass); font: 900 12px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.scholar-card-back small { font: 800 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; }
+.scholar-campus { border-top-color: #0a7478; }
+.scholar-discipline { border-top-color: var(--burgundy); }
+.scholar-language { border-top-color: #7854b8; }
+.scholar-mentor { border-top-color: var(--ochre); }
+.scholar-research { border-top-color: var(--leaf); }
+.scholar-announcement { min-height: 20px; margin: 13px 0 0; color: #40504e; font-size: 12px; font-weight: 700; text-align: center; }
+.scholar-feedback { margin-top: 14px; }
+.scholar-feedback .feedback-panel { box-shadow: 7px 8px 0 var(--scholar-teal); }
+@keyframes scholar-wrong { 0%, 100% { transform: translateX(0); } 30% { transform: translateX(-9px) rotate(-1deg); } 65% { transform: translateX(9px) rotate(1deg); } }
+
+@media (max-width: 900px) {
+  .game-grid { grid-template-columns: 1fr; }
+  .scholar-game { padding-top: 18px; }
+  .scholar-heading { grid-template-columns: minmax(0, 1fr) 150px; gap: 14px; }
+  .scholar-heading > img { width: 150px; height: 78px; }
+  .scholar-heading h2 { font-size: 39px; }
+  .scholar-passport { min-height: clamp(128px, 17vh, 150px); }
+}
+
+@media (max-width: 650px) {
+  .scholar-heading { grid-template-columns: 1fr; }
+  .scholar-heading > img { display: none; }
+  .scholar-brief { grid-template-columns: 66px minmax(0, 1fr); gap: 11px; padding: 10px 12px; }
+  .study-brief .button { grid-column: 1 / -1; width: 100%; }
+  .scholar-brief > div { padding-right: 8px; }
+  .scholar-desk { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 10px; box-shadow: 6px 7px 0 #4a2819; }
+  .scholar-passport { min-height: 138px; padding-inline: 8px; }
+  .scholar-card-face { grid-template-columns: 39px minmax(0, 1fr); column-gap: 7px; }
+  .scholar-card-face > i, .scholar-card-face > img { width: 39px; height: 46px; }
+  .scholar-card-face > i { height: 39px; font-size: 13px; }
+  .scholar-card-face strong { font-size: 17px; }
+  .scholar-card-face em { font-size: 10px; }
+}
+
+@media (max-height: 760px) and (min-width: 651px) {
+  .scholar-game { padding-top: 10px; padding-bottom: 12px; }
+  .scholar-heading { margin-bottom: 8px; }
+  .scholar-heading h2 { font-size: 30px; }
+  .scholar-heading > img { height: 62px; }
+  .scholar-brief { min-height: 70px; margin-bottom: 8px; padding-block: 7px; }
+  .scholar-passport { min-height: 116px; }
+  .scholar-desk { gap: 8px; padding: 11px; }
+  .scholar-card-face strong { font-size: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scholar-passport, .scholar-passport.is-wrong { animation: none; transition: none; }
+}

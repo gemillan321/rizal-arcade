@@ -49,7 +49,7 @@ create table public.rizal_arcade_scores (
   student_id uuid not null references public.rizal_arcade_profiles(id) on delete cascade,
   section_id uuid not null references public.rizal_arcade_sections(id) on delete cascade,
   player_name text not null,
-  game_id text not null check (game_id in ('values', 'novels', 'codebreaker')),
+  game_id text not null check (game_id in ('values', 'novels', 'codebreaker', 'scholar')),
   score integer not null,
   achieved_at timestamptz not null default now(),
   primary key (student_id, section_id, game_id),
@@ -57,6 +57,7 @@ create table public.rizal_arcade_scores (
     (game_id = 'values' and score between 0 and 900)
     or (game_id = 'novels' and score between 0 and 870)
     or (game_id = 'codebreaker' and score between 0 and 1200)
+    or (game_id = 'scholar' and score between 0 and 870)
   )
 );
 
@@ -154,6 +155,7 @@ begin
     when 'values' then 900
     when 'novels' then 870
     when 'codebreaker' then 1200
+    when 'scholar' then 870
     else null
   end;
   if v_max_score is null or p_score is null or p_score < 0 or p_score > v_max_score then

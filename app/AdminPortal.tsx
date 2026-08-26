@@ -11,6 +11,7 @@ const games: Array<{ id: LeaderboardGame; label: string }> = [
   { id: "values", label: "River Quest" },
   { id: "novels", label: "Noli Case Files" },
   { id: "codebreaker", label: "Codebreaker" },
+  { id: "scholar", label: "Scholar’s Memory" },
 ];
 
 function csvCell(value: string) {
