@@ -7,6 +7,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState, type RefO
 import AdminPortal from "./AdminPortal";
 import { FirstPasswordPortal, LoginPortal } from "./AuthPortal";
 import { defineChallengeBank, drawChallengeSet, shuffleList } from "./challengeBank";
+import { valuesChallenges } from "./valuesChallenges";
 import {
   getAuthSnapshot,
   signOutOfArcade,
@@ -37,7 +38,7 @@ const gameCards: Array<{
   {
     id: "values",
     number: "01",
-    title: "Rizal River Quest",
+    title: "Rizalian Values: River Quest",
     description: "Answer correctly to move the frog pad by pad toward the finish line before its lives run out.",
     meta: "River route · 3 min",
     tone: "burgundy",
@@ -70,73 +71,6 @@ const comingSoon = [
   { title: "Scholar’s Memory", label: "Education & travels", symbol: "M", art: "/art/calamba-shrine.webp", alt: "Rizal Shrine in Calamba" },
   { title: "Hearts & Horizons", label: "Letters & relationships", symbol: "H", art: "/art/rizal-letter.webp", alt: "A handwritten letter by José Rizal" },
   { title: "Masterpiece Museum", label: "Works & genres", symbol: "A", art: "/art/rizal-poster.webp", alt: "Historic public-domain José Rizal poster" },
-];
-
-const valuesData = [
-  {
-    id: "V01",
-    scenario: "A student hears a dramatic claim about Rizal, checks the original text and reliable references, then shares only what the evidence supports.",
-    value: "Independent judgment",
-    rationale: "Interpretive mapping: Rizal’s Malolos letter urges readers to use reason and choose what they judge to be right instead of following blindly.",
-    source: "Letter to the Young Women of Malolos (1889)",
-    sourceUrl: "https://www.gutenberg.org/ebooks/17116",
-  },
-  {
-    id: "V02",
-    scenario: "A classmate is told history and public discussion are “not for girls,” so you help her access materials and present her research.",
-    value: "Education as empowerment",
-    rationale: "Interpretive mapping: the Malolos letter praises women pursuing education, moral courage, and independent thought.",
-    source: "Letter to the Young Women of Malolos (1889)",
-    sourceUrl: "https://www.gutenberg.org/ebooks/17116",
-  },
-  {
-    id: "V03",
-    scenario: "After a typhoon ruins several classmates’ notebooks, the class creates a shared supply fund for anyone in need.",
-    value: "Mutual aid",
-    rationale: "Interpretive mapping: the Liga Filipina statutes name mutual protection in hardship and need among the organization’s aims.",
-    source: "La Liga Filipina statutes (1892)",
-    sourceUrl: "https://www.gutenberg.org/ebooks/20855",
-  },
-  {
-    id: "V04",
-    scenario: "Students from different Philippine regions combine their local-history findings into one exhibit and share credit.",
-    value: "Unity and cooperation",
-    rationale: "Interpretive mapping: the Liga’s aims begin with uniting people into a strong, cohesive body and include collective study and action.",
-    source: "La Liga Filipina statutes (1892)",
-    sourceUrl: "https://www.gutenberg.org/ebooks/20855",
-  },
-  {
-    id: "V05",
-    scenario: "Your team’s favorite answer has no support, so you mark it uncertain instead of inventing a citation.",
-    value: "Integrity and truthfulness",
-    rationale: "Interpretive mapping: Liga duties call for communication that is sincere, truthful, and meticulous.",
-    source: "La Liga Filipina statutes (1892)",
-    sourceUrl: "https://www.gutenberg.org/ebooks/20855",
-  },
-  {
-    id: "V06",
-    scenario: "During a heated debate, you firmly defend your position but refuse to bully or humiliate the other side.",
-    value: "Human dignity and respect",
-    rationale: "Interpretive mapping: a Liga duty rejects both accepting humiliation and treating others with arrogance or contempt.",
-    source: "La Liga Filipina statutes (1892)",
-    sourceUrl: "https://www.gutenberg.org/ebooks/20855",
-  },
-  {
-    id: "V07",
-    scenario: "Instead of calling a struggling community “lazy,” you examine working conditions, education, policy, and historical causes.",
-    value: "Evidence-based social analysis",
-    rationale: "Interpretive mapping: Rizal’s essay investigates structural and historical causes rather than treating indolence as an inherited racial trait.",
-    source: "The Indolence of the Filipino (1890)",
-    sourceUrl: "https://www.gutenberg.org/ebooks/6885",
-  },
-  {
-    id: "V08",
-    scenario: "A student newspaper respectfully explains why a campus rule is unfair and proposes a practical change.",
-    value: "Civic responsibility",
-    rationale: "Interpretive mapping: Rizal argued for channels through which truth, complaints, representation, and reform could reach government.",
-    source: "The Philippines a Century Hence",
-    sourceUrl: "https://www.gutenberg.org/ebooks/35899",
-  },
 ];
 
 const novelData = [
@@ -227,7 +161,7 @@ const codeData = [
   },
 ];
 
-const valuesBank = defineChallengeBank({ id: "values", topicId: "rizalian-values", contentVersion: 1, items: valuesData });
+const valuesBank = defineChallengeBank({ id: "values", topicId: "rizalian-values", contentVersion: 2, items: valuesChallenges });
 const novelBank = defineChallengeBank({ id: "novels", topicId: "noli-and-el-fili-characters", contentVersion: 1, items: novelData });
 const codeBank = defineChallengeBank({ id: "codebreaker", topicId: "rizal-life-and-works-archive", contentVersion: 1, items: codeData });
 
@@ -389,7 +323,9 @@ function FeedbackPanel({ feedback, onNext, isLast }: { feedback: Feedback; onNex
       </div>
       <p>{feedback.rationale}</p>
       <div className="feedback-footer">
-        <a href={feedback.sourceUrl} target="_blank" rel="noreferrer">Check the source: {feedback.source} ↗</a>
+        {feedback.sourceUrl
+          ? <a href={feedback.sourceUrl} target="_blank" rel="noreferrer">Check the source: {feedback.source} ↗</a>
+          : <span>Course basis: {feedback.source}</span>}
         <button className="button button-dark" type="button" onClick={onNext}>{isLast ? "See results" : "Next file"}</button>
       </div>
     </div>
@@ -526,7 +462,8 @@ function RiverCourse({ progress, goal }: { progress: number; goal: number }) {
 
 function ValuesGame({ onClose }: { onClose: () => void }) {
   const goal = 6;
-  const [deck, setDeck] = useState(() => drawChallengeSet(valuesBank, valuesBank.items.length));
+  const roundSize = goal + 2;
+  const [deck, setDeck] = useState(() => drawChallengeSet(valuesBank, roundSize));
   const [caseIndex, setCaseIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [score, setScore] = useState(0);
@@ -543,7 +480,10 @@ function ValuesGame({ onClose }: { onClose: () => void }) {
   const [best, saveBest] = useHighScore("values");
   const { enabled: soundEnabled, play, toggle: toggleSound } = useArcadeSound();
   const current = deck[caseIndex % deck.length];
-  const choices = useMemo(() => shuffleList([current.value, ...shuffleList(valuesBank.items.filter((item) => item.value !== current.value)).slice(0, 2).map((item) => item.value)]), [current]);
+  const choices = useMemo(() => {
+    const distractors = [...new Set(valuesBank.items.map((item) => item.value))].filter((value) => value !== current.value);
+    return shuffleList([current.value, ...shuffleList(distractors).slice(0, 2)]);
+  }, [current]);
 
   const answer = useCallback((choice: string, index: number) => {
     if (phase !== "ready") return;
@@ -604,7 +544,7 @@ function ValuesGame({ onClose }: { onClose: () => void }) {
   }
   function replay() {
     saveBest(score);
-    setDeck(drawChallengeSet(valuesBank, valuesBank.items.length));
+    setDeck(drawChallengeSet(valuesBank, roundSize));
     setCaseIndex(0);
     setProgress(0);
     setScore(0);
@@ -615,10 +555,10 @@ function ValuesGame({ onClose }: { onClose: () => void }) {
     setFeedback(null);
   }
 
-  if (finished) return <><GameHeader title="Rizal River Quest" status={[{ label: "Lives", value: `${"♥".repeat(lives)}${"♡".repeat(3 - lives)}` }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} /><Results game="values" title="Rizal River Quest" score={score} best={best} maxScore={900} onReplay={replay} onClose={onClose} /></>;
+  if (finished) return <><GameHeader title="Rizalian Values: River Quest" status={[{ label: "Lives", value: `${"♥".repeat(lives)}${"♡".repeat(3 - lives)}` }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} /><Results game="values" title="Rizalian Values: River Quest" score={score} best={best} maxScore={900} onReplay={replay} onClose={onClose} /></>;
   return (
     <>
-      <GameHeader title="Rizal River Quest" status={[{ label: "Lives", value: `${"♥".repeat(lives)}${"♡".repeat(3 - lives)}` }, { label: "To finish", value: `${progress} / ${goal}` }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} />
+      <GameHeader title="Rizalian Values: River Quest" status={[{ label: "Lives", value: `${"♥".repeat(lives)}${"♡".repeat(3 - lives)}` }, { label: "To finish", value: `${progress} / ${goal}` }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} />
       <section className="river-game">
         <RiverCourse progress={progress} goal={goal} />
         <div className="river-question" ref={questionRef}>
@@ -1003,7 +943,7 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
           <h1>Press play through <em>José Rizal’s life, works, and legacy.</em></h1>
           <p className="hero-intro">Hop across ideas, match characters, and crack archive codes in quick games built from Rizal’s life, works, and world.</p>
           <div className="hero-actions"><button className="button button-primary" type="button" onClick={() => launchGame("values")}>Start playing <span>▶</span></button><span>3 games · Student sign-in · Section scores</span></div>
-          <div className="hero-proof"><span><strong>3</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>22</strong> sourced prompts</span></div>
+          <div className="hero-proof"><span><strong>3</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>64</strong> sourced challenges</span></div>
         </div>
         <div className="hero-art arcade-cabinet-wrap">
           <div className="arcade-cabinet">

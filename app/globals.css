@@ -245,6 +245,7 @@ footer button { border: 0; padding: 0; background: transparent; color: inherit; 
 .feedback-panel > p { margin: 9px 0 19px; max-width: 890px; color: #3f4c47; line-height: 1.5; font-size: 14px; }
 .feedback-footer { display: flex; justify-content: space-between; align-items: center; gap: 18px; }
 .feedback-footer a { color: #3f4c47; text-decoration: underline; text-underline-offset: 4px; font-size: 11px; }
+.feedback-footer > span { color: #3f4c47; font-size: 11px; line-height: 1.45; }
 .button-dark { min-height: 43px; border: 0; background: var(--ink); color: var(--paper); cursor: pointer; }
 
 .dossier-head { display: flex; justify-content: space-between; gap: 35px; align-items: end; }
