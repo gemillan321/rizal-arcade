@@ -126,4 +126,6 @@ export async function POST(request: Request) {
   }
 }
 
+export default { fetch: POST };
+
 export const config = { maxDuration: 60 };

@@ -32,3 +32,5 @@ export async function POST(request: Request) {
     return handleApiError(error);
   }
 }
+
+export default { fetch: POST };

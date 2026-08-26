@@ -34,7 +34,13 @@ async function adminRequest(path: string, body: unknown) {
     headers: { Authorization: `Bearer ${await getAccessToken()}`, "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  const result = await response.json() as Record<string, unknown>;
+  const responseText = await response.text();
+  let result: Record<string, unknown>;
+  try {
+    result = JSON.parse(responseText) as Record<string, unknown>;
+  } catch {
+    throw new Error(`The server returned an unreadable response (${response.status}). Please try again after the latest deployment finishes.`);
+  }
   if (!response.ok) throw new Error(typeof result.error === "string" ? result.error : "The admin request failed.");
   return result;
 }

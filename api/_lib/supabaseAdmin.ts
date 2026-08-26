@@ -47,9 +47,10 @@ export async function findAuthUserByEmail(supabase: SupabaseClient, email: strin
   for (let page = 1; page <= 5; page += 1) {
     const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
     if (error) throw error;
-    const found = data.users.find((user) => user.email?.toLowerCase() === email.toLowerCase());
+    const users = data.users as User[];
+    const found = users.find((user) => user.email?.toLowerCase() === email.toLowerCase());
     if (found) return found;
-    if (data.users.length < 1000) return null;
+    if (users.length < 1000) return null;
   }
   return null;
 }
