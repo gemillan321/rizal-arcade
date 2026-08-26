@@ -64,13 +64,43 @@ function normalizeSection(value: unknown): ArcadeSection | null {
 }
 
 export async function loadProfile(userId: string): Promise<ArcadeProfile> {
-  const { data, error } = await getSupabaseClient()
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase
     .from("rizal_arcade_profiles")
-    .select("id,role,student_id,first_name,last_name,display_name,must_change_password,active,section:rizal_arcade_sections(id,section_code,school_year,term)")
+    .select("id,role,student_id,first_name,last_name,display_name,must_change_password,active,section_id")
     .eq("id", userId)
     .single();
-  if (error || !data) throw new Error("This account is not assigned to Rizal Arcade. Ask the administrator to import or activate it.");
-  return { ...(data as Omit<ArcadeProfile, "section">), section: normalizeSection(data.section) };
+  if (error || !data) {
+    console.error("[Rizal Arcade auth] Profile lookup failed.", { code: error?.code, message: error?.message });
+    throw new Error("This account is not assigned to Rizal Arcade. Ask the administrator to import or activate it.");
+  }
+
+  const profile = data as Omit<ArcadeProfile, "section"> & { section_id: string | null };
+  let section: ArcadeSection | null = null;
+  if (profile.section_id) {
+    const { data: sectionData, error: sectionError } = await supabase
+      .from("rizal_arcade_sections")
+      .select("id,section_code,school_year,term")
+      .eq("id", profile.section_id)
+      .single();
+    if (sectionError || !sectionData) {
+      console.error("[Rizal Arcade auth] Section lookup failed.", { code: sectionError?.code, message: sectionError?.message });
+      throw new Error("This student account is missing its assigned section. Ask the administrator to import the roster again.");
+    }
+    section = normalizeSection(sectionData);
+  }
+
+  return {
+    id: profile.id,
+    role: profile.role,
+    student_id: profile.student_id,
+    first_name: profile.first_name,
+    last_name: profile.last_name,
+    display_name: profile.display_name,
+    must_change_password: profile.must_change_password,
+    active: profile.active,
+    section,
+  };
 }
 
 export async function getAuthSnapshot(): Promise<ArcadeAuthSnapshot | null> {
