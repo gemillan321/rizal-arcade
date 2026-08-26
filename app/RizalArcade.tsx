@@ -7,6 +7,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState, type RefO
 import AdminPortal from "./AdminPortal";
 import { FirstPasswordPortal, LoginPortal } from "./AuthPortal";
 import { defineChallengeBank, drawChallengeSet, shuffleList } from "./challengeBank";
+import { codebreakerChallenges, type CodebreakerGroup } from "./codebreakerChallenges";
 import { valuesChallenges } from "./valuesChallenges";
 import {
   getAuthSnapshot,
@@ -58,12 +59,12 @@ const gameCards: Array<{
   {
     id: "codebreaker",
     number: "03",
-    title: "Rizal Codebreaker",
-    description: "Use a substitution formula to decode each archive title by hand, then file it by historical type.",
-    meta: "Manual cipher · 4 min",
+    title: "Rizal Roots: Codebreaker",
+    description: "Decode files about Rizal’s family, childhood, genealogy, and early education, then sort each clue into its roots archive.",
+    meta: "Module 4 cipher · 4 min",
     tone: "ochre",
     symbol: "⌁",
-    skill: "Chronology & context",
+    skill: "Family roots & early education",
   },
 ];
 
@@ -118,52 +119,9 @@ const novelData = [
   },
 ];
 
-const codeData = [
-  {
-    id: "C01", answer: "Calamba", variants: ["calamba", "calamba laguna"], category: "Place", year: "1861",
-    clues: ["This answer is a town in Laguna.", "José Rizal was born in this town on June 19, 1861.", "Rizal’s birthplace in this town is preserved as a national shrine."],
-    rationale: "Rizal was born in Calamba, Laguna, on June 19, 1861.", source: "NHCP: Rizal Shrine, Calamba", sourceUrl: "https://philhistoricsites.nhcp.gov.ph/registry_database/rizal-shrine-calamba/",
-  },
-  {
-    id: "C02", answer: "Noli Me Tangere", variants: ["noli me tangere", "the social cancer"], category: "Novel", year: "1887",
-    clues: ["Crisóstomo Ibarra returns from Europe in this novel.", "Much of this novel’s story centers on the fictional town of San Diego.", "This novel was printed in Berlin in 1887."],
-    rationale: "Noli Me Tángere was published in Berlin in 1887.", source: "NHCP: José Rizal historical marker", sourceUrl: "https://philhistoricsites.nhcp.gov.ph/registry_database/jose-rizal-1861-1896-9/",
-  },
-  {
-    id: "C03", answer: "El Filibusterismo", variants: ["el filibusterismo", "el fili", "the reign of greed"], category: "Novel", year: "1891",
-    clues: ["This novel continues the story begun in Noli Me Tángere.", "Simoun, a wealthy jeweler, drives this novel’s central plot.", "The original title page of this novel reads Gent, 1891."],
-    rationale: "El Filibusterismo, the sequel to Noli, was published in Ghent in 1891.", source: "El Filibusterismo, original edition", sourceUrl: "https://www.gutenberg.org/ebooks/30903",
-  },
-  {
-    id: "C04", answer: "La Liga Filipina", variants: ["la liga filipina", "liga filipina"], category: "Civic organization", year: "1892",
-    clues: ["Rizal founded this civic organization in Manila on July 3, 1892.", "Its aims included unity and mutual protection.", "It promoted education, agriculture, industry, commerce, and reform."],
-    rationale: "Rizal founded La Liga Filipina on July 3, 1892, as a civic organization for unity and mutual aid.", source: "NHCP: La Liga Filipina", sourceUrl: "https://philhistoricsites.nhcp.gov.ph/registry_database/la-liga-filipina/",
-  },
-  {
-    id: "C05", answer: "Dapitan", variants: ["dapitan", "dapitan city"], category: "Place / exile", year: "1892–1896",
-    clues: ["This place is in present-day Zamboanga del Norte.", "Rizal lived in exile in this place for more than four years.", "In this place, Rizal taught, practiced medicine, and worked on community projects."],
-    rationale: "Rizal lived in exile in Dapitan from 1892 to 1896.", source: "NHCP: Liwasan ng Dapitan", sourceUrl: "https://philhistoricsites.nhcp.gov.ph/registry_database/liwasan-ng-dapitan/",
-  },
-  {
-    id: "C06", answer: "Mi Ultimo Adios", variants: ["mi ultimo adios", "my last farewell"], category: "Poem", year: "1896",
-    clues: ["Rizal completed this untitled farewell poem in his prison cell.", "He hid the poem in an alcohol stove before his execution.", "The poem later became known by a Spanish title meaning ‘My Last Farewell.’"],
-    rationale: "The untitled farewell poem hidden in an alcohol stove became known as Mi Último Adiós.", source: "Museo ni Rizal, Fort Santiago", sourceUrl: "https://intramuros.gov.ph/mnr/",
-  },
-  {
-    id: "C07", answer: "The Indolence of the Filipino", variants: ["the indolence of the filipino", "la indolencia de los filipinos", "sobre la indolencia de los filipinos"], category: "Essay", year: "1890",
-    clues: ["This essay answers colonial claims about Filipino ‘laziness.’", "The essay examines historical and social causes instead of racial inheritance.", "It argues that education and liberty are necessary remedies."],
-    rationale: "The essay challenges racial explanations and investigates the historical conditions behind indolence.", source: "The Indolence of the Filipino", sourceUrl: "https://www.gutenberg.org/ebooks/6885",
-  },
-  {
-    id: "C08", answer: "Young Women of Malolos", variants: ["young women of malolos", "to the young women of malolos", "letter to the young women of malolos", "sa mga kababayang dalaga sa malolos"], category: "Letter", year: "1889",
-    clues: ["This letter is dated February 1889.", "Rizal addressed it to women in a Bulacan town.", "The letter praises education, moral courage, and independent judgment."],
-    rationale: "Rizal’s letter responds to the women of Malolos and their effort to pursue education.", source: "Letter to the Young Women of Malolos", sourceUrl: "https://www.gutenberg.org/ebooks/17116",
-  },
-];
-
 const valuesBank = defineChallengeBank({ id: "values", topicId: "rizalian-values", contentVersion: 2, items: valuesChallenges });
 const novelBank = defineChallengeBank({ id: "novels", topicId: "noli-and-el-fili-characters", contentVersion: 1, items: novelData });
-const codeBank = defineChallengeBank({ id: "codebreaker", topicId: "rizal-life-and-works-archive", contentVersion: 1, items: codeData });
+const codeBank = defineChallengeBank({ id: "codebreaker", topicId: "family-childhood-genealogy-early-education", contentVersion: 2, items: codebreakerChallenges });
 
 function atbashText(value: string) {
   return value.toUpperCase().replace(/[A-Z]/g, (letter) =>
@@ -712,13 +670,11 @@ function NovelsGame({ onClose }: { onClose: () => void }) {
   );
 }
 
-type ArchiveGroup = "Places" | "Written works" | "Civic life";
-const archiveGroups: ArchiveGroup[] = ["Places", "Written works", "Civic life"];
+type ArchiveGroup = CodebreakerGroup;
+const archiveGroups: ArchiveGroup[] = ["Family & roots", "Childhood", "Early education"];
 
 function archiveGroupFor(item: (typeof codeBank.items)[number]): ArchiveGroup {
-  if (item.category.toLowerCase().includes("place")) return "Places";
-  if (item.category.toLowerCase().includes("organization")) return "Civic life";
-  return "Written works";
+  return item.category;
 }
 
 function CodebreakerGame({ onClose }: { onClose: () => void }) {
@@ -732,7 +688,7 @@ function CodebreakerGame({ onClose }: { onClose: () => void }) {
   const [slipSelected, setSlipSelected] = useState(false);
   const [wrongDrawer, setWrongDrawer] = useState<ArchiveGroup | null>(null);
   const [answerWrong, setAnswerWrong] = useState(false);
-  const [announcement, setAnnouncement] = useState("Use the substitution key to decode the archive title manually.");
+  const [announcement, setAnnouncement] = useState("Use the substitution key to decode the Rizal roots file manually.");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const decoderTopRef = useRef<HTMLDivElement>(null);
@@ -812,7 +768,7 @@ function CodebreakerGame({ onClose }: { onClose: () => void }) {
     setSlipSelected(false);
     setWrongDrawer(null);
     setPhase("decoding");
-    setAnnouncement("Use the substitution key to decode the archive title manually.");
+    setAnnouncement("Use the substitution key to decode the Rizal roots file manually.");
     setRound((value) => value + 1);
   }
   function replay() {
@@ -828,13 +784,13 @@ function CodebreakerGame({ onClose }: { onClose: () => void }) {
     setAnswerWrong(false);
     setPhase("decoding");
     setFeedback(null);
-    setAnnouncement("Use the substitution key to decode the archive title manually.");
+    setAnnouncement("Use the substitution key to decode the Rizal roots file manually.");
   }
 
-  if (finished) return <><GameHeader title="Rizal Codebreaker" status={[{ label: "Files", value: "6 / 6" }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} /><Results game="codebreaker" title="Rizal Codebreaker" score={score} best={best} maxScore={1200} onReplay={replay} onClose={onClose} /></>;
+  if (finished) return <><GameHeader title="Rizal Roots: Codebreaker" status={[{ label: "Files", value: "6 / 6" }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} /><Results game="codebreaker" title="Rizal Roots: Codebreaker" score={score} best={best} maxScore={1200} onReplay={replay} onClose={onClose} /></>;
   return (
     <>
-      <GameHeader title="Rizal Codebreaker" status={[{ label: "File", value: `${round + 1} / ${deck.length}` }, { label: "Stage", value: phase === "decoding" ? "Decode" : phase === "filing" ? "File" : "Solved" }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} />
+      <GameHeader title="Rizal Roots: Codebreaker" status={[{ label: "File", value: `${round + 1} / ${deck.length}` }, { label: "Stage", value: phase === "decoding" ? "Decode" : phase === "filing" ? "File" : "Solved" }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} />
       <section className="decoder-game play-layout">
         <div className="decoder-heading"><div><p className="eyebrow">Archive cipher room · {current.year}</p><h2>Use the key. Decode it yourself.</h2></div><span>File {current.id}</span></div>
 
@@ -848,7 +804,7 @@ function CodebreakerGame({ onClose }: { onClose: () => void }) {
               <p><strong>A = Z</strong>, <strong>B = Y</strong>, <strong>C = X</strong> … Decode every letter manually.</p>
             </div>
             <label className="decode-answer" htmlFor={`decode-answer-${current.id}`}>
-              <span>Your decoded title or place</span>
+              <span>Your decoded roots answer</span>
               <input ref={decodeInputRef} id={`decode-answer-${current.id}`} value={guess} onChange={(event) => setGuess(event.target.value)} autoComplete="off" autoCapitalize="words" spellCheck={false} placeholder="Type the complete answer" />
             </label>
             <button className="check-code-button" type="submit">Check my decoding</button>
@@ -861,7 +817,7 @@ function CodebreakerGame({ onClose }: { onClose: () => void }) {
         </div>}
 
         {phase === "filing" && <div className="manual-file-stage">
-          <div className="decoded-stamp"><span>Code cracked</span><strong>{current.answer}</strong><small>Now file this item by historical type.</small></div>
+          <div className="decoded-stamp"><span>Code cracked</span><strong>{current.answer}</strong><small>Now file this answer in the correct roots drawer.</small></div>
           <div className="filing-station">
             <button className={`archive-slip ${slipSelected ? "is-selected" : ""}`} ref={archiveSlipRef} type="button" onClick={() => { setSlipSelected(true); play("pickup"); }}><small>Decoded archive slip</small><strong>{current.answer}</strong><span>{slipSelected ? "Selected — choose a drawer" : "Tap to pick up"}</span></button>
             <div className="archive-drawers" ref={archiveDrawersRef}>
@@ -887,7 +843,7 @@ function GameOverlay({ game, onClose }: { game: GameId; onClose: () => void }) {
 function GameCardScene({ game }: { game: GameId }) {
   if (game === "values") return <div className="card-scene pond-card-scene"><span className="mini-cloud" /><span className="mini-lily lily-a" /><span className="mini-lily lily-b" /><span className="mini-lily lily-c" /><span className="mini-frog">●</span><strong>HOP!</strong></div>;
   if (game === "novels") return <div className="card-scene memory-card-scene"><img src="/art/noli-cover.jpg" alt="" /><span className="mini-card card-a">MC</span><span className="mini-card card-b">?</span><span className="mini-card card-c">IB</span><strong>Match the file</strong></div>;
-  return <div className="card-scene code-card-scene"><span className="mini-code">MROL</span><span className="mini-wheel">A=Z</span><span className="mini-drawer">ARCHIVE</span><strong>Read · Decode · File</strong></div>;
+  return <div className="card-scene code-card-scene"><span className="mini-code">IRAZO</span><span className="mini-wheel">A=Z</span><span className="mini-drawer">ROOTS</span><strong>Read · Decode · File</strong></div>;
 }
 
 function LeaderboardDrawer({ onClose }: { onClose: () => void }) {
@@ -943,7 +899,7 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
           <h1>Press play through <em>José Rizal’s life, works, and legacy.</em></h1>
           <p className="hero-intro">Hop across ideas, match characters, and crack archive codes in quick games built from Rizal’s life, works, and world.</p>
           <div className="hero-actions"><button className="button button-primary" type="button" onClick={() => launchGame("values")}>Start playing <span>▶</span></button><span>3 games · Student sign-in · Section scores</span></div>
-          <div className="hero-proof"><span><strong>3</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>64</strong> sourced challenges</span></div>
+          <div className="hero-proof"><span><strong>3</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>106</strong> sourced challenges</span></div>
         </div>
         <div className="hero-art arcade-cabinet-wrap">
           <div className="arcade-cabinet">
@@ -997,7 +953,7 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
 
       {activeGame && <GameOverlay game={activeGame} onClose={closeGame} />}
       {showLeaderboard && <LeaderboardDrawer onClose={closeLeaderboard} />}
-      {showSources && <div className="source-overlay" role="dialog" aria-modal="true" aria-labelledby="source-title"><button className="source-backdrop" aria-label="Close sources" type="button" onClick={closeSources} /><section className="source-drawer" ref={sourceDrawerRef} tabIndex={-1}><button className="icon-button" data-dialog-close type="button" onClick={closeSources} aria-label="Close sources">×</button><p className="eyebrow">Source desk</p><h2 id="source-title">Playful format. Careful history.</h2><p>Prompts are grounded in primary texts, public-domain translations, and National Historical Commission of the Philippines markers. Every River Quest scenario is explicitly an interpretive, present-day application—not a quotation or historical event.</p><h3>Core references</h3><ul><li><a href="https://philhistoricsites.nhcp.gov.ph/registry_database/jose-rizal-1861-1896-9/" target="_blank" rel="noreferrer">NHCP Registry: José Rizal ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/6737" target="_blank" rel="noreferrer">Noli Me Tangere / The Social Cancer ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/10676" target="_blank" rel="noreferrer">El Filibusterismo / The Reign of Greed ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/17116" target="_blank" rel="noreferrer">Letter to the Young Women of Malolos ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/6885" target="_blank" rel="noreferrer">The Indolence of the Filipino ↗</a></li><li><a href="https://philhistoricsites.nhcp.gov.ph/registry_database/la-liga-filipina/" target="_blank" rel="noreferrer">NHCP Registry: La Liga Filipina ↗</a></li></ul><h3 className="visual-credit-title">Visual archive</h3><ul><li><a href="https://commons.wikimedia.org/wiki/File:Portrait_of_Jos%C3%A9_Rizal_(1883)_with_frame.jpg" target="_blank" rel="noreferrer">1883 Rizal portrait · public domain / CC0 ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Manila_and_suburbs_1898.jpg" target="_blank" rel="noreferrer">1898 Manila map · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Noli_Me_Tangere.jpg" target="_blank" rel="noreferrer">Historic Noli cover · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Rizal_letter.png" target="_blank" rel="noreferrer">1889 Rizal letter · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Rizal_Died_for_You-_Be_Worthy_of_Him_-_NARA_-_5730063.jpg" target="_blank" rel="noreferrer">Historic Rizal poster · public domain ↗</a></li></ul><div className="review-note"><strong>Before formal classroom release</strong><p>A Rizal Life instructor should review translations, wording, interpretations, and accepted answers. The game records are structured so content can be updated without redesigning each game.</p></div></section></div>}
+      {showSources && <div className="source-overlay" role="dialog" aria-modal="true" aria-labelledby="source-title"><button className="source-backdrop" aria-label="Close sources" type="button" onClick={closeSources} /><section className="source-drawer" ref={sourceDrawerRef} tabIndex={-1}><button className="icon-button" data-dialog-close type="button" onClick={closeSources} aria-label="Close sources">×</button><p className="eyebrow">Source desk</p><h2 id="source-title">Playful format. Careful history.</h2><p>Prompts are grounded in the instructor-provided course modules, primary texts, public-domain translations, and National Historical Commission of the Philippines markers. Every River Quest scenario is explicitly an interpretive, present-day application—not a quotation or historical event.</p><h3>Core references</h3><ul><li><a href="https://philhistoricsites.nhcp.gov.ph/registry_database/jose-rizal-1861-1896-9/" target="_blank" rel="noreferrer">NHCP Registry: José Rizal ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/6737" target="_blank" rel="noreferrer">Noli Me Tangere / The Social Cancer ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/10676" target="_blank" rel="noreferrer">El Filibusterismo / The Reign of Greed ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/17116" target="_blank" rel="noreferrer">Letter to the Young Women of Malolos ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/6885" target="_blank" rel="noreferrer">The Indolence of the Filipino ↗</a></li><li><a href="https://philhistoricsites.nhcp.gov.ph/registry_database/la-liga-filipina/" target="_blank" rel="noreferrer">NHCP Registry: La Liga Filipina ↗</a></li></ul><h3 className="visual-credit-title">Visual archive</h3><ul><li><a href="https://commons.wikimedia.org/wiki/File:Portrait_of_Jos%C3%A9_Rizal_(1883)_with_frame.jpg" target="_blank" rel="noreferrer">1883 Rizal portrait · public domain / CC0 ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Manila_and_suburbs_1898.jpg" target="_blank" rel="noreferrer">1898 Manila map · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Noli_Me_Tangere.jpg" target="_blank" rel="noreferrer">Historic Noli cover · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Rizal_letter.png" target="_blank" rel="noreferrer">1889 Rizal letter · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Rizal_Died_for_You-_Be_Worthy_of_Him_-_NARA_-_5730063.jpg" target="_blank" rel="noreferrer">Historic Rizal poster · public domain ↗</a></li></ul><div className="review-note"><strong>Before formal classroom release</strong><p>A Rizal Life instructor should review translations, wording, interpretations, and accepted answers. The game records are structured so content can be updated without redesigning each game.</p></div></section></div>}
     </main>
   );
 }
