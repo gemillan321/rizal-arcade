@@ -759,6 +759,7 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
 .match-note p { margin: 10px 0 13px; color: #415259; line-height: 1.5; }
 .match-note a { font-size: 11px; font-weight: 800; text-decoration: underline; text-underline-offset: 4px; }
 .match-note > div { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.match-note > div > span { color: #415259; font-size: 11px; font-weight: 800; line-height: 1.4; }
 .match-note .button { flex: 0 0 auto; padding: 0 18px; border-radius: 6px; }
 
 /* Decoder archive */
@@ -1124,6 +1125,21 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   background-size: 300% 200%;
   background-repeat: no-repeat;
 }
+.case-file-visual {
+  width: 100%;
+  min-height: 0;
+  flex: 1 1 58%;
+  display: grid;
+  place-items: center;
+  border-bottom: 2px solid var(--night);
+  color: #fff7db;
+  background: radial-gradient(circle at 35% 28%, #d94c5e, #78182d 72%);
+  font: 950 clamp(25px, 4vw, 58px)/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: -.04em;
+  text-shadow: 3px 3px 0 rgba(6, 25, 35, .55);
+}
+.case-plot-background { color: var(--night); background: radial-gradient(circle at 35% 28%, #ffe28a, #dd8a25 72%); }
+.case-theme-context { color: var(--night); background: radial-gradient(circle at 35% 28%, #8aeee5, #2aafa9 72%); }
 .portrait-hint {
   flex: 1 1 42%;
   display: grid;

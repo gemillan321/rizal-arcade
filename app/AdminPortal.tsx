@@ -9,7 +9,7 @@ type Tab = "roster" | "leaderboards" | "passwords";
 
 const games: Array<{ id: LeaderboardGame; label: string }> = [
   { id: "values", label: "River Quest" },
-  { id: "novels", label: "Novel Case Files" },
+  { id: "novels", label: "Noli Case Files" },
   { id: "codebreaker", label: "Codebreaker" },
 ];
 

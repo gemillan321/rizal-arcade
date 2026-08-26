@@ -8,6 +8,7 @@ import AdminPortal from "./AdminPortal";
 import { FirstPasswordPortal, LoginPortal } from "./AuthPortal";
 import { defineChallengeBank, drawChallengeSet, shuffleList } from "./challengeBank";
 import { codebreakerChallenges, type CodebreakerGroup } from "./codebreakerChallenges";
+import { noliCaseFiles } from "./noliCaseFiles";
 import { valuesChallenges } from "./valuesChallenges";
 import {
   getAuthSnapshot,
@@ -49,12 +50,12 @@ const gameCards: Array<{
   {
     id: "novels",
     number: "02",
-    title: "Novel Case Files",
-    description: "Match illustrated clue cards to six clearly identified characters from Noli and El Fili.",
-    meta: "Portrait memory · 5 min",
+    title: "Noli Case Files",
+    description: "Match visual clue cards to characters, events, and ideas from Rizal’s novel of social awakening.",
+    meta: "Module 7 memory · 5 min",
     tone: "indigo",
     symbol: "✦",
-    skill: "Character & theme recall",
+    skill: "Noli characters, plot & themes",
   },
   {
     id: "codebreaker",
@@ -74,53 +75,8 @@ const comingSoon = [
   { title: "Masterpiece Museum", label: "Works & genres", symbol: "A", art: "/art/rizal-poster.webp", alt: "Historic public-domain José Rizal poster" },
 ];
 
-const novelData = [
-  {
-    id: "N01", character: "Crisóstomo Ibarra", novel: "Noli Me Tángere",
-    portraitIndex: 0,
-    hint: "Don Rafael’s son · returns from Europe · plans a school in San Diego",
-    rationale: "Don Rafael’s son returns from Europe, and his school project drives a major part of Noli Me Tángere.",
-    source: "Noli Me Tangere / The Social Cancer", sourceUrl: "https://www.gutenberg.org/ebooks/6737",
-  },
-  {
-    id: "N02", character: "Sisa", novel: "Noli Me Tángere",
-    portraitIndex: 2,
-    hint: "Mother of Basilio and Crispin · searches San Diego for her missing sons",
-    rationale: "Chapter XVI centers on Sisa’s loss and her search for her two sons.",
-    source: "Noli Me Tangere / The Social Cancer", sourceUrl: "https://www.gutenberg.org/ebooks/6737",
-  },
-  {
-    id: "N03", character: "Elias", novel: "Noli Me Tángere",
-    portraitIndex: 3,
-    hint: "Boatman and pilot · warns Crisóstomo Ibarra · helps Ibarra escape the guards pursuing him",
-    rationale: "Elias, the mysterious pilot and boatman, becomes Crisóstomo Ibarra’s ally, warns him about danger, and helps him escape from pursuing guards.",
-    source: "Noli Me Tangere / The Social Cancer", sourceUrl: "https://www.gutenberg.org/ebooks/6737",
-  },
-  {
-    id: "N04", character: "María Clara", novel: "Noli Me Tángere",
-    portraitIndex: 1,
-    hint: "Raised in Capitán Tiago’s home · Crisóstomo Ibarra’s fiancée · sings during the lake outing",
-    rationale: "These details identify María Clara without relying on the novel’s later parentage revelation.",
-    source: "Noli Me Tangere / The Social Cancer", sourceUrl: "https://www.gutenberg.org/ebooks/6737",
-  },
-  {
-    id: "F01", character: "Simoun", novel: "El Filibusterismo",
-    portraitIndex: 4,
-    hint: "Wealthy jeweler · wears blue spectacles · influences the Captain-General",
-    rationale: "Simoun is the jeweler at the center of El Filibusterismo; his identity is revealed in Chapter VII.",
-    source: "El Filibusterismo / The Reign of Greed", sourceUrl: "https://www.gutenberg.org/ebooks/10676",
-  },
-  {
-    id: "F03", character: "Isagani", novel: "El Filibusterismo",
-    portraitIndex: 5,
-    hint: "Idealistic student-poet · Padre Florentino’s nephew · supports the Spanish academy",
-    rationale: "The proposed academy and relationship to Padre Florentino identify Isagani.",
-    source: "El Filibusterismo / The Reign of Greed", sourceUrl: "https://www.gutenberg.org/ebooks/10676",
-  },
-];
-
 const valuesBank = defineChallengeBank({ id: "values", topicId: "rizalian-values", contentVersion: 2, items: valuesChallenges });
-const novelBank = defineChallengeBank({ id: "novels", topicId: "noli-and-el-fili-characters", contentVersion: 1, items: novelData });
+const novelBank = defineChallengeBank({ id: "novels", topicId: "noli-social-awakening", contentVersion: 2, items: noliCaseFiles });
 const codeBank = defineChallengeBank({ id: "codebreaker", topicId: "family-childhood-genealogy-early-education", contentVersion: 2, items: codebreakerChallenges });
 
 function atbashText(value: string) {
@@ -546,10 +502,11 @@ function ValuesGame({ onClose }: { onClose: () => void }) {
 type MemoryCard = {
   uid: string;
   pairId: string;
-  face: "portrait" | "name";
+  face: "clue" | "name";
   text: string;
   portraitIndex?: number;
-  novel: string;
+  visual: string;
+  caseType: string;
   rationale: string;
   source: string;
   sourceUrl: string;
@@ -558,8 +515,8 @@ type MemoryCard = {
 function buildMemoryDeck(): MemoryCard[] {
   const pairs = drawChallengeSet(novelBank, 6);
   return shuffleList(pairs.flatMap((item) => [
-    { uid: `${item.id}-portrait`, pairId: item.id, face: "portrait" as const, text: item.hint, portraitIndex: item.portraitIndex, novel: item.novel, rationale: item.rationale, source: item.source, sourceUrl: item.sourceUrl },
-    { uid: `${item.id}-name`, pairId: item.id, face: "name" as const, text: item.character, novel: item.novel, rationale: item.rationale, source: item.source, sourceUrl: item.sourceUrl },
+    { uid: `${item.id}-clue`, pairId: item.id, face: "clue" as const, text: item.hint, portraitIndex: item.portraitIndex, visual: item.visual, caseType: item.caseType, rationale: item.rationale, source: item.source, sourceUrl: item.sourceUrl },
+    { uid: `${item.id}-name`, pairId: item.id, face: "name" as const, text: item.answer, visual: item.visual, caseType: item.caseType, rationale: item.rationale, source: item.source, sourceUrl: item.sourceUrl },
   ]));
 }
 
@@ -572,7 +529,7 @@ function NovelsGame({ onClose }: { onClose: () => void }) {
   const [streak, setStreak] = useState(0);
   const [boardLocked, setBoardLocked] = useState(false);
   const [matchedFact, setMatchedFact] = useState<Feedback | null>(null);
-  const [announcement, setAnnouncement] = useState("Find an illustrated clue card and the matching character name.");
+  const [announcement, setAnnouncement] = useState("Find a visual clue card and its matching Noli case answer.");
   const flipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const matchNoteRef = useRef<HTMLElement>(null);
@@ -597,15 +554,15 @@ function NovelsGame({ onClose }: { onClose: () => void }) {
     setBoardLocked(true);
     flipTimer.current = setTimeout(() => {
       if (isMatch) {
-        const character = [first, card].find((item) => item?.face === "name");
-        const characterName = character?.text ?? card.text;
+        const answerCard = [first, card].find((item) => item?.face === "name");
+        const answerName = answerCard?.text ?? card.text;
         const nextScore = score + 120 + streak * 10;
         setMatchedPairs((value) => [...value, card.pairId]);
         setScore(nextScore);
         if (matchedPairs.length === 5) saveBest(nextScore);
         setStreak((value) => value + 1);
-        setMatchedFact({ correct: true, title: `${characterName} · ${card.novel}`, rationale: card.rationale, source: card.source, sourceUrl: card.sourceUrl });
-        setAnnouncement(`Matched ${characterName} in ${card.novel}.`);
+        setMatchedFact({ correct: true, title: `${answerName} · ${card.caseType}`, rationale: card.rationale, source: card.source, sourceUrl: card.sourceUrl });
+        setAnnouncement(`Matched the ${answerName} case file.`);
         play("match");
       } else {
         setStreak(0);
@@ -634,17 +591,17 @@ function NovelsGame({ onClose }: { onClose: () => void }) {
     setStreak(0);
     setBoardLocked(false);
     setMatchedFact(null);
-    setAnnouncement("Find an illustrated clue card and the matching character name.");
+    setAnnouncement("Find a visual clue card and its matching Noli case answer.");
   }
 
-  if (finished) return <><GameHeader title="Novel Case Files" status={[{ label: "Pairs", value: "6 / 6" }, { label: "Moves", value: String(moves) }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} /><Results game="novels" title="Novel Case Files" score={score} best={best} maxScore={870} onReplay={replay} onClose={onClose} /></>;
+  if (finished) return <><GameHeader title="Noli Case Files" status={[{ label: "Pairs", value: "6 / 6" }, { label: "Moves", value: String(moves) }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} /><Results game="novels" title="Noli Case Files" score={score} best={best} maxScore={870} onReplay={replay} onClose={onClose} /></>;
   return (
     <>
-      <GameHeader title="Novel Case Files" status={[{ label: "Pairs", value: `${matchedPairs.length} / 6` }, { label: "Moves", value: String(moves) }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} />
+      <GameHeader title="Noli Case Files" status={[{ label: "Pairs", value: `${matchedPairs.length} / 6` }, { label: "Moves", value: String(moves) }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} />
       <section className="memory-game play-layout">
-        <div className="memory-title"><div><p className="eyebrow">Noli + El Fili portrait room</p><h2>Match each illustrated clue card to the character’s name.</h2></div><img src="/art/noli-cover.jpg" alt="Historic cover of Noli Me Tangere" /></div>
-        <p className="memory-instructions">The portraits are artistic interpretations, not historical photographs. Use the specific clues printed below each portrait.</p>
-        <div className="memory-board" aria-label="Character memory cards" ref={boardRef}>
+        <div className="memory-title"><div><p className="eyebrow">Noli memory archive · Module 7</p><h2>Match each visual clue card to its correct case answer.</h2></div><img src="/art/noli-cover.jpg" alt="Historic cover of Noli Me Tangere" /></div>
+        <p className="memory-instructions">Character portraits are artistic interpretations; other files use archive seals. Match specific clues to a character, plot file, or theme.</p>
+        <div className="memory-board" aria-label="Noli Me Tangere case-file memory cards" ref={boardRef}>
           {cards.map((card, index) => {
             const faceUp = openIds.includes(card.uid) || matchedPairs.includes(card.pairId);
             return (
@@ -652,11 +609,13 @@ function NovelsGame({ onClose }: { onClose: () => void }) {
                 <span className="memory-card-inner">
                   <span className="memory-card-back"><img src="/art/rizal-signature.svg" alt="" /><b>{String(index + 1).padStart(2, "0")}</b></span>
                   <span className={`memory-card-front memory-${card.face}`}>
-                    <small>{card.face === "portrait" ? "Portrait + clues" : "Character name"}</small>
-                    {card.face === "portrait" && card.portraitIndex !== undefined
-                      ? <><span className="character-portrait" aria-hidden="true" style={{ backgroundPosition: `${(card.portraitIndex % 3) * 50}% ${Math.floor(card.portraitIndex / 3) * 100}%` }} /><strong className="portrait-hint">{card.text}</strong></>
-                      : <><strong className="name-card-title">{card.text}</strong><span className="name-card-prompt">Match this name to its illustrated clue card.</span></>}
-                    <em>{card.face === "portrait" ? `Artistic interpretation · ${card.novel}` : card.novel}</em>
+                    <small>{card.face === "clue" ? `${card.caseType} clues` : "Case answer"}</small>
+                    {card.face === "clue"
+                      ? <>{card.portraitIndex !== undefined
+                        ? <span className="character-portrait" aria-hidden="true" style={{ backgroundPosition: `${(card.portraitIndex % 3) * 50}% ${Math.floor(card.portraitIndex / 3) * 100}%` }} />
+                        : <span className={`case-file-visual case-${card.caseType.toLowerCase().replace(/[^a-z]+/g, "-")}`} aria-hidden="true">{card.visual}</span>}<strong className="portrait-hint">{card.text}</strong></>
+                      : <><strong className="name-card-title">{card.text}</strong><span className="name-card-prompt">Match this answer to its visual clue card.</span></>}
+                    <em>{card.face === "clue" && card.portraitIndex !== undefined ? "Artistic portrait · Noli Me Tangere" : `${card.caseType} · Noli Me Tangere`}</em>
                   </span>
                 </span>
               </button>
@@ -664,7 +623,7 @@ function NovelsGame({ onClose }: { onClose: () => void }) {
           })}
         </div>
         <p className="sr-announcement" aria-live="polite">{announcement}</p>
-        {matchedFact && <aside className="match-note" ref={matchNoteRef} role="status"><span>Case ledger updated</span><strong>{matchedFact.title}</strong><p>{matchedFact.rationale}</p><div><a href={matchedFact.sourceUrl} target="_blank" rel="noreferrer">Read the source: {matchedFact.source} ↗</a><button className="button button-dark" type="button" onClick={dismissMatchedFact}>Keep matching</button></div></aside>}
+        {matchedFact && <aside className="match-note" ref={matchNoteRef} role="status"><span>Case ledger updated</span><strong>{matchedFact.title}</strong><p>{matchedFact.rationale}</p><div>{matchedFact.sourceUrl ? <a href={matchedFact.sourceUrl} target="_blank" rel="noreferrer">Read the source: {matchedFact.source} ↗</a> : <span>Course basis: {matchedFact.source}</span>}<button className="button button-dark" type="button" onClick={dismissMatchedFact}>Keep matching</button></div></aside>}
       </section>
     </>
   );
@@ -899,7 +858,7 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
           <h1>Press play through <em>José Rizal’s life, works, and legacy.</em></h1>
           <p className="hero-intro">Hop across ideas, match characters, and crack archive codes in quick games built from Rizal’s life, works, and world.</p>
           <div className="hero-actions"><button className="button button-primary" type="button" onClick={() => launchGame("values")}>Start playing <span>▶</span></button><span>3 games · Student sign-in · Section scores</span></div>
-          <div className="hero-proof"><span><strong>3</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>106</strong> sourced challenges</span></div>
+          <div className="hero-proof"><span><strong>3</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>150</strong> sourced challenges</span></div>
         </div>
         <div className="hero-art arcade-cabinet-wrap">
           <div className="arcade-cabinet">
