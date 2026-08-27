@@ -8,6 +8,7 @@ import AdminPortal from "./AdminPortal";
 import { FirstPasswordPortal, LoginPortal } from "./AuthPortal";
 import { defineChallengeBank, drawChallengeSet, shuffleList } from "./challengeBank";
 import { codebreakerChallenges, type CodebreakerGroup } from "./codebreakerChallenges";
+import { heartsChallenges, heartsProfiles, heartsProfilesById, type HeartsWomanId } from "./heartsChallenges";
 import { noliCaseFiles } from "./noliCaseFiles";
 import { scholarJourneyStations, scholarMemoryCards, scholarStationCardIds } from "./scholarMemoryCards";
 import { valuesChallenges } from "./valuesChallenges";
@@ -78,16 +79,27 @@ const gameCards: Array<{
     symbol: "M",
     skill: "Higher education & scholarship",
   },
+  {
+    id: "hearts",
+    number: "05",
+    title: "Hearts & Horizons",
+    description: "Read a portrait dossier, identify the woman, match her to the right place in Rizal’s journey, then seal and send the evidence.",
+    meta: "Module 5 correspondence · 4 min",
+    tone: "rose",
+    symbol: "H",
+    skill: "Relationships, setting & evidence",
+  },
 ];
 
 const comingSoon = [
-  { title: "Hearts & Horizons", label: "Letters & relationships", symbol: "H", art: "/art/rizal-letter.webp", alt: "A handwritten letter by José Rizal" },
   { title: "Masterpiece Museum", label: "Works & genres", symbol: "A", art: "/art/rizal-poster.webp", alt: "Historic public-domain José Rizal poster" },
+  { title: "Global Sojourn", label: "Travels & reform work", symbol: "G", art: "/art/manila-map.webp", alt: "Historic map representing Rizal’s journeys" },
 ];
 
 const valuesBank = defineChallengeBank({ id: "values", topicId: "rizalian-values", contentVersion: 2, items: valuesChallenges });
 const novelBank = defineChallengeBank({ id: "novels", topicId: "noli-social-awakening", contentVersion: 2, items: noliCaseFiles });
 const codeBank = defineChallengeBank({ id: "codebreaker", topicId: "family-childhood-genealogy-early-education", contentVersion: 2, items: codebreakerChallenges });
+const heartsBank = defineChallengeBank({ id: "hearts", topicId: "love-interests-and-women-rizal-met", contentVersion: 1, items: heartsChallenges });
 const scholarStationBanks = scholarJourneyStations.map((station) => ({
   station,
   bank: defineChallengeBank({
@@ -113,18 +125,30 @@ function normalizeCodeAnswer(value: string) {
     .trim();
 }
 
-type SoundCue = "jump" | "correct" | "wrong" | "flip" | "match" | "decode" | "pickup" | "file" | "finish" | "page";
+type SoundCue = "jump" | "correct" | "wrong" | "flip" | "match" | "decode" | "pickup" | "file" | "finish" | "page" | "seal";
 
-function useArcadeSound() {
+function useArcadeSound(musicSrc: string) {
   const [enabled, setEnabled] = useState(() => {
     if (typeof window === "undefined") return true;
     try { return window.localStorage.getItem("rizal-arcade-sound") !== "off"; } catch { return true; }
   });
   const contextRef = useRef<AudioContext | null>(null);
   const pageTurnRef = useRef<HTMLAudioElement | null>(null);
+  const musicRef = useRef<HTMLAudioElement | null>(null);
+
+  const startMusic = useCallback(() => {
+    if (!enabled || typeof window === "undefined") return;
+    const music = musicRef.current ?? new Audio(musicSrc);
+    musicRef.current = music;
+    music.loop = true;
+    music.preload = "auto";
+    music.volume = .1;
+    void music.play().catch(() => { /* The next direct game interaction will try again. */ });
+  }, [enabled, musicSrc]);
 
   const play = useCallback((cue: SoundCue, force = false) => {
     if ((!enabled && !force) || typeof window === "undefined") return;
+    startMusic();
     if (cue === "page") {
       const pageTurn = pageTurnRef.current ?? new Audio("/audio/scholar-page-turn.mp3");
       pageTurnRef.current = pageTurn;
@@ -148,6 +172,7 @@ function useArcadeSound() {
       pickup: [[680, .07, "sine"], [820, .09, "sine"]],
       file: [[294, .08, "triangle"], [392, .13, "triangle"]],
       finish: [[523, .09, "triangle"], [659, .09, "triangle"], [784, .09, "triangle"], [1047, .22, "triangle"]],
+      seal: [[392, .07, "triangle"], [494, .09, "triangle"], [659, .16, "sine"]],
     };
     let start = context.currentTime + .01;
     patterns[cue]?.forEach(([frequency, duration, type]) => {
@@ -163,16 +188,33 @@ function useArcadeSound() {
       oscillator.stop(start + duration + .02);
       start += duration * .78;
     });
-  }, [enabled]);
+  }, [enabled, startMusic]);
 
   const toggle = useCallback(() => {
     const next = !enabled;
     setEnabled(next);
     try { window.localStorage.setItem("rizal-arcade-sound", next ? "on" : "off"); } catch { /* Optional preference. */ }
-    if (next) window.setTimeout(() => play("correct", true), 0);
-  }, [enabled, play]);
+    if (next) {
+      window.setTimeout(() => {
+        const music = musicRef.current ?? new Audio(musicSrc);
+        musicRef.current = music;
+        music.loop = true;
+        music.volume = .1;
+        void music.play().catch(() => { /* Optional background audio. */ });
+        play("correct", true);
+      }, 0);
+    } else {
+      musicRef.current?.pause();
+    }
+  }, [enabled, musicSrc, play]);
 
-  useEffect(() => () => { void contextRef.current?.close(); }, []);
+  useEffect(() => { startMusic(); }, [startMusic]);
+
+  useEffect(() => () => {
+      musicRef.current?.pause();
+      if (musicRef.current) musicRef.current.currentTime = 0;
+      void contextRef.current?.close();
+  }, []);
   return { enabled, play, toggle };
 }
 
@@ -370,7 +412,7 @@ function GameHeader({ title, status, onClose, soundEnabled, onToggleSound }: { t
       <button className="icon-button" data-dialog-close type="button" onClick={onClose} aria-label="Close game">×</button>
       <div className="game-header-title"><span>Rizal Arcade</span><strong>{title}</strong></div>
       <div className="game-hud">
-        {onToggleSound && <button className="sound-toggle" type="button" onClick={onToggleSound} aria-pressed={soundEnabled} aria-label={`${soundEnabled ? "Mute" : "Turn on"} game sounds`}><span aria-hidden="true">{soundEnabled ? "♪" : "×"}</span><small>Sound</small></button>}
+        {onToggleSound && <button className="sound-toggle" type="button" onClick={onToggleSound} aria-pressed={soundEnabled} aria-label={`${soundEnabled ? "Mute" : "Turn on"} game audio`}><span aria-hidden="true">{soundEnabled ? "♪" : "×"}</span><small>Audio</small></button>}
         {status.map((item) => <span key={item.label}><small>{item.label}</small><strong>{item.value}</strong></span>)}
       </div>
     </header>
@@ -420,7 +462,7 @@ function ValuesGame({ onClose }: { onClose: () => void }) {
   const returnToQuestion = useRef(false);
   const finished = progress >= goal || lives <= 0;
   const [best, saveBest] = useHighScore("values");
-  const { enabled: soundEnabled, play, toggle: toggleSound } = useArcadeSound();
+  const { enabled: soundEnabled, play, toggle: toggleSound } = useArcadeSound("/audio/arcade-adventure.mp3");
   const current = deck[caseIndex % deck.length];
   const choices = useMemo(() => {
     const distractors = [...new Set(valuesBank.items.map((item) => item.value))].filter((value) => value !== current.value);
@@ -563,7 +605,7 @@ function NovelsGame({ onClose }: { onClose: () => void }) {
   const matchNoteRef = useRef<HTMLElement>(null);
   const finished = matchedPairs.length === 6 && matchedFact === null;
   const [best, saveBest] = useHighScore("novels");
-  const { enabled: soundEnabled, play, toggle: toggleSound } = useArcadeSound();
+  const { enabled: soundEnabled, play, toggle: toggleSound } = useArcadeSound("/audio/arcade-mystery.mp3");
 
   useEffect(() => () => { if (flipTimer.current) clearTimeout(flipTimer.current); }, []);
   useEffect(() => {
@@ -665,7 +707,7 @@ function buildScholarRound() {
 export function ScholarMemoryGame({ onClose }: { onClose: () => void }) {
   const [roundData, setRoundData] = useState(buildScholarRound);
   const [phase, setPhase] = useState<"study" | "recall" | "feedback" | "finished">("study");
-  const [seconds, setSeconds] = useState(12);
+  const [seconds, setSeconds] = useState(20);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [placedIds, setPlacedIds] = useState<string[]>([]);
   const [lives, setLives] = useState(4);
@@ -678,7 +720,7 @@ export function ScholarMemoryGame({ onClose }: { onClose: () => void }) {
   const finishTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
   const recallPanelRef = useRef<HTMLElement>(null);
   const [best, saveBest] = useHighScore("scholar");
-  const { enabled: soundEnabled, play, toggle: toggleSound } = useArcadeSound();
+  const { enabled: soundEnabled, play, toggle: toggleSound } = useArcadeSound("/audio/arcade-adventure.mp3");
   const selectedStop = roundData.stops.find(({ card }) => card.id === selectedId);
 
   const beginRecall = useCallback(() => {
@@ -771,7 +813,7 @@ export function ScholarMemoryGame({ onClose }: { onClose: () => void }) {
     saveBest(score);
     setRoundData(buildScholarRound());
     setPhase("study");
-    setSeconds(12);
+    setSeconds(20);
     setSelectedId(null);
     setPlacedIds([]);
     setLives(4);
@@ -837,6 +879,203 @@ export function ScholarMemoryGame({ onClose }: { onClose: () => void }) {
   );
 }
 
+function HeartsPortrait({ womanId, decorative = false }: { womanId: HeartsWomanId; decorative?: boolean }) {
+  const profile = heartsProfilesById[womanId];
+  if (profile.art) return <img className="hearts-portrait-image" src={profile.art} alt={decorative ? "" : profile.artAlt} />;
+  const column = profile.portraitIndex % 3;
+  const row = Math.floor(profile.portraitIndex / 3);
+  return (
+    <span
+      className="hearts-portrait-sprite"
+      role={decorative ? undefined : "img"}
+      aria-label={decorative ? undefined : profile.artAlt}
+      aria-hidden={decorative ? "true" : undefined}
+      style={{ backgroundPosition: `${column * 50}% ${row * 50}%` }}
+    />
+  );
+}
+
+function HeartsGame({ onClose }: { onClose: () => void }) {
+  const roundSize = 6;
+  const [deck, setDeck] = useState(() => drawChallengeSet(heartsBank, roundSize));
+  const [round, setRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [lives, setLives] = useState(4);
+  const [selectedWoman, setSelectedWoman] = useState<HeartsWomanId | null>(null);
+  const [selectedPlace, setSelectedPlace] = useState<HeartsWomanId | null>(null);
+  const [phase, setPhase] = useState<"selecting" | "feedback" | "finished">("selecting");
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [announcement, setAnnouncement] = useState("Read the dossier, choose an identity seal and a journey postmark, then seal the letter.");
+  const [wrongSelection, setWrongSelection] = useState<"identity" | "place" | "both" | null>(null);
+  const feedbackRef = useRef<HTMLDivElement>(null);
+  const wrongTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const [best, saveBest] = useHighScore("hearts");
+  const { enabled: soundEnabled, play, toggle: toggleSound } = useArcadeSound("/audio/arcade-waltz.mp3");
+  const current = deck[round];
+  const currentProfile = heartsProfilesById[current.womanId];
+  const options = useMemo(() => {
+    const others = shuffleList(heartsProfiles.filter((profile) => profile.id !== current.womanId)).slice(0, 4);
+    return {
+      identities: shuffleList([currentProfile, ...others.slice(0, 2)]),
+      places: shuffleList([currentProfile, ...others.slice(2, 4)]),
+    };
+  }, [current.womanId, currentProfile]);
+
+  useEffect(() => {
+    if (phase === "feedback") feedbackRef.current?.focus({ preventScroll: true });
+  }, [phase]);
+
+  useEffect(() => () => {
+    if (wrongTimer.current) window.clearTimeout(wrongTimer.current);
+  }, []);
+
+  function selectIdentity(womanId: HeartsWomanId) {
+    if (phase !== "selecting") return;
+    setSelectedWoman(womanId);
+    setWrongSelection(null);
+    setAnnouncement(`${heartsProfilesById[womanId].name} selected. Now confirm the journey postmark.`);
+    play("pickup");
+  }
+
+  function selectHorizon(womanId: HeartsWomanId) {
+    if (phase !== "selecting") return;
+    setSelectedPlace(womanId);
+    setWrongSelection(null);
+    setAnnouncement(`${heartsProfilesById[womanId].place} selected. Seal the letter when both choices are ready.`);
+    play("page");
+  }
+
+  function sealLetter() {
+    if (phase !== "selecting") return;
+    if (!selectedWoman || !selectedPlace) {
+      setAnnouncement("The envelope needs both an identity seal and a journey postmark.");
+      play("wrong");
+      return;
+    }
+    const identityCorrect = selectedWoman === current.womanId;
+    const placeCorrect = selectedPlace === current.womanId;
+    if (identityCorrect && placeCorrect) {
+      const nextScore = score + 160 + streak * 10;
+      setScore(nextScore);
+      setStreak((value) => value + 1);
+      setFeedback({
+        correct: true,
+        title: `${currentProfile.name} · ${currentProfile.place}`,
+        rationale: current.rationale,
+        source: current.source,
+        sourceUrl: current.sourceUrl,
+      });
+      setAnnouncement(`Letter sealed. ${currentProfile.name} belongs to the ${currentProfile.place} horizon.`);
+      setPhase("feedback");
+      play("seal");
+      return;
+    }
+
+    const nextLives = lives - 1;
+    setLives(nextLives);
+    setStreak(0);
+    setWrongSelection(!identityCorrect && !placeCorrect ? "both" : identityCorrect ? "place" : "identity");
+    setAnnouncement(
+      identityCorrect
+        ? `The identity seal fits, but the journey postmark does not. ${nextLives} lives remain.`
+        : placeCorrect
+          ? `The journey postmark fits, but the identity seal does not. ${nextLives} lives remain.`
+          : `Neither seal fits this dossier yet. Re-read the evidence. ${nextLives} lives remain.`,
+    );
+    play("wrong");
+    if (wrongTimer.current) window.clearTimeout(wrongTimer.current);
+    wrongTimer.current = window.setTimeout(() => setWrongSelection(null), 700);
+    if (nextLives === 0) {
+      saveBest(score);
+      window.setTimeout(() => {
+        setPhase("finished");
+        play("finish");
+      }, 500);
+    }
+  }
+
+  function nextDossier() {
+    setFeedback(null);
+    setSelectedWoman(null);
+    setSelectedPlace(null);
+    setWrongSelection(null);
+    if (round === deck.length - 1) {
+      saveBest(score);
+      setPhase("finished");
+      play("finish");
+      return;
+    }
+    setRound((value) => value + 1);
+    setPhase("selecting");
+    setAnnouncement("New dossier opened. Match its identity and horizon before sealing the letter.");
+    play("page");
+  }
+
+  function replay() {
+    saveBest(score);
+    setDeck(drawChallengeSet(heartsBank, roundSize));
+    setRound(0);
+    setScore(0);
+    setStreak(0);
+    setLives(4);
+    setSelectedWoman(null);
+    setSelectedPlace(null);
+    setFeedback(null);
+    setWrongSelection(null);
+    setPhase("selecting");
+    setAnnouncement("Read the dossier, choose an identity seal and a journey postmark, then seal the letter.");
+  }
+
+  if (phase === "finished") return <><GameHeader title="Hearts & Horizons" status={[{ label: "Letters", value: `${lives > 0 ? round + 1 : round} / 6` }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} /><Results game="hearts" title="Hearts & Horizons" score={score} best={best} maxScore={1110} onReplay={replay} onClose={onClose} /></>;
+
+  return (
+    <>
+      <GameHeader title="Hearts & Horizons" status={[{ label: "Lives", value: "♥".repeat(lives) || "0" }, { label: "Dossier", value: `${round + 1} / ${deck.length}` }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} />
+      <section className="hearts-game play-layout">
+        <div className="hearts-heading">
+          <div><p className="eyebrow">Module 5 · relationships and the women Rizal met</p><h2>Read the evidence. Route the letter.</h2></div>
+          <p>Portraits are archival where available; the remaining cameos are clearly labeled artistic interpretations.</p>
+        </div>
+
+        <div className="hearts-route" aria-label={`${round} of ${deck.length} letters sent`}>
+          {deck.map((item, index) => <span key={item.id} className={index < round ? "is-sent" : index === round ? "is-current" : ""}><i>{index < round ? "✓" : index + 1}</i><small>{index < round ? "Sent" : index === round ? "Desk" : "Waiting"}</small>{index === round && <b aria-hidden="true">✉</b>}</span>)}
+        </div>
+
+        <div className="hearts-desk">
+          <aside className={`hearts-choice-panel identity-panel ${wrongSelection === "identity" || wrongSelection === "both" ? "is-wrong" : ""}`}>
+            <span className="hearts-panel-label">01 · Identity seal</span>
+            <h3>Who belongs to this dossier?</h3>
+            <div role="group" aria-label="Choose the woman described by the dossier">
+              {options.identities.map((profile) => <button key={profile.id} type="button" className={selectedWoman === profile.id ? "is-selected" : ""} aria-pressed={selectedWoman === profile.id} disabled={phase !== "selecting"} onClick={() => selectIdentity(profile.id)}><span className="mini-profile"><HeartsPortrait womanId={profile.id} decorative /></span><strong>{profile.name}</strong><small>Press into wax</small></button>)}
+            </div>
+          </aside>
+
+          <article className="hearts-dossier">
+            <div className="dossier-topline"><span>{current.id} · confidential correspondence</span><b>{currentProfile.period}</b></div>
+            <div className="dossier-portrait"><HeartsPortrait womanId={current.womanId} /><span>{currentProfile.art ? "Archival portrait" : "Artistic interpretation"}</span></div>
+            <div className="dossier-copy"><p className="eyebrow">Evidence file</p><h3>{current.evidenceTitle}</h3><ol>{current.evidence.map((clue, index) => <li key={clue}><span>0{index + 1}</span>{clue}</li>)}</ol></div>
+            <span className="dossier-thread" aria-hidden="true" />
+            <span className="dossier-stamp" aria-hidden="true">RA<br />ARCHIVE</span>
+          </article>
+
+          <aside className={`hearts-choice-panel horizon-panel ${wrongSelection === "place" || wrongSelection === "both" ? "is-wrong" : ""}`}>
+            <span className="hearts-panel-label">02 · Journey postmark</span>
+            <h3>Where does this chapter belong?</h3>
+            <div role="group" aria-label="Choose the place associated with the dossier">
+              {options.places.map((profile) => <button key={profile.id} type="button" className={selectedPlace === profile.id ? "is-selected" : ""} aria-pressed={selectedPlace === profile.id} disabled={phase !== "selecting"} onClick={() => selectHorizon(profile.id)}><i>{profile.routeCode}</i><span><strong>{profile.place}</strong><small>{profile.period}</small></span></button>)}
+            </div>
+          </aside>
+        </div>
+
+        <div className="hearts-actions"><p aria-live="polite">{announcement}</p><button className="button hearts-seal-button" type="button" disabled={phase !== "selecting"} onClick={sealLetter}><span aria-hidden="true">✦</span> Seal & send</button></div>
+        {feedback && <div className="hearts-feedback" ref={feedbackRef} tabIndex={-1}><FeedbackPanel feedback={feedback} onNext={nextDossier} isLast={round === deck.length - 1} /></div>}
+        <p className="hearts-accuracy-note">Relationship histories can contain later recollections and disputed details. This game uses the course module and named institutional sources, and avoids presenting artistic cameos as documentary likenesses.</p>
+      </section>
+    </>
+  );
+}
+
 type ArchiveGroup = CodebreakerGroup;
 const archiveGroups: ArchiveGroup[] = ["Family & roots", "Childhood", "Early education"];
 
@@ -866,7 +1105,7 @@ function CodebreakerGame({ onClose }: { onClose: () => void }) {
   const returnToDecoder = useRef(false);
   const finished = round >= deck.length;
   const [best, saveBest] = useHighScore("codebreaker");
-  const { enabled: soundEnabled, play, toggle: toggleSound } = useArcadeSound();
+  const { enabled: soundEnabled, play, toggle: toggleSound } = useArcadeSound("/audio/arcade-mystery.mp3");
   const current = deck[Math.min(round, deck.length - 1)];
   const encoded = atbashText(current.answer);
   const correctGroup = archiveGroupFor(current);
@@ -1004,14 +1243,15 @@ function CodebreakerGame({ onClose }: { onClose: () => void }) {
 function GameOverlay({ game, onClose }: { game: GameId; onClose: () => void }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   useModalLifecycle(true, onClose, overlayRef);
-  return <div ref={overlayRef} tabIndex={-1} className={`game-overlay game-${game}`} role="dialog" aria-modal="true" aria-label={`${game} game`}>{game === "values" ? <ValuesGame onClose={onClose} /> : game === "novels" ? <NovelsGame onClose={onClose} /> : game === "codebreaker" ? <CodebreakerGame onClose={onClose} /> : <ScholarMemoryGame onClose={onClose} />}</div>;
+  return <div ref={overlayRef} tabIndex={-1} className={`game-overlay game-${game}`} role="dialog" aria-modal="true" aria-label={`${game} game`}>{game === "values" ? <ValuesGame onClose={onClose} /> : game === "novels" ? <NovelsGame onClose={onClose} /> : game === "codebreaker" ? <CodebreakerGame onClose={onClose} /> : game === "scholar" ? <ScholarMemoryGame onClose={onClose} /> : <HeartsGame onClose={onClose} />}</div>;
 }
 
 function GameCardScene({ game }: { game: GameId }) {
   if (game === "values") return <div className="card-scene pond-card-scene"><span className="mini-cloud" /><span className="mini-lily lily-a" /><span className="mini-lily lily-b" /><span className="mini-lily lily-c" /><span className="mini-frog">●</span><strong>HOP!</strong></div>;
   if (game === "novels") return <div className="card-scene memory-card-scene"><img src="/art/noli-cover.jpg" alt="" /><span className="mini-card card-a">MC</span><span className="mini-card card-b">?</span><span className="mini-card card-c">IB</span><strong>Match the file</strong></div>;
   if (game === "codebreaker") return <div className="card-scene code-card-scene"><span className="mini-code">IRAZO</span><span className="mini-wheel">A=Z</span><span className="mini-drawer">ROOTS</span><strong>Read · Decode · File</strong></div>;
-  return <div className="card-scene scholar-card-scene"><img src="/art/universidad-central.jpg" alt="" /><span className="mini-passport passport-a">01</span><span className="mini-passport passport-b">?</span><span className="mini-passport passport-c">06</span><strong>Study · Close · Recall</strong></div>;
+  if (game === "scholar") return <div className="card-scene scholar-card-scene"><img src="/art/universidad-central.jpg" alt="" /><span className="mini-passport passport-a">01</span><span className="mini-passport passport-b">?</span><span className="mini-passport passport-c">06</span><strong>Study · Close · Recall</strong></div>;
+  return <div className="card-scene hearts-card-scene"><img src="/art/rizal-letter.webp" alt="" /><span className="mini-envelope envelope-a">?</span><span className="mini-envelope envelope-b">YK</span><span className="mini-wax">RA</span><strong>Read · Seal · Send</strong></div>;
 }
 
 function LeaderboardDrawer({ onClose }: { onClose: () => void }) {
@@ -1066,8 +1306,8 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
           <p className="eyebrow">The José Rizal history arcade</p>
           <h1>Press play through <em>José Rizal’s life, works, and legacy.</em></h1>
           <p className="hero-intro">Hop across ideas, match characters, and crack archive codes in quick games built from Rizal’s life, works, and world.</p>
-          <div className="hero-actions"><button className="button button-primary" type="button" onClick={() => launchGame("values")}>Start playing <span>▶</span></button><span>4 games · Student sign-in · Section scores</span></div>
-          <div className="hero-proof"><span><strong>4</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>200</strong> sourced challenges</span></div>
+          <div className="hero-actions"><button className="button button-primary" type="button" onClick={() => launchGame("values")}>Start playing <span>▶</span></button><span>5 games · Student sign-in · Section scores</span></div>
+          <div className="hero-proof"><span><strong>5</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>250</strong> sourced challenges</span></div>
         </div>
         <div className="hero-art arcade-cabinet-wrap">
           <div className="arcade-cabinet">
@@ -1112,7 +1352,7 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
 
       <section className="coming-section">
         <div className="section-heading"><div><p className="eyebrow">Next in the archive</p><h2>The arcade can keep growing.</h2></div><p>A modular format makes it easy to add new games after your instructor reviews the learning content.</p></div>
-        <div className="coming-grid">{comingSoon.map((game, index) => <article key={game.title}><div><img src={game.art} alt={game.alt} loading="lazy" /><span>{game.symbol}</span><small>0{index + 5}</small></div><p>{game.label}</p><h3>{game.title}</h3><span className="soon-pill">Next cabinet</span></article>)}</div>
+        <div className="coming-grid">{comingSoon.map((game, index) => <article key={game.title}><div><img src={game.art} alt={game.alt} loading="lazy" /><span>{game.symbol}</span><small>0{index + 6}</small></div><p>{game.label}</p><h3>{game.title}</h3><span className="soon-pill">Next cabinet</span></article>)}</div>
       </section>
 
       <section className="manifesto"><img src="/art/rizal-poster.webp" alt="Public-domain poster reading Rizal died for you—be worthy of him" loading="lazy" /><div><p className="eyebrow">A new way into history</p><p>Not a quiz wearing a costume. Every room gives history a rule, a rhythm, and a reason to try again.</p><button type="button" onClick={() => setShowSources(true)}>How we handle historical accuracy <span>→</span></button></div></section>
@@ -1121,7 +1361,7 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
 
       {activeGame && <GameOverlay game={activeGame} onClose={closeGame} />}
       {showLeaderboard && <LeaderboardDrawer onClose={closeLeaderboard} />}
-      {showSources && <div className="source-overlay" role="dialog" aria-modal="true" aria-labelledby="source-title"><button className="source-backdrop" aria-label="Close sources" type="button" onClick={closeSources} /><section className="source-drawer" ref={sourceDrawerRef} tabIndex={-1}><button className="icon-button" data-dialog-close type="button" onClick={closeSources} aria-label="Close sources">×</button><p className="eyebrow">Source desk</p><h2 id="source-title">Playful format. Careful history.</h2><p>Prompts are grounded in the instructor-provided course modules, primary texts, university archives, public-domain translations, and National Historical Commission of the Philippines markers. Every River Quest scenario is explicitly an interpretive, present-day application—not a quotation or historical event.</p><h3>Core references</h3><ul><li><a href="https://philhistoricsites.nhcp.gov.ph/registry_database/jose-rizal-1861-1896-9/" target="_blank" rel="noreferrer">NHCP Registry: José Rizal ↗</a></li><li><a href="https://books.ub.uni-heidelberg.de/heibooks/catalog/book/1635" target="_blank" rel="noreferrer">Heidelberg University: Tracing José Rizal ↗</a></li><li><a href="https://archivo.ust.edu.ph/about" target="_blank" rel="noreferrer">UST Archive: Rizal student records ↗</a></li><li><a href="https://research.ateneo.edu/en/publications/rizal-in-ateneo-ateneo-in-rizal/" target="_blank" rel="noreferrer">Ateneo archive: Rizal in Ateneo ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/6737" target="_blank" rel="noreferrer">Noli Me Tangere / The Social Cancer ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/10676" target="_blank" rel="noreferrer">El Filibusterismo / The Reign of Greed ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/17116" target="_blank" rel="noreferrer">Letter to the Young Women of Malolos ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/6885" target="_blank" rel="noreferrer">The Indolence of the Filipino ↗</a></li><li><a href="https://philhistoricsites.nhcp.gov.ph/registry_database/la-liga-filipina/" target="_blank" rel="noreferrer">NHCP Registry: La Liga Filipina ↗</a></li></ul><h3 className="visual-credit-title">Visual and audio archive</h3><ul><li><a href="https://commons.wikimedia.org/wiki/File:Portrait_of_Jos%C3%A9_Rizal_(1883)_with_frame.jpg" target="_blank" rel="noreferrer">1883 Rizal portrait · public domain / CC0 ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Rizal-18.jpg" target="_blank" rel="noreferrer">Rizal as an eighteen-year-old medical student · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Universidad_Central_e_Instituto_Cardenal_Cisneros.jpg" target="_blank" rel="noreferrer">Former Central University of Madrid · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Manila_and_suburbs_1898.jpg" target="_blank" rel="noreferrer">1898 Manila map · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Noli_Me_Tangere.jpg" target="_blank" rel="noreferrer">Historic Noli cover · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Rizal_letter.png" target="_blank" rel="noreferrer">1889 Rizal letter · public domain ↗</a></li><li><a href="https://pixabay.com/sound-effects/film-special-effects-turn-a-page-336933/" target="_blank" rel="noreferrer">Turn a Page by CreatorsHome · Pixabay Content License ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Rizal_Died_for_You-_Be_Worthy_of_Him_-_NARA_-_5730063.jpg" target="_blank" rel="noreferrer">Historic Rizal poster · public domain ↗</a></li></ul><div className="review-note"><strong>Before formal classroom release</strong><p>A Rizal Life instructor should review translations, wording, interpretations, and accepted answers. The game records are structured so content can be updated without redesigning each game.</p></div></section></div>}
+      {showSources && <div className="source-overlay" role="dialog" aria-modal="true" aria-labelledby="source-title"><button className="source-backdrop" aria-label="Close sources" type="button" onClick={closeSources} /><section className="source-drawer" ref={sourceDrawerRef} tabIndex={-1}><button className="icon-button" data-dialog-close type="button" onClick={closeSources} aria-label="Close sources">×</button><p className="eyebrow">Source desk</p><h2 id="source-title">Playful format. Careful history.</h2><p>Prompts are grounded in the instructor-provided course modules, primary texts, university archives, public-domain translations, and National Historical Commission of the Philippines markers. Every River Quest scenario is explicitly an interpretive, present-day application—not a quotation or historical event.</p><h3>Core references</h3><ul><li><a href="https://philhistoricsites.nhcp.gov.ph/registry_database/jose-rizal-1861-1896-9/" target="_blank" rel="noreferrer">NHCP Registry: José Rizal ↗</a></li><li><a href="https://books.ub.uni-heidelberg.de/heibooks/catalog/book/1635" target="_blank" rel="noreferrer">Heidelberg University: Tracing José Rizal ↗</a></li><li><a href="https://archivo.ust.edu.ph/about" target="_blank" rel="noreferrer">UST Archive: Rizal student records ↗</a></li><li><a href="https://research.ateneo.edu/en/publications/rizal-in-ateneo-ateneo-in-rizal/" target="_blank" rel="noreferrer">Ateneo archive: Rizal in Ateneo ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/6737" target="_blank" rel="noreferrer">Noli Me Tangere / The Social Cancer ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/10676" target="_blank" rel="noreferrer">El Filibusterismo / The Reign of Greed ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/17116" target="_blank" rel="noreferrer">Letter to the Young Women of Malolos ↗</a></li><li><a href="https://www.gutenberg.org/ebooks/6885" target="_blank" rel="noreferrer">The Indolence of the Filipino ↗</a></li><li><a href="https://philhistoricsites.nhcp.gov.ph/registry_database/la-liga-filipina/" target="_blank" rel="noreferrer">NHCP Registry: La Liga Filipina ↗</a></li><li><a href="https://up.edu.ph/ilustrados-enamorados-del-japon/" target="_blank" rel="noreferrer">UP: Rizal and Seiko Usui in Japan ↗</a></li><li><a href="https://www.filipinaslibrary.org.ph/himig/rizals-verses-for-leonor-and-maria-clara/" target="_blank" rel="noreferrer">Filipinas Heritage Library: Rizal’s verses for Leonor ↗</a></li><li><a href="https://pia.gov.ph/regions/dapitan-pays-homage-to-rizals-unsung-muse/" target="_blank" rel="noreferrer">PIA / NHCP: Josephine Bracken and Dapitan ↗</a></li><li><a href="https://www.nationalmuseum.gov.ph/2024/12/30/nmp-exhibits-rizals-josephine-sleeping/" target="_blank" rel="noreferrer">National Museum: Josephine Sleeping ↗</a></li></ul><h3 className="visual-credit-title">Visual and audio archive</h3><ul><li><a href="https://commons.wikimedia.org/wiki/File:Portrait_of_Jos%C3%A9_Rizal_(1883)_with_frame.jpg" target="_blank" rel="noreferrer">1883 Rizal portrait · public domain / CC0 ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Rizal-18.jpg" target="_blank" rel="noreferrer">Rizal as an eighteen-year-old medical student · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Universidad_Central_e_Instituto_Cardenal_Cisneros.jpg" target="_blank" rel="noreferrer">Former Central University of Madrid · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Manila_and_suburbs_1898.jpg" target="_blank" rel="noreferrer">1898 Manila map · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Noli_Me_Tangere.jpg" target="_blank" rel="noreferrer">Historic Noli cover · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Rizal_letter.png" target="_blank" rel="noreferrer">1889 Rizal letter · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Crayon_sketch_of_Leonor_Rivera_by_Rizal.jpg" target="_blank" rel="noreferrer">Leonor Rivera crayon sketch · public domain ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Josephine_Bracken_BR.jpg" target="_blank" rel="noreferrer">Josephine Bracken portrait · public domain ↗</a></li><li>Remaining Hearts & Horizons cameos · original artistic interpretations, not documentary likenesses</li><li><a href="https://pixabay.com/sound-effects/film-special-effects-turn-a-page-336933/" target="_blank" rel="noreferrer">Turn a Page by CreatorsHome · Pixabay Content License ↗</a></li><li><a href="https://pixabay.com/music/adventure-adventure-movie-amp-animation-soundtrack-1230/" target="_blank" rel="noreferrer">Adventure by JuliusH · Pixabay Content License ↗</a></li><li><a href="https://pixabay.com/music/crime-scene-mystery-of-the-investigation-215184/" target="_blank" rel="noreferrer">Mystery Of The Investigation by PaoloArgento · Pixabay Content License ↗</a></li><li><a href="https://pixabay.com/music/modern-classical-background-sentimental-waltz-123818/" target="_blank" rel="noreferrer">Background Sentimental Waltz by MusicLFiles · Pixabay Content License ↗</a></li><li><a href="https://commons.wikimedia.org/wiki/File:Rizal_Died_for_You-_Be_Worthy_of_Him_-_NARA_-_5730063.jpg" target="_blank" rel="noreferrer">Historic Rizal poster · public domain ↗</a></li></ul><div className="review-note"><strong>Before formal classroom release</strong><p>A Rizal Life instructor should review translations, wording, interpretations, and accepted answers. The game records are structured so content can be updated without redesigning each game.</p></div></section></div>}
     </main>
   );
 }
