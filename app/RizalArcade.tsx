@@ -9,7 +9,7 @@ import { FirstPasswordPortal, LoginPortal } from "./AuthPortal";
 import { defineChallengeBank, drawChallengeSet, shuffleList } from "./challengeBank";
 import { codebreakerChallenges, type CodebreakerGroup } from "./codebreakerChallenges";
 import { noliCaseFiles } from "./noliCaseFiles";
-import { scholarMemoryCards } from "./scholarMemoryCards";
+import { scholarJourneyStations, scholarMemoryCards, scholarStationCardIds } from "./scholarMemoryCards";
 import { valuesChallenges } from "./valuesChallenges";
 import {
   getAuthSnapshot,
@@ -71,9 +71,9 @@ const gameCards: Array<{
   {
     id: "scholar",
     number: "04",
-    title: "Scholar’s Memory",
-    description: "Study six passport cards, close the desk, then remember where each higher-education record is filed.",
-    meta: "Module 5 memory · 4 min",
+    title: "Scholar’s Journey",
+    description: "Study Rizal’s academic route, then rebuild it by stamping scholarly records at six journey stations.",
+    meta: "Module 5 journey · 4 min",
     tone: "teal",
     symbol: "M",
     skill: "Higher education & scholarship",
@@ -88,7 +88,15 @@ const comingSoon = [
 const valuesBank = defineChallengeBank({ id: "values", topicId: "rizalian-values", contentVersion: 2, items: valuesChallenges });
 const novelBank = defineChallengeBank({ id: "novels", topicId: "noli-social-awakening", contentVersion: 2, items: noliCaseFiles });
 const codeBank = defineChallengeBank({ id: "codebreaker", topicId: "family-childhood-genealogy-early-education", contentVersion: 2, items: codebreakerChallenges });
-const scholarBank = defineChallengeBank({ id: "scholar", topicId: "higher-education-and-scholarly-formation", contentVersion: 1, items: scholarMemoryCards });
+const scholarStationBanks = scholarJourneyStations.map((station) => ({
+  station,
+  bank: defineChallengeBank({
+    id: `scholar-${station.id}`,
+    topicId: "higher-education-and-scholarly-formation",
+    contentVersion: 2,
+    items: scholarMemoryCards.filter((card) => scholarStationCardIds[station.id].includes(card.id)),
+  }),
+}));
 
 function atbashText(value: string) {
   return value.toUpperCase().replace(/[A-Z]/g, (letter) =>
@@ -650,33 +658,33 @@ function NovelsGame({ onClose }: { onClose: () => void }) {
 }
 
 function buildScholarRound() {
-  const cards = drawChallengeSet(scholarBank, 6);
-  return { cards, recallIds: shuffleList(cards.map((card) => card.id)) };
+  const stops = scholarStationBanks.map(({ station, bank }) => ({ station, card: drawChallengeSet(bank, 1)[0] }));
+  return { stops, tokenIds: shuffleList(stops.map(({ card }) => card.id)) };
 }
 
-function ScholarMemoryGame({ onClose }: { onClose: () => void }) {
+export function ScholarMemoryGame({ onClose }: { onClose: () => void }) {
   const [roundData, setRoundData] = useState(buildScholarRound);
   const [phase, setPhase] = useState<"study" | "recall" | "feedback" | "finished">("study");
-  const [seconds, setSeconds] = useState(9);
-  const [targetIndex, setTargetIndex] = useState(0);
-  const [foundIds, setFoundIds] = useState<string[]>([]);
+  const [seconds, setSeconds] = useState(12);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [placedIds, setPlacedIds] = useState<string[]>([]);
   const [lives, setLives] = useState(4);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [wrongCardId, setWrongCardId] = useState<string | null>(null);
+  const [wrongStopId, setWrongStopId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
-  const [announcement, setAnnouncement] = useState("Study the six open passport cards before the desk closes.");
+  const [announcement, setAnnouncement] = useState("Study the scholarly record attached to each stop on Rizal’s academic journey.");
   const wrongTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
   const finishTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
   const recallPanelRef = useRef<HTMLElement>(null);
   const [best, saveBest] = useHighScore("scholar");
   const { enabled: soundEnabled, play, toggle: toggleSound } = useArcadeSound();
-  const currentTarget = roundData.cards.find((card) => card.id === roundData.recallIds[Math.min(targetIndex, roundData.recallIds.length - 1)]) ?? roundData.cards[0];
+  const selectedStop = roundData.stops.find(({ card }) => card.id === selectedId);
 
   const beginRecall = useCallback(() => {
     setSeconds(0);
     setPhase("recall");
-    setAnnouncement("The passport cards are closed. Find the position that answers the clue.");
+    setAnnouncement("The records have moved to your passport tray. Select one, then stamp its remembered journey stop.");
     play("page");
   }, [play]);
 
@@ -691,35 +699,51 @@ function ScholarMemoryGame({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     if (phase === "recall") recallPanelRef.current?.focus({ preventScroll: true });
-  }, [phase, targetIndex]);
+  }, [phase, placedIds.length]);
 
   useEffect(() => () => {
     if (wrongTimer.current) window.clearTimeout(wrongTimer.current);
     if (finishTimer.current) window.clearTimeout(finishTimer.current);
   }, []);
 
-  function chooseScholarCard(card: (typeof scholarBank.items)[number]) {
-    if (phase !== "recall" || foundIds.includes(card.id)) return;
-    if (card.id === currentTarget.id) {
+  function selectScholarRecord(cardId: string) {
+    if (phase !== "recall" || placedIds.includes(cardId)) return;
+    setSelectedId(cardId);
+    const record = roundData.stops.find(({ card }) => card.id === cardId)?.card;
+    setAnnouncement(`${record?.label ?? "Record"} selected. Now choose its remembered journey stop.`);
+    play("pickup");
+  }
+
+  function stampScholarStop(stopId: string) {
+    if (phase !== "recall") return;
+    if (!selectedStop) {
+      setAnnouncement("Choose a passport record from the tray before selecting a journey stop.");
+      play("wrong");
+      return;
+    }
+
+    if (selectedStop.station.id === stopId) {
+      const { card, station } = selectedStop;
       const nextScore = score + 120 + streak * 10;
       setScore(nextScore);
       setStreak((value) => value + 1);
-      setFoundIds((value) => [...value, card.id]);
-      setFeedback({ correct: true, title: `${card.label} · ${card.category}`, rationale: card.rationale, source: card.source, sourceUrl: card.sourceUrl });
-      setAnnouncement(`Correct. Passport card ${roundData.cards.indexOf(card) + 1} contains ${card.label}.`);
+      setPlacedIds((value) => [...value, card.id]);
+      setFeedback({ correct: true, title: `${station.place} stamped · ${card.label}`, rationale: card.rationale, source: card.source, sourceUrl: card.sourceUrl });
+      setAnnouncement(`Correct. ${card.label} belongs to the ${station.chapter} stop.`);
       setPhase("feedback");
-      play("match");
+      play("file");
       return;
     }
 
     const nextLives = lives - 1;
     setLives(nextLives);
     setStreak(0);
-    setWrongCardId(card.id);
-    setAnnouncement(`Passport card ${roundData.cards.indexOf(card) + 1} is not the requested record. ${nextLives} lives remain.`);
+    setWrongStopId(stopId);
+    const attemptedStation = roundData.stops.find(({ station }) => station.id === stopId)?.station;
+    setAnnouncement(`${attemptedStation?.place ?? "That stop"} is not where this record appeared. ${nextLives} lives remain.`);
     play("wrong");
     if (wrongTimer.current) window.clearTimeout(wrongTimer.current);
-    wrongTimer.current = window.setTimeout(() => setWrongCardId(null), 650);
+    wrongTimer.current = window.setTimeout(() => setWrongStopId(null), 650);
     if (nextLives === 0) {
       saveBest(score);
       finishTimer.current = window.setTimeout(() => {
@@ -729,17 +753,17 @@ function ScholarMemoryGame({ onClose }: { onClose: () => void }) {
     }
   }
 
-  function nextScholarClue() {
+  function continueScholarJourney() {
     setFeedback(null);
-    if (targetIndex === roundData.recallIds.length - 1) {
+    setSelectedId(null);
+    if (placedIds.length === roundData.stops.length) {
       saveBest(score);
       setPhase("finished");
       play("finish");
       return;
     }
-    setTargetIndex((value) => value + 1);
     setPhase("recall");
-    setAnnouncement("A new clue is open. Remember which passport position holds its answer.");
+    setAnnouncement("Choose another passport record and stamp its remembered journey stop.");
     play("page");
   }
 
@@ -747,55 +771,67 @@ function ScholarMemoryGame({ onClose }: { onClose: () => void }) {
     saveBest(score);
     setRoundData(buildScholarRound());
     setPhase("study");
-    setSeconds(9);
-    setTargetIndex(0);
-    setFoundIds([]);
+    setSeconds(12);
+    setSelectedId(null);
+    setPlacedIds([]);
     setLives(4);
     setScore(0);
     setStreak(0);
-    setWrongCardId(null);
+    setWrongStopId(null);
     setFeedback(null);
-    setAnnouncement("Study the six open passport cards before the desk closes.");
+    setAnnouncement("Study the scholarly record attached to each stop on Rizal’s academic journey.");
   }
 
-  if (phase === "finished") return <><GameHeader title="Scholar’s Memory" status={[{ label: "Recalled", value: `${foundIds.length} / 6` }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} /><Results game="scholar" title="Scholar’s Memory" score={score} best={best} maxScore={870} onReplay={replay} onClose={onClose} /></>;
+  if (phase === "finished") return <><GameHeader title="Scholar’s Journey" status={[{ label: "Stamped", value: `${placedIds.length} / 6` }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} /><Results game="scholar" title="Scholar’s Journey" score={score} best={best} maxScore={870} onReplay={replay} onClose={onClose} /></>;
 
   return (
     <>
-      <GameHeader title="Scholar’s Memory" status={[{ label: "Cards", value: phase === "study" ? "Study" : `${Math.min(targetIndex + 1, 6)} / 6` }, { label: "Lives", value: "♥".repeat(lives) || "0" }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} />
+      <GameHeader title="Scholar’s Journey" status={[{ label: "Route", value: phase === "study" ? "Study" : `${placedIds.length} / 6` }, { label: "Lives", value: "♥".repeat(lives) || "0" }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} />
       <section className="scholar-game play-layout">
         <div className="scholar-heading">
-          <div><p className="eyebrow">Module 5 · higher education and scholarly formation</p><h2>Study the desk. Remember the passport.</h2></div>
+          <div><p className="eyebrow">Module 5 · higher education and scholarly formation</p><h2>Study the route. Rebuild the journey.</h2></div>
           <img src="/art/universidad-central.jpg" alt="Buildings of the former Central University of Madrid" />
         </div>
 
         {phase === "study"
-          ? <aside className="scholar-brief study-brief" ref={recallPanelRef} tabIndex={-1}><div><span>Study window</span><strong>{seconds}</strong></div><p>Memorize each record and its numbered position. The cards will close automatically.</p><button className="button button-dark" type="button" onClick={beginRecall}>Close the desk and begin</button></aside>
-          : <aside className="scholar-brief recall-brief" ref={recallPanelRef} tabIndex={-1} aria-live="polite"><div><span>Recall clue {targetIndex + 1}</span><strong>?</strong></div><p>{currentTarget.prompt}</p></aside>}
+          ? <aside className="scholar-brief study-brief" ref={recallPanelRef} tabIndex={-1}><div><span>Study route</span><strong>{seconds}</strong></div><p>Memorize which scholarly record is pinned to each journey stop. The records will move into your passport tray.</p><button className="button button-dark" type="button" onClick={beginRecall}>Pack the records</button></aside>
+          : <aside className="scholar-brief recall-brief" ref={recallPanelRef} tabIndex={-1} aria-live="polite"><div><span>Passport</span><strong>{placedIds.length}/6</strong></div><p>{selectedStop ? <><b>{selectedStop.card.label}</b> selected — stamp the journey stop where it appeared.</> : "Select a record from the passport tray, then stamp the journey stop where you remember seeing it."}</p></aside>}
 
-        <div className="scholar-desk" aria-label="Six scholar passport cards">
-          {roundData.cards.map((card, index) => {
-            const faceUp = phase === "study" || foundIds.includes(card.id) || (phase === "feedback" && card.id === currentTarget.id);
+        <div className="scholar-route" aria-label="Rizal academic journey with six learning stations">
+          {roundData.stops.map(({ station, card }, index) => {
+            const placed = placedIds.includes(card.id);
             return (
               <button
-                key={card.id}
-                className={`scholar-passport scholar-${card.category.toLowerCase()} ${faceUp ? "is-open" : "is-closed"} ${wrongCardId === card.id ? "is-wrong" : ""}`}
+                key={station.id}
+                className={`scholar-stop ${placed ? "is-stamped" : ""} ${wrongStopId === station.id ? "is-wrong" : ""}`}
                 type="button"
-                disabled={phase === "study" || phase === "feedback" || foundIds.includes(card.id)}
-                onClick={() => chooseScholarCard(card)}
-                aria-label={faceUp ? `Passport card ${index + 1}: ${card.label}. ${card.memoryLine}` : `Passport card ${index + 1}, closed`}
+                disabled={phase === "study" || phase === "feedback" || placed}
+                onClick={() => stampScholarStop(station.id)}
+                aria-label={phase === "study" ? `${station.place}: ${card.label}. ${card.memoryLine}` : placed ? `${station.place} stamped with ${card.label}` : `Stamp ${selectedStop?.card.label ?? "the selected record"} at ${station.place}`}
               >
-                <span className="scholar-card-number">{String(index + 1).padStart(2, "0")}</span>
-                {faceUp ? <span className="scholar-card-face">
-                  {card.art ? <img src={card.art} alt={card.artAlt ?? ""} /> : <i aria-hidden="true">{card.symbol}</i>}
-                  <small>{card.category}</small><strong>{card.label}</strong><em>{card.memoryLine}</em>
-                </span> : <span className="scholar-card-back"><img src="/art/rizal-signature.svg" alt="" /><b>{card.symbol}</b><small>Scholar passport</small></span>}
+                <span className="scholar-stop-index">0{index + 1}</span>
+                <span className="scholar-stop-stamp" aria-hidden="true">{station.stamp}</span>
+                <span className="scholar-stop-copy"><small>{station.years} · {station.chapter}</small><strong>{station.place}</strong><em>{station.note}</em></span>
+                {phase === "study" ? <span className="scholar-pinned-record"><i>{card.symbol}</i><span><small>{card.category}</small><b>{card.label}</b><em>{card.memoryLine}</em></span></span>
+                  : placed ? <span className="scholar-placed-record"><i>✓</i><b>{card.label}</b><small>Passport stamped</small></span>
+                    : <span className="scholar-empty-stop"><i>＋</i><b>Stamp this stop</b></span>}
+                {index === Math.min(placedIds.length, roundData.stops.length - 1) && phase !== "study" && <span className="scholar-traveller" aria-hidden="true"><img src="/art/rizal-student-18.jpg" alt="" /></span>}
               </button>
             );
           })}
         </div>
+
+        {phase !== "study" && <div className="scholar-passport-tray" aria-label="Passport records waiting to be placed">
+          <div className="tray-label"><span>Travel document</span><strong>Passport tray</strong><small>Tap a record, then tap its stop</small></div>
+          <div className="scholar-tokens">{roundData.tokenIds.map((cardId) => {
+            const stop = roundData.stops.find(({ card }) => card.id === cardId);
+            if (!stop || placedIds.includes(cardId)) return null;
+            return <button key={cardId} type="button" className={`scholar-token ${selectedId === cardId ? "is-selected" : ""}`} disabled={phase === "feedback"} aria-pressed={selectedId === cardId} onClick={() => selectScholarRecord(cardId)}><i>{stop.card.symbol}</i><span><small>{stop.card.category}</small><b>{stop.card.label}</b></span></button>;
+          })}</div>
+        </div>}
         <p className="scholar-announcement" aria-live="polite">{announcement}</p>
-        {feedback && <div className="scholar-feedback"><FeedbackPanel feedback={feedback} onNext={nextScholarClue} isLast={targetIndex === roundData.recallIds.length - 1} /></div>}
+        {feedback && <div className="scholar-feedback"><FeedbackPanel feedback={feedback} onNext={continueScholarJourney} isLast={placedIds.length === roundData.stops.length} /></div>}
+        <p className="scholar-route-note">Journey stops organize related learning chapters; they do not claim that every broad scholarly habit occurred only in that city.</p>
       </section>
     </>
   );

@@ -2,15 +2,29 @@ import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import test from "node:test";
 
-import { scholarMemoryCards } from "../app/scholarMemoryCards.ts";
+import { scholarJourneyStations, scholarMemoryCards, scholarStationCardIds } from "../app/scholarMemoryCards.ts";
 
-test("Scholar's Memory has a complete 50-record topic bank", () => {
+test("Scholar's Journey has a complete 50-record topic bank", () => {
   assert.equal(scholarMemoryCards.length, 50);
   assert.deepEqual(
     scholarMemoryCards.map((item) => item.id),
     Array.from({ length: 50 }, (_, index) => `S${String(index + 1).padStart(2, "0")}`),
   );
   assert.equal(new Set(scholarMemoryCards.map((item) => item.label.toLowerCase())).size, 50);
+});
+
+test("every scholar record belongs to exactly one journey station", () => {
+  assert.equal(scholarJourneyStations.length, 6);
+  assert.equal(new Set(scholarJourneyStations.map((station) => station.id)).size, 6);
+
+  const journeyIds = scholarJourneyStations.flatMap((station) => [...scholarStationCardIds[station.id]]);
+  assert.equal(journeyIds.length, 50);
+  assert.equal(new Set(journeyIds).size, 50);
+  assert.deepEqual(new Set(journeyIds), new Set(scholarMemoryCards.map((card) => card.id)));
+  for (const station of scholarJourneyStations) {
+    assert.ok(scholarStationCardIds[station.id].length >= 5, `${station.place} needs enough records for varied rounds`);
+    assert.ok(station.note.length >= 35, `${station.place} needs a clear learning-chapter description`);
+  }
 });
 
 test("the scholar bank is balanced, specific, sourced, and media-ready", () => {

@@ -1,4 +1,4 @@
--- Run once in the Supabase SQL Editor after deploying Scholar's Memory.
+-- Run once in the Supabase SQL Editor after deploying Scholar's Journey.
 -- This migration preserves every existing student, section, and score.
 
 alter table public.rizal_arcade_scores

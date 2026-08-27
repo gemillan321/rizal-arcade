@@ -18,7 +18,7 @@ The generated `novel-character-sprite-v2.webp` contains artistic interpretations
 
 ## Audio
 
-- **Turn a Page** by CreatorsHome — used locally as the Scholar's Memory page-turn cue under the Pixabay Content License. [Pixabay source and license](https://pixabay.com/sound-effects/film-special-effects-turn-a-page-336933/)
+- **Turn a Page** by CreatorsHome — used locally as the Scholar’s Journey page-turn cue under the Pixabay Content License. [Pixabay source and license](https://pixabay.com/sound-effects/film-special-effects-turn-a-page-336933/)
 - All other arcade effects are generated locally by the browser's audio system and do not download third-party audio while students play.
 
 ## Fonts

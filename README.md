@@ -9,9 +9,9 @@ The classroom edition takes the familiar pick-and-play feel of Friv or Y8 and gi
 - **Rizal River Quest** — move a frog along a six-jump river route by choosing the value that best fits each modern scenario. Wrong answers cost a life and do not advance the frog. Every mapping is clearly labeled as an interpretation.
 - **Novel Case Files** — play a 12-card memory game that pairs clearly labeled artistic character portraits and specific clues with names from *Noli Me Tángere* and *El Filibusterismo*.
 - **Rizal Codebreaker** — manually decode an Atbash substitution cipher with the supplied alphabet key, then file the archive slip into the correct drawer.
-- **Scholar’s Memory** — study six open scholar passports, close the desk, then recall the numbered positions that match clues about Rizal's campuses, disciplines, languages, mentors, and research habits.
+- **Scholar’s Journey** — study six records along Rizal’s academic route, pack them into a passport tray, then stamp each record at its remembered learning station. Correct placements move the Rizal traveller forward.
 
-All four games include optional sound effects. Scholar's Memory adds a locally hosted, licensed page-turn recording; the remaining cues are synthesized by the browser. Nothing is downloaded from an external audio service while students play.
+All four games include optional sound effects. Scholar’s Journey adds a locally hosted, licensed page-turn recording; the remaining cues are synthesized by the browser. Nothing is downloaded from an external audio service while students play.
 
 The home page also previews future modules for Rizal’s documented relationships and literary works.
 

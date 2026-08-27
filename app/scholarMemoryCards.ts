@@ -14,6 +14,17 @@ export type ScholarMemoryCard = {
   artAlt?: string;
 };
 
+export type ScholarStationId = "manila" | "madrid" | "paris" | "heidelberg" | "berlin" | "london";
+
+export type ScholarJourneyStation = {
+  id: ScholarStationId;
+  place: string;
+  chapter: string;
+  years: string;
+  stamp: string;
+  note: string;
+};
+
 const heidelbergBook = {
   source: "Heidelberg University: Hero of the Nation and Citizen of the World (2025)",
   sourceUrl: "https://books.ub.uni-heidelberg.de/heibooks/catalog/book/1635",
@@ -105,3 +116,21 @@ export const scholarMemoryCards: ScholarMemoryCard[] = [
   scholarCard("S49", "Noli · Scholar and writer", "Research", "NO", "A novel shaped in Europe", "Which novel shows Rizal combining European study, observation, language, and writing into a critique of colonial society?", "While pursuing scholarship and medical training in Europe, Rizal worked on Noli Me Tangere, later published in Berlin.", heidelbergBook),
   scholarCard("S50", "Examine before accepting", "Research", "EV", "Evidence before conclusion", "Which principle best captures Rizal's scholarly habit of questioning claims, comparing sources, and analysing evidence?", "Rizal's formation in Europe reinforced a habit of discussion, doubt, examination, and analysis before accepting a claim.", heidelbergBook),
 ];
+
+export const scholarJourneyStations: ScholarJourneyStation[] = [
+  { id: "manila", place: "Calamba & Manila", chapter: "Foundations", years: "1861–1882", stamp: "PH", note: "Home learning, Ateneo formation, and UST medicine" },
+  { id: "madrid", place: "Madrid", chapter: "University years", years: "1882–1885", stamp: "ES", note: "Medicine, Philosophy and Letters, languages, and libraries" },
+  { id: "paris", place: "Paris", chapter: "Clinical apprenticeship", years: "1885–1886", stamp: "FR", note: "Ophthalmology, research collections, and cultural study" },
+  { id: "heidelberg", place: "Heidelberg", chapter: "Eye-clinic training", years: "1886", stamp: "HD", note: "Otto Becker, clinical work, German, and poetry" },
+  { id: "berlin", place: "Berlin & networks", chapter: "Scholar in print", years: "1886–1887", stamp: "DE", note: "Further training, correspondence, inquiry, and Noli" },
+  { id: "london", place: "London", chapter: "Historical research", years: "1888–1889", stamp: "GB", note: "British Museum sources, Morga, and Philippine history" },
+];
+
+export const scholarStationCardIds: Record<ScholarStationId, readonly string[]> = {
+  manila: ["S01", "S02", "S03", "S11", "S19", "S22", "S31", "S32", "S41"],
+  madrid: ["S04", "S08", "S12", "S15", "S18", "S21", "S24", "S25", "S27", "S30", "S36", "S37"],
+  paris: ["S05", "S09", "S13", "S17", "S34", "S40", "S43", "S45"],
+  heidelberg: ["S06", "S14", "S23", "S28", "S33", "S39", "S44", "S48"],
+  berlin: ["S07", "S20", "S29", "S35", "S49"],
+  london: ["S10", "S16", "S26", "S38", "S42", "S46", "S47", "S50"],
+};
