@@ -10,10 +10,12 @@ The classroom edition takes the familiar pick-and-play feel of Friv or Y8 and gi
 - **Novel Case Files** — play a 12-card memory game that pairs clearly labeled artistic character portraits and specific clues with names from *Noli Me Tángere* and *El Filibusterismo*.
 - **Rizal Codebreaker** — manually decode an Atbash substitution cipher with the supplied alphabet key, then file the archive slip into the correct drawer.
 - **Scholar’s Journey** — study six records along Rizal’s academic route, pack them into a passport tray, then stamp each record at its remembered learning station. Correct placements move the Rizal traveller forward.
+- **Hearts & Horizons** — inspect a portrait dossier, match the woman to the evidence and place in Rizal’s journey, then seal and send the correspondence.
+- **Masterpiece Museum** — inspect an artifact, choose among five genre galleries, attach the historically accurate curatorial plaque, and install a randomized six-exhibit collection.
 
-All four games include optional sound effects. Scholar’s Journey adds a locally hosted, licensed page-turn recording; the remaining cues are synthesized by the browser. Nothing is downloaded from an external audio service while students play.
+All six games include optional sound effects and locally hosted background music. Scholar’s Journey adds a licensed page-turn recording; the remaining action cues are synthesized by the browser. Nothing is downloaded from an external audio service while students play.
 
-The home page also previews future modules for Rizal’s documented relationships and literary works.
+The home page also previews future modules about Rizal’s global journeys, trial, and legacy.
 
 ## Classroom safeguards
 
@@ -81,6 +83,9 @@ The arcade uses locally hosted public-domain or CC0 historical visuals, includin
 - [*El Filibusterismo* / *The Reign of Greed*](https://www.gutenberg.org/ebooks/10676)
 - [Letter to the Young Women of Malolos](https://www.gutenberg.org/ebooks/17116)
 - [*The Indolence of the Filipino*](https://www.gutenberg.org/ebooks/6885)
+- [*The Philippines a Century Hence*](https://www.gutenberg.org/ebooks/35899)
+- [Museo ni Rizal](https://intramuros.gov.ph/mnr/)
+- [National Museum: Dr. José Rizal Hall](https://www.nationalmuseum.gov.ph/exhibitions/fine-arts/galley-5/)
 - [NHCP Registry: La Liga Filipina](https://philhistoricsites.nhcp.gov.ph/registry_database/la-liga-filipina/)
 
 This is an educational prototype, not an official publication of the NHCP or any school.

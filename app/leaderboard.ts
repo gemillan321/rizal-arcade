@@ -1,6 +1,6 @@
 import { authConfigured, getAuthSnapshot, getSupabaseClient } from "./auth";
 
-export type LeaderboardGame = "values" | "novels" | "codebreaker" | "scholar" | "hearts";
+export type LeaderboardGame = "values" | "novels" | "codebreaker" | "scholar" | "hearts" | "museum";
 
 export type LeaderboardEntry = {
   player_name: string;

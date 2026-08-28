@@ -9,6 +9,7 @@ import { FirstPasswordPortal, LoginPortal } from "./AuthPortal";
 import { defineChallengeBank, drawChallengeSet, shuffleList } from "./challengeBank";
 import { codebreakerChallenges, type CodebreakerGroup } from "./codebreakerChallenges";
 import { heartsChallenges, heartsProfiles, heartsProfilesById, type HeartsWomanId } from "./heartsChallenges";
+import { masterpieceChallenges, museumGalleries, museumGalleriesById, type MuseumGalleryId } from "./masterpieceChallenges";
 import { noliCaseFiles } from "./noliCaseFiles";
 import { scholarJourneyStations, scholarMemoryCards, scholarStationCardIds } from "./scholarMemoryCards";
 import { valuesChallenges } from "./valuesChallenges";
@@ -89,17 +90,28 @@ const gameCards: Array<{
     symbol: "H",
     skill: "Relationships, setting & evidence",
   },
+  {
+    id: "museum",
+    number: "06",
+    title: "Masterpiece Museum",
+    description: "Inspect an artifact, choose its gallery, attach the right curatorial plaque, and build a six-exhibit Rizal collection.",
+    meta: "Module 7 curation · 4 min",
+    tone: "museum",
+    symbol: "A",
+    skill: "Works, genres & significance",
+  },
 ];
 
 const comingSoon = [
-  { title: "Masterpiece Museum", label: "Works & genres", symbol: "A", art: "/art/rizal-poster.webp", alt: "Historic public-domain José Rizal poster" },
   { title: "Global Sojourn", label: "Travels & reform work", symbol: "G", art: "/art/manila-map.webp", alt: "Historic map representing Rizal’s journeys" },
+  { title: "Trial & Legacy", label: "Exile, trial & execution", symbol: "T", art: "/art/rizal-poster.webp", alt: "Historic public-domain José Rizal poster" },
 ];
 
 const valuesBank = defineChallengeBank({ id: "values", topicId: "rizalian-values", contentVersion: 2, items: valuesChallenges });
 const novelBank = defineChallengeBank({ id: "novels", topicId: "noli-social-awakening", contentVersion: 2, items: noliCaseFiles });
 const codeBank = defineChallengeBank({ id: "codebreaker", topicId: "family-childhood-genealogy-early-education", contentVersion: 2, items: codebreakerChallenges });
 const heartsBank = defineChallengeBank({ id: "hearts", topicId: "love-interests-and-women-rizal-met", contentVersion: 1, items: heartsChallenges });
+const museumBank = defineChallengeBank({ id: "museum", topicId: "essays-letters-annotations-and-other-works", contentVersion: 1, items: masterpieceChallenges });
 const scholarStationBanks = scholarJourneyStations.map((station) => ({
   station,
   bank: defineChallengeBank({
@@ -125,7 +137,7 @@ function normalizeCodeAnswer(value: string) {
     .trim();
 }
 
-type SoundCue = "jump" | "correct" | "wrong" | "flip" | "match" | "decode" | "pickup" | "file" | "finish" | "page" | "seal";
+type SoundCue = "jump" | "correct" | "wrong" | "flip" | "match" | "decode" | "pickup" | "file" | "finish" | "page" | "seal" | "curate";
 
 function useArcadeSound(musicSrc: string) {
   const [enabled, setEnabled] = useState(() => {
@@ -173,6 +185,7 @@ function useArcadeSound(musicSrc: string) {
       file: [[294, .08, "triangle"], [392, .13, "triangle"]],
       finish: [[523, .09, "triangle"], [659, .09, "triangle"], [784, .09, "triangle"], [1047, .22, "triangle"]],
       seal: [[392, .07, "triangle"], [494, .09, "triangle"], [659, .16, "sine"]],
+      curate: [[349, .06, "triangle"], [523, .08, "sine"], [698, .13, "triangle"]],
     };
     let start = context.currentTime + .01;
     patterns[cue]?.forEach(([frequency, duration, type]) => {
@@ -1076,6 +1089,177 @@ function HeartsGame({ onClose }: { onClose: () => void }) {
   );
 }
 
+function MasterpieceMuseumGame({ onClose }: { onClose: () => void }) {
+  const roundSize = 6;
+  const [deck, setDeck] = useState(() => drawChallengeSet(museumBank, roundSize));
+  const [round, setRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [streak, setStreak] = useState(0);
+  const [lives, setLives] = useState(4);
+  const [selectedGallery, setSelectedGallery] = useState<MuseumGalleryId | null>(null);
+  const [selectedPlaque, setSelectedPlaque] = useState<string | null>(null);
+  const [phase, setPhase] = useState<"curating" | "feedback" | "finished">("curating");
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [announcement, setAnnouncement] = useState("Inspect the artifact, choose its gallery, then attach the plaque that explains why it matters.");
+  const [wrongSelection, setWrongSelection] = useState<"gallery" | "plaque" | "both" | null>(null);
+  const feedbackRef = useRef<HTMLDivElement>(null);
+  const finishTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const [best, saveBest] = useHighScore("museum");
+  const { enabled: soundEnabled, play, toggle: toggleSound } = useArcadeSound("/audio/arcade-waltz.mp3");
+  const current = deck[round];
+  const currentGallery = museumGalleriesById[current.galleryId];
+  const plaqueOptions = useMemo(
+    () => shuffleList([current.correctPlaque, ...current.distractorPlaques]),
+    [current.correctPlaque, current.distractorPlaques],
+  );
+
+  useEffect(() => {
+    if (phase === "feedback") feedbackRef.current?.focus({ preventScroll: true });
+  }, [phase]);
+
+  useEffect(() => () => {
+    if (finishTimer.current) window.clearTimeout(finishTimer.current);
+  }, []);
+
+  function chooseGallery(galleryId: MuseumGalleryId) {
+    if (phase !== "curating") return;
+    setSelectedGallery(galleryId);
+    setWrongSelection(null);
+    setAnnouncement(`${museumGalleriesById[galleryId].title} selected. Now choose the exhibit plaque.`);
+    play("pickup");
+  }
+
+  function choosePlaque(plaque: string) {
+    if (phase !== "curating") return;
+    setSelectedPlaque(plaque);
+    setWrongSelection(null);
+    setAnnouncement("Plaque prepared. Install the exhibit when both choices are ready.");
+    play("page");
+  }
+
+  function installExhibit() {
+    if (phase !== "curating") return;
+    if (!selectedGallery || !selectedPlaque) {
+      setAnnouncement("The exhibit needs both a gallery destination and a curatorial plaque.");
+      play("wrong");
+      return;
+    }
+    const galleryCorrect = selectedGallery === current.galleryId;
+    const plaqueCorrect = selectedPlaque === current.correctPlaque;
+    if (galleryCorrect && plaqueCorrect) {
+      const nextScore = score + 160 + streak * 10;
+      setScore(nextScore);
+      setStreak((value) => value + 1);
+      setFeedback({
+        correct: true,
+        title: `${current.workTitle} · ${currentGallery.title}`,
+        rationale: current.rationale,
+        source: current.source,
+        sourceUrl: current.sourceUrl,
+      });
+      setAnnouncement(`Exhibit installed in ${currentGallery.title}.`);
+      setPhase("feedback");
+      play("curate");
+      return;
+    }
+
+    const nextLives = lives - 1;
+    setLives(nextLives);
+    setStreak(0);
+    setWrongSelection(!galleryCorrect && !plaqueCorrect ? "both" : galleryCorrect ? "plaque" : "gallery");
+    setAnnouncement(
+      galleryCorrect
+        ? `The gallery is right, but that plaque changes the work’s meaning. ${nextLives} lives remain.`
+        : plaqueCorrect
+          ? `The plaque fits, but this artifact belongs in another gallery. ${nextLives} lives remain.`
+          : `Both parts of the installation need another look. ${nextLives} lives remain.`,
+    );
+    play("wrong");
+    window.setTimeout(() => setWrongSelection(null), 650);
+    if (nextLives === 0) {
+      saveBest(score);
+      finishTimer.current = window.setTimeout(() => {
+        setPhase("finished");
+        play("finish");
+      }, 500);
+    }
+  }
+
+  function nextExhibit() {
+    setFeedback(null);
+    setSelectedGallery(null);
+    setSelectedPlaque(null);
+    setWrongSelection(null);
+    if (round === deck.length - 1) {
+      saveBest(score);
+      setPhase("finished");
+      play("finish");
+      return;
+    }
+    setRound((value) => value + 1);
+    setPhase("curating");
+    setAnnouncement("A new artifact has arrived. Build its museum label and choose its gallery.");
+    play("page");
+  }
+
+  function replay() {
+    saveBest(score);
+    setDeck(drawChallengeSet(museumBank, roundSize));
+    setRound(0);
+    setScore(0);
+    setStreak(0);
+    setLives(4);
+    setSelectedGallery(null);
+    setSelectedPlaque(null);
+    setFeedback(null);
+    setWrongSelection(null);
+    setPhase("curating");
+    setAnnouncement("Inspect the artifact, choose its gallery, then attach the plaque that explains why it matters.");
+  }
+
+  if (phase === "finished") return <><GameHeader title="Masterpiece Museum" status={[{ label: "Exhibits", value: `${lives > 0 ? round + 1 : round} / 6` }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} /><Results game="museum" title="Masterpiece Museum" score={score} best={best} maxScore={1110} onReplay={replay} onClose={onClose} /></>;
+
+  return (
+    <>
+      <GameHeader title="Masterpiece Museum" status={[{ label: "Lives", value: "♥".repeat(lives) || "0" }, { label: "Exhibit", value: `${round + 1} / ${deck.length}` }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} />
+      <section className="museum-game play-layout">
+        <div className="museum-heading">
+          <div><p className="eyebrow">Module 7 · essays, letters, annotations, and other works</p><h2>Curate Rizal’s many forms.</h2></div>
+          <div className="museum-progress" aria-label={`${round} of ${deck.length} exhibits installed`}>
+            {deck.map((item, index) => <span key={item.id} className={index < round ? "is-installed" : index === round ? "is-current" : ""}>{index < round ? "✓" : index + 1}</span>)}
+          </div>
+        </div>
+
+        <div className="museum-floor">
+          <article className="museum-artifact">
+            <div className="museum-art-window"><img src="/art/masterpiece-museum.png" alt="Original illustrated museum interior with books, letters, poetry, and sculpture" /><span>{currentGallery.symbol}</span></div>
+            <div className="museum-object-tag"><small>{current.id} · incoming object</small><strong>{current.objectLabel}</strong><span>{current.dateLabel}</span></div>
+            <div className="museum-clue-copy"><p className="eyebrow">{current.clueTitle}</p><h3>{current.workTitle}</h3><ol>{current.evidence.map((clue, index) => <li key={clue}><span>0{index + 1}</span>{clue}</li>)}</ol></div>
+          </article>
+
+          <section className={`museum-gallery-map ${wrongSelection === "gallery" || wrongSelection === "both" ? "is-wrong" : ""}`} aria-labelledby="gallery-choice-title">
+            <div className="museum-section-label"><span>01</span><div><small>Gallery destination</small><h3 id="gallery-choice-title">Where should it hang?</h3></div></div>
+            <div className="museum-doors" role="group" aria-label="Choose a museum gallery">
+              {museumGalleries.map((gallery) => <button key={gallery.id} type="button" className={selectedGallery === gallery.id ? "is-selected" : ""} aria-pressed={selectedGallery === gallery.id} disabled={phase !== "curating"} onClick={() => chooseGallery(gallery.id)}><i>{gallery.symbol}</i><span><strong>{gallery.shortTitle}</strong><small>{gallery.description}</small></span></button>)}
+            </div>
+          </section>
+
+          <section className={`museum-plaque-rack ${wrongSelection === "plaque" || wrongSelection === "both" ? "is-wrong" : ""}`} aria-labelledby="plaque-choice-title">
+            <div className="museum-section-label"><span>02</span><div><small>Curatorial meaning</small><h3 id="plaque-choice-title">Which label belongs?</h3></div></div>
+            <div role="group" aria-label="Choose the exhibit’s curatorial label">
+              {plaqueOptions.map((plaque, index) => <button key={plaque} type="button" className={selectedPlaque === plaque ? "is-selected" : ""} aria-pressed={selectedPlaque === plaque} disabled={phase !== "curating"} onClick={() => choosePlaque(plaque)}><i>{String.fromCharCode(65 + index)}</i><span>{plaque}</span></button>)}
+            </div>
+          </section>
+        </div>
+
+        <div className="museum-actions"><p aria-live="polite">{announcement}</p><button className="button museum-install-button" type="button" disabled={phase !== "curating"} onClick={installExhibit}><span aria-hidden="true">◆</span> Install exhibit</button></div>
+        {feedback && <div className="museum-feedback" ref={feedbackRef} tabIndex={-1}><FeedbackPanel feedback={feedback} onNext={nextExhibit} isLast={round === deck.length - 1} /></div>}
+        <p className="museum-note">Artwork is an original period-inspired illustration. Exhibit facts use the instructor module and the named institutional or primary-text sources.</p>
+      </section>
+    </>
+  );
+}
+
 type ArchiveGroup = CodebreakerGroup;
 const archiveGroups: ArchiveGroup[] = ["Family & roots", "Childhood", "Early education"];
 
@@ -1243,7 +1427,7 @@ function CodebreakerGame({ onClose }: { onClose: () => void }) {
 function GameOverlay({ game, onClose }: { game: GameId; onClose: () => void }) {
   const overlayRef = useRef<HTMLDivElement>(null);
   useModalLifecycle(true, onClose, overlayRef);
-  return <div ref={overlayRef} tabIndex={-1} className={`game-overlay game-${game}`} role="dialog" aria-modal="true" aria-label={`${game} game`}>{game === "values" ? <ValuesGame onClose={onClose} /> : game === "novels" ? <NovelsGame onClose={onClose} /> : game === "codebreaker" ? <CodebreakerGame onClose={onClose} /> : game === "scholar" ? <ScholarMemoryGame onClose={onClose} /> : <HeartsGame onClose={onClose} />}</div>;
+  return <div ref={overlayRef} tabIndex={-1} className={`game-overlay game-${game}`} role="dialog" aria-modal="true" aria-label={`${game} game`}>{game === "values" ? <ValuesGame onClose={onClose} /> : game === "novels" ? <NovelsGame onClose={onClose} /> : game === "codebreaker" ? <CodebreakerGame onClose={onClose} /> : game === "scholar" ? <ScholarMemoryGame onClose={onClose} /> : game === "hearts" ? <HeartsGame onClose={onClose} /> : <MasterpieceMuseumGame onClose={onClose} />}</div>;
 }
 
 function GameCardScene({ game }: { game: GameId }) {
@@ -1251,7 +1435,8 @@ function GameCardScene({ game }: { game: GameId }) {
   if (game === "novels") return <div className="card-scene memory-card-scene"><img src="/art/noli-cover.jpg" alt="" /><span className="mini-card card-a">MC</span><span className="mini-card card-b">?</span><span className="mini-card card-c">IB</span><strong>Match the file</strong></div>;
   if (game === "codebreaker") return <div className="card-scene code-card-scene"><span className="mini-code">IRAZO</span><span className="mini-wheel">A=Z</span><span className="mini-drawer">ROOTS</span><strong>Read · Decode · File</strong></div>;
   if (game === "scholar") return <div className="card-scene scholar-card-scene"><img src="/art/universidad-central.jpg" alt="" /><span className="mini-passport passport-a">01</span><span className="mini-passport passport-b">?</span><span className="mini-passport passport-c">06</span><strong>Study · Close · Recall</strong></div>;
-  return <div className="card-scene hearts-card-scene"><img src="/art/rizal-letter.webp" alt="" /><span className="mini-envelope envelope-a">?</span><span className="mini-envelope envelope-b">YK</span><span className="mini-wax">RA</span><strong>Read · Seal · Send</strong></div>;
+  if (game === "hearts") return <div className="card-scene hearts-card-scene"><img src="/art/rizal-letter.webp" alt="" /><span className="mini-envelope envelope-a">?</span><span className="mini-envelope envelope-b">YK</span><span className="mini-wax">RA</span><strong>Read · Seal · Send</strong></div>;
+  return <div className="card-scene museum-card-scene"><img src="/art/masterpiece-museum.png" alt="" /><span className="mini-frame frame-a">✉</span><span className="mini-frame frame-b">❧</span><span className="mini-plaque">CURATE</span><strong>Inspect · Label · Install</strong></div>;
 }
 
 function LeaderboardDrawer({ onClose }: { onClose: () => void }) {
@@ -1306,8 +1491,8 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
           <p className="eyebrow">The José Rizal history arcade</p>
           <h1>Press play through <em>José Rizal’s life, works, and legacy.</em></h1>
           <p className="hero-intro">Hop across ideas, match characters, and crack archive codes in quick games built from Rizal’s life, works, and world.</p>
-          <div className="hero-actions"><button className="button button-primary" type="button" onClick={() => launchGame("values")}>Start playing <span>▶</span></button><span>5 games · Student sign-in · Section scores</span></div>
-          <div className="hero-proof"><span><strong>5</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>250</strong> sourced challenges</span></div>
+          <div className="hero-actions"><button className="button button-primary" type="button" onClick={() => launchGame("values")}>Start playing <span>▶</span></button><span>6 games · Student sign-in · Section scores</span></div>
+          <div className="hero-proof"><span><strong>6</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>300</strong> sourced challenges</span></div>
         </div>
         <div className="hero-art arcade-cabinet-wrap">
           <div className="arcade-cabinet">
@@ -1352,7 +1537,7 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
 
       <section className="coming-section">
         <div className="section-heading"><div><p className="eyebrow">Next in the archive</p><h2>The arcade can keep growing.</h2></div><p>A modular format makes it easy to add new games after your instructor reviews the learning content.</p></div>
-        <div className="coming-grid">{comingSoon.map((game, index) => <article key={game.title}><div><img src={game.art} alt={game.alt} loading="lazy" /><span>{game.symbol}</span><small>0{index + 6}</small></div><p>{game.label}</p><h3>{game.title}</h3><span className="soon-pill">Next cabinet</span></article>)}</div>
+        <div className="coming-grid">{comingSoon.map((game, index) => <article key={game.title}><div><img src={game.art} alt={game.alt} loading="lazy" /><span>{game.symbol}</span><small>0{index + 7}</small></div><p>{game.label}</p><h3>{game.title}</h3><span className="soon-pill">Next cabinet</span></article>)}</div>
       </section>
 
       <section className="manifesto"><img src="/art/rizal-poster.webp" alt="Public-domain poster reading Rizal died for you—be worthy of him" loading="lazy" /><div><p className="eyebrow">A new way into history</p><p>Not a quiz wearing a costume. Every room gives history a rule, a rhythm, and a reason to try again.</p><button type="button" onClick={() => setShowSources(true)}>How we handle historical accuracy <span>→</span></button></div></section>
