@@ -8,6 +8,7 @@ import AdminPortal from "./AdminPortal";
 import { FirstPasswordPortal, LoginPortal } from "./AuthPortal";
 import { defineChallengeBank, drawChallengeSet, shuffleList } from "./challengeBank";
 import { codebreakerChallenges, type CodebreakerGroup } from "./codebreakerChallenges";
+import { gameInstructions } from "./gameInstructions";
 import { heartsChallenges, heartsProfiles, heartsProfilesById, type HeartsWomanId } from "./heartsChallenges";
 import { masterpieceChallenges, museumGalleries, museumGalleriesById, type MuseumGalleryId } from "./masterpieceChallenges";
 import { noliCaseFiles } from "./noliCaseFiles";
@@ -1424,10 +1425,84 @@ function CodebreakerGame({ onClose }: { onClose: () => void }) {
   );
 }
 
+function GameInstructions({ game, onStart, onClose }: { game: GameId; onStart: () => void; onClose: () => void }) {
+  const instructions = gameInstructions[game];
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const card = gameCards.find((item) => item.id === game);
+
+  useEffect(() => {
+    titleRef.current?.focus();
+  }, []);
+
+  return (
+    <section className={`game-intro game-intro-${game}`} aria-labelledby="game-instructions-title">
+      <header className="intro-topbar">
+        <button className="icon-button" type="button" onClick={onClose} aria-label="Close instructions">×</button>
+        <div>
+          <span>Rizal Arcade</span>
+          <strong>How to Play</strong>
+        </div>
+        <span className="intro-game-number">Game {card?.number}</span>
+      </header>
+
+      <div className="intro-shell">
+        <div className="intro-visual" aria-hidden="true">
+          <div className="intro-preview"><GameCardScene game={game} /></div>
+          <span className="intro-topic">{instructions.topic}</span>
+          <h2>{instructions.title}</h2>
+          <p>{instructions.goal}</p>
+        </div>
+
+        <div className="intro-mechanics">
+          <p className="eyebrow">Before you begin</p>
+          <h1 id="game-instructions-title" ref={titleRef} tabIndex={-1}>How to play</h1>
+          <ol>
+            {instructions.steps.map((step, index) => (
+              <li key={step}><span>{index + 1}</span><p>{step}</p></li>
+            ))}
+          </ol>
+          <div className="intro-rule">
+            <span aria-hidden="true">★</span>
+            <p><strong>Score & lives</strong>{instructions.scoring}</p>
+          </div>
+          <div className="intro-tip">
+            <strong>Player tip</strong>
+            <p>{instructions.tip}</p>
+          </div>
+          <div className="intro-actions">
+            <button className="intro-back-button" type="button" onClick={onClose}>Back to arcade</button>
+            <button className="button intro-start-button" type="button" onClick={onStart}>Start game <span aria-hidden="true">▶</span></button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function GameOverlay({ game, onClose }: { game: GameId; onClose: () => void }) {
+  const [started, setStarted] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   useModalLifecycle(true, onClose, overlayRef);
-  return <div ref={overlayRef} tabIndex={-1} className={`game-overlay game-${game}`} role="dialog" aria-modal="true" aria-label={`${game} game`}>{game === "values" ? <ValuesGame onClose={onClose} /> : game === "novels" ? <NovelsGame onClose={onClose} /> : game === "codebreaker" ? <CodebreakerGame onClose={onClose} /> : game === "scholar" ? <ScholarMemoryGame onClose={onClose} /> : game === "hearts" ? <HeartsGame onClose={onClose} /> : <MasterpieceMuseumGame onClose={onClose} />}</div>;
+  useEffect(() => {
+    if (started) overlayRef.current?.focus({ preventScroll: true });
+  }, [started]);
+  return (
+    <div ref={overlayRef} tabIndex={-1} className={`game-overlay game-${game}`} role="dialog" aria-modal="true" aria-label={`${gameInstructions[game].title} game`}>
+      {!started
+        ? <GameInstructions game={game} onClose={onClose} onStart={() => setStarted(true)} />
+        : game === "values"
+          ? <ValuesGame onClose={onClose} />
+          : game === "novels"
+            ? <NovelsGame onClose={onClose} />
+            : game === "codebreaker"
+              ? <CodebreakerGame onClose={onClose} />
+              : game === "scholar"
+                ? <ScholarMemoryGame onClose={onClose} />
+                : game === "hearts"
+                  ? <HeartsGame onClose={onClose} />
+                  : <MasterpieceMuseumGame onClose={onClose} />}
+    </div>
+  );
 }
 
 function GameCardScene({ game }: { game: GameId }) {
