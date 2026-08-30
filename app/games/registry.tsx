@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import type { ComponentType } from "react";
 import { CodebreakerGame } from "./codebreaker";
+import { DapitanToBagumbayanGame } from "./dapitan-to-bagumbayan";
 import { HeartsGame } from "./hearts-and-horizons";
 import { MasterpieceMuseumGame } from "./masterpiece-museum";
 import { NovelsGame } from "./noli-case-files";
@@ -78,11 +79,20 @@ export const gameCards: Array<{
     symbol: "A",
     skill: "Works, genres & significance",
   },
+  {
+    id: "dapitan",
+    number: "08",
+    title: "Dapitan to Bagumbayan",
+    description: "Reconstruct Rizal’s final years by sorting timeline events, testing historical claims, and identifying Rizalian themes.",
+    meta: "Module 6 archive · 5 min",
+    tone: "burgundy",
+    symbol: "D",
+    skill: "Exile, trial & legacy",
+  },
 ];
 
 export const comingSoon = [
   { title: "Global Sojourn", label: "Travels & reform work", symbol: "G", art: "/art/manila-map.webp", alt: "Historic map representing Rizal’s journeys" },
-  { title: "Trial & Legacy", label: "Exile, trial & execution", symbol: "T", art: "/art/rizal-poster.webp", alt: "Historic public-domain José Rizal poster" },
 ];
 
 
@@ -93,6 +103,7 @@ export const gameComponents: Record<GameId, ComponentType<GameProps>> = {
   scholar: ScholarMemoryGame,
   hearts: HeartsGame,
   museum: MasterpieceMuseumGame,
+  dapitan: DapitanToBagumbayanGame,
 };
 
 export function GameCardScene({ game }: { game: GameId }) {
@@ -101,5 +112,6 @@ export function GameCardScene({ game }: { game: GameId }) {
   if (game === "codebreaker") return <div className="card-scene code-card-scene"><span className="mini-code">IRAZO</span><span className="mini-wheel">A=Z</span><span className="mini-drawer">ROOTS</span><strong>Read · Decode · File</strong></div>;
   if (game === "scholar") return <div className="card-scene scholar-card-scene"><img src="/art/universidad-central.jpg" alt="" /><span className="mini-passport passport-a">01</span><span className="mini-passport passport-b">?</span><span className="mini-passport passport-c">06</span><strong>Study · Close · Recall</strong></div>;
   if (game === "hearts") return <div className="card-scene hearts-card-scene"><img src="/art/rizal-letter.webp" alt="" /><span className="mini-envelope envelope-a">?</span><span className="mini-envelope envelope-b">YK</span><span className="mini-wax">RA</span><strong>Read · Seal · Send</strong></div>;
+  if (game === "dapitan") return <div className="card-scene museum-card-scene"><img src="/art/rizal-poster.webp" alt="" /><span className="mini-frame frame-a">1892</span><span className="mini-frame frame-b">1896</span><span className="mini-plaque">ARCHIVE</span><strong>Classify · Verify · Reconstruct</strong></div>;
   return <div className="card-scene museum-card-scene"><img src="/art/masterpiece-museum.png" alt="" /><span className="mini-frame frame-a">✉</span><span className="mini-frame frame-b">❧</span><span className="mini-plaque">CURATE</span><strong>Inspect · Label · Install</strong></div>;
 }

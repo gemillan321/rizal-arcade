@@ -177,6 +177,7 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
   const closeLeaderboard = useCallback(() => setShowLeaderboard(false), []);
   const closeSources = useCallback(() => setShowSources(false), []);
   const launchGame = useCallback((game: GameId) => {
+    if (game === "dapitan") { setActiveGame(game); return; }
     if (!profile) { onRequestLogin(); return; }
     setActiveGame(game);
   }, [onRequestLogin, profile]);
@@ -199,8 +200,8 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
           <p className="eyebrow">The José Rizal history arcade</p>
           <h1>Press play through <em>José Rizal’s life, works, and legacy.</em></h1>
           <p className="hero-intro">Hop across ideas, match characters, and crack archive codes in quick games built from Rizal’s life, works, and world.</p>
-          <div className="hero-actions"><button className="button button-primary" type="button" onClick={() => launchGame("values")}>Start playing <span>▶</span></button><span>6 games · Student sign-in · Section scores</span></div>
-          <div className="hero-proof"><span><strong>6</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>300</strong> sourced challenges</span></div>
+          <div className="hero-actions"><button className="button button-primary" type="button" onClick={() => launchGame("values")}>Start playing <span>▶</span></button><span>7 games · Student sign-in · Dapitan guest preview</span></div>
+          <div className="hero-proof"><span><strong>7</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>350</strong> sourced challenges</span></div>
         </div>
         <div className="hero-art arcade-cabinet-wrap">
           <div className="arcade-cabinet">
