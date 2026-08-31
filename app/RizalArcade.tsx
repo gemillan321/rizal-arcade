@@ -136,7 +136,10 @@ function GameOverlay({ game, onClose }: { game: GameId; onClose: () => void }) {
   const ActiveGame = gameComponents[game];
   useModalLifecycle(true, onClose, overlayRef);
   useEffect(() => {
-    if (started) overlayRef.current?.focus({ preventScroll: true });
+    if (started) {
+      overlayRef.current?.scrollTo({ top: 0, behavior: "auto" });
+      overlayRef.current?.focus({ preventScroll: true });
+    }
   }, [started]);
   return (
     <div ref={overlayRef} tabIndex={-1} className={`game-overlay game-${game}`} role="dialog" aria-modal="true" aria-label={`${gameInstructions[game].title} game`}>
@@ -201,7 +204,7 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
           <h1>Press play through <em>José Rizal’s life, works, and legacy.</em></h1>
           <p className="hero-intro">Hop across ideas, match characters, and crack archive codes in quick games built from Rizal’s life, works, and world.</p>
           <div className="hero-actions"><button className="button button-primary" type="button" onClick={() => launchGame("values")}>Start playing <span>▶</span></button><span>7 games · Student sign-in · Global Sojourn guest preview</span></div>
-          <div className="hero-proof"><span><strong>7</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>310</strong> sourced challenges</span></div>
+          <div className="hero-proof"><span><strong>7</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>350</strong> sourced challenges</span></div>
         </div>
         <div className="hero-art arcade-cabinet-wrap">
           <div className="arcade-cabinet">

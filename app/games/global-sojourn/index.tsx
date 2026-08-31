@@ -1,116 +1,246 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { GameHeader } from "../shared/ArcadeGameKit";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { defineChallengeBank, drawChallengeSet, shuffleList } from "../../challengeBank";
+import { FeedbackPanel, GameHeader, Results, useArcadeSound, useHighScore, type Feedback } from "../shared/ArcadeGameKit";
 import type { GameProps } from "../types";
-import { globalSojournChallenges } from "./content";
+import {
+  globalDestinations,
+  globalDestinationsById,
+  globalSojournChallenges,
+  type GlobalDestination,
+  type GlobalDestinationId,
+} from "./content";
+
+const roundSize = 8;
+const globalBank = defineChallengeBank({
+  id: "global-sojourn",
+  topicId: "rizal-travels-reform-and-intellectual-networks",
+  contentVersion: 2,
+  items: globalSojournChallenges,
+});
+
+function drawRoute() {
+  return drawChallengeSet(globalBank, roundSize);
+}
 
 export function GlobalSojournGame({ onClose }: GameProps) {
-  const [round, setRound] = useState(1);
+  const [deck, setDeck] = useState(drawRoute);
+  const [round, setRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [lives, setLives] = useState(4);
   const [streak, setStreak] = useState(0);
-  const [route, setRoute] = useState<string[]>([]);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [isGameOver, setIsGameOver] = useState(false);
-  const maxRounds = 6;
+  const [lives, setLives] = useState(4);
+  const [phase, setPhase] = useState<"routing" | "feedback" | "finished">("routing");
+  const [route, setRoute] = useState<GlobalDestinationId[]>([]);
+  const [blocked, setBlocked] = useState<GlobalDestinationId[]>([]);
+  const [wrongDestination, setWrongDestination] = useState<GlobalDestinationId | null>(null);
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [announcement, setAnnouncement] = useState("Read the travel dossier, then send it to the matching destination station.");
+  const feedbackRef = useRef<HTMLDivElement>(null);
+  const [best, saveBest] = useHighScore("global");
+  const { enabled: soundEnabled, play, toggle: toggleSound } = useArcadeSound("/audio/arcade-adventure.mp3");
+  const current = deck[round];
+  const correctDestination = globalDestinationsById[current.destinationId];
+  const options = useMemo<GlobalDestination[]>(() => {
+    const distractors = shuffleList(globalDestinations.filter((destination) => destination.id !== current.destinationId)).slice(0, 2);
+    return shuffleList([correctDestination, ...distractors]);
+  }, [correctDestination, current]);
 
-  // In production, shuffle and slice 6 items chronologically
-  const currentChallenge = globalSojournChallenges[round - 1];
+  useEffect(() => {
+    if (phase === "feedback") feedbackRef.current?.focus({ preventScroll: true });
+  }, [phase]);
 
-  const handleDrop = (e: React.DragEvent | null, selectedPlace: string) => {
-    e?.preventDefault();
-    
-    if (selectedPlace === currentChallenge.place) {
-      // Correct: Audio chime, animate route, stamp passport
-      setScore(prev => prev + 100 + (streak * 20));
-      setStreak(prev => prev + 1);
-      setRoute([...route, selectedPlace]);
-      setShowFeedback(true);
-    } else {
-      // Incorrect: Audio buzzer, camera shake, lose life
-      setStreak(0);
-      setLives(prev => prev - 1);
-      if (lives - 1 <= 0) {
-        setShowFeedback(true);
-        setIsGameOver(true);
-      }
+  const chooseDestination = useCallback((destinationId: GlobalDestinationId) => {
+    if (phase !== "routing" || blocked.includes(destinationId)) return;
+    if (destinationId === current.destinationId) {
+      const nextStreak = streak + 1;
+      const points = 120 + Math.min(streak, 4) * 25 + Math.max(0, 20 - blocked.length * 10);
+      setScore((value) => value + points);
+      setStreak(nextStreak);
+      setRoute((value) => [...value, destinationId]);
+      setFeedback({
+        correct: true,
+        title: `Passport stamped: ${correctDestination.place}`,
+        rationale: `${current.explanation} You earned ${points} route points${nextStreak > 1 ? ` with a ×${nextStreak} streak` : ""}.`,
+        source: current.source,
+        sourceUrl: current.sourceUrl,
+      });
+      setAnnouncement(`${correctDestination.place} confirmed. The route has advanced.`);
+      setPhase("feedback");
+      play("correct");
+      return;
     }
-  };
 
-  const nextRound = () => {
-    setShowFeedback(false);
-    if (round < maxRounds && !isGameOver) {
-      setRound(prev => prev + 1);
-    } else {
-      setIsGameOver(true);
+    const destination = globalDestinationsById[destinationId];
+    const nextLives = lives - 1;
+    setLives(nextLives);
+    setStreak(0);
+    setBlocked((value) => [...value, destinationId]);
+    setWrongDestination(destinationId);
+    setAnnouncement(`${destination.shortPlace} does not fit all three clues. One life lost—compare the remaining stations.`);
+    play("wrong");
+    if (nextLives <= 0) {
+      setFeedback({
+        correct: false,
+        title: `The route ended before ${correctDestination.shortPlace}`,
+        rationale: `The correct station was ${correctDestination.place}. ${current.explanation}`,
+        source: current.source,
+        sourceUrl: current.sourceUrl,
+      });
+      setPhase("feedback");
     }
-  };
+  }, [blocked, correctDestination, current, lives, phase, play, streak]);
 
-  if (isGameOver && !showFeedback) {
+  useEffect(() => {
+    function useNumberKey(event: KeyboardEvent) {
+      if (phase !== "routing") return;
+      const optionIndex = Number(event.key) - 1;
+      if (optionIndex >= 0 && optionIndex < options.length) chooseDestination(options[optionIndex].id);
+    }
+    window.addEventListener("keydown", useNumberKey);
+    return () => window.removeEventListener("keydown", useNumberKey);
+  }, [chooseDestination, options, phase]);
+
+  function nextDossier() {
+    feedbackRef.current?.closest<HTMLElement>(".game-overlay")?.scrollTo({ top: 0, behavior: "auto" });
+    if (lives <= 0 || round >= deck.length - 1) {
+      saveBest(score);
+      play("finish");
+      setPhase("finished");
+      return;
+    }
+    setRound((value) => value + 1);
+    setBlocked([]);
+    setWrongDestination(null);
+    setFeedback(null);
+    setAnnouncement("New dossier opened. Compare every clue before choosing a station.");
+    setPhase("routing");
+    play("page");
+  }
+
+  function replay() {
+    setDeck(drawRoute());
+    setRound(0);
+    setScore(0);
+    setStreak(0);
+    setLives(4);
+    setPhase("routing");
+    setRoute([]);
+    setBlocked([]);
+    setWrongDestination(null);
+    setFeedback(null);
+    setAnnouncement("A new route is ready. Read the first dossier and choose its destination.");
+    play("page");
+  }
+
+  function dropDossier(event: React.DragEvent<HTMLButtonElement>, destinationId: GlobalDestinationId) {
+    event.preventDefault();
+    if (event.dataTransfer.getData("text/plain") === current.id) chooseDestination(destinationId);
+  }
+
+  if (phase === "finished") {
     return (
-      <div className="p-8 text-center bg-[#f4ebd8] text-gray-900 min-h-screen">
-        <h2 className="text-3xl font-bold font-serif mb-4">Journey Complete</h2>
-        <p className="mb-4">Final Score: {score}</p>
-        <p className="mb-8">Destinations Reached: {route.length} / {maxRounds}</p>
-        <button onClick={onClose} className="px-6 py-2 bg-red-800 text-white rounded">Return to Arcade</button>
-      </div>
+      <>
+        <GameHeader title="Global Sojourn" status={[{ label: "Stops", value: `${route.length} / ${roundSize}` }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} />
+        <Results game="global" title="Global Sojourn" score={score} best={best} maxScore={1670} onReplay={replay} onClose={onClose} />
+      </>
     );
   }
 
   return (
-    <div className="bg-[#1a1a1a] min-h-screen font-serif text-gray-800 flex flex-col items-center p-4">
-      <GameHeader title="Global Sojourn" status={[{ label: "Score", value: String(score) }, { label: "Lives", value: String(lives) }]} onClose={onClose} />
-      
-      {/* 19th Century Map Container */}
-      <div className="relative w-full max-w-4xl h-[50vh] bg-[#e2d5b8] border-4 border-[#8b7355] rounded-md shadow-inner overflow-hidden mb-6 bg-[url('/art/historical-map-bg.jpg')] bg-cover">
-        
-        {/* Render City Pins */}
-        {globalSojournChallenges.map((city) => (
-          <button
-            key={city.id}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => handleDrop(e, city.place)}
-            onClick={() => handleDrop(null, city.place)}
-            className="absolute w-8 h-8 -ml-4 -mt-4 bg-red-600 rounded-full border-2 border-white shadow-lg transition-transform hover:scale-125 focus:ring-4 focus:ring-yellow-400 z-10"
-            style={{ top: city.coordinates.top, left: city.coordinates.left }}
-            aria-label={`Drop or click to travel to ${city.place}`}
-          >
-            {route.includes(city.place) && <span className="absolute -top-1 -right-1 text-xs bg-green-500 text-white rounded-full px-1">✓</span>}
-          </button>
-        ))}
-      </div>
+    <>
+      <GameHeader
+        title="Global Sojourn"
+        status={[
+          { label: "Lives", value: `${"♥".repeat(lives)}${"♡".repeat(4 - lives)}` },
+          { label: "Dossier", value: `${round + 1} / ${deck.length}` },
+          { label: "Score", value: String(score) },
+        ]}
+        onClose={onClose}
+        soundEnabled={soundEnabled}
+        onToggleSound={toggleSound}
+      />
 
-      {/* Travel Document / Archive Folder */}
-      {!showFeedback ? (
-        <div 
-          draggable 
-          onDragStart={(e) => e.dataTransfer.setData("text/plain", currentChallenge.id)}
-          className="bg-[#fdfbf7] p-6 w-full max-w-2xl border border-[#d2c4a7] shadow-xl rounded cursor-grab active:cursor-grabbing"
-        >
-          <div className="border-b-2 border-red-800 pb-2 mb-4 flex justify-between uppercase text-sm tracking-widest text-red-900 font-bold">
-            <span>Travel Document</span>
-            <span>Stop {round} of {maxRounds}</span>
+      <main className="global-game" aria-labelledby="global-game-title">
+        <section className="global-map-board">
+          <div className="global-map-heading">
+            <div>
+              <p className="eyebrow">Game 07 · route-building archive</p>
+              <h2 id="global-game-title">Plot Rizal’s global sojourn.</h2>
+            </div>
+            <div className="global-streak" aria-label={`Current streak ${streak}`}><span>Route streak</span><strong>×{streak}</strong></div>
           </div>
-          <p className="text-gray-500 text-sm mb-1">{currentChallenge.period}</p>
-          <h3 className="text-xl font-bold mb-4">{currentChallenge.mission}</h3>
-          <ul className="list-disc pl-5 text-gray-700">
-            {currentChallenge.evidence.map((clue, idx) => <li key={idx}>{clue}</li>)}
-          </ul>
-          <p className="text-center mt-6 text-sm text-gray-400 italic">Drag this document to the correct map pin.</p>
-        </div>
-      ) : (
-        <div className="bg-[#fdfbf7] p-6 w-full max-w-2xl border-4 border-green-800 shadow-xl rounded">
-          <h3 className="text-2xl font-bold text-green-900 mb-2">Stamp Acquired: {currentChallenge.place}</h3>
-          <p className="mb-4 text-gray-800">{currentChallenge.explanation}</p>
-          <a href={currentChallenge.sourceUrl} target="_blank" rel="noreferrer" className="text-blue-700 underline text-sm block mb-6">
-            Source: {currentChallenge.source}
-          </a>
-          <button onClick={nextRound} className="w-full py-3 bg-green-800 text-white font-bold rounded shadow hover:bg-green-700">
-            {isGameOver ? "View Final Route" : "Proceed to Next Destination"}
-          </button>
+
+          <div className="global-route" aria-label={`${route.length} of ${roundSize} route stamps collected`}>
+            <span className="global-route-line" aria-hidden="true" />
+            {deck.map((challenge, index) => {
+              const destination = route[index] ? globalDestinationsById[route[index]] : null;
+              return (
+                <span key={challenge.id} className={index < route.length ? "is-stamped" : index === round ? "is-current" : ""}>
+                  <b>{destination?.stamp ?? String(index + 1).padStart(2, "0")}</b>
+                  <small>{destination?.shortPlace ?? (index === round ? "Current file" : "Sealed")}</small>
+                </span>
+              );
+            })}
+            <span className="global-traveler" style={{ "--route-progress": `${Math.min(100, (route.length / roundSize) * 100)}%` } as React.CSSProperties} aria-hidden="true">✦</span>
+          </div>
+        </section>
+
+        <section className="global-worktable">
+          <article
+            className="travel-dossier"
+            draggable={phase === "routing"}
+            onDragStart={(event) => { event.dataTransfer.setData("text/plain", current.id); play("pickup"); }}
+          >
+            <div className="travel-dossier-topline"><span>Confidential travel dossier</span><b>{current.id}</b></div>
+            <div className="travel-date"><span>Period</span><strong>{current.period}</strong></div>
+            <p className="eyebrow">Mission brief</p>
+            <h3>{current.mission}</h3>
+            <ol>
+              {current.evidence.map((clue, index) => <li key={clue}><span>0{index + 1}</span><p>{clue}</p></li>)}
+            </ol>
+            <div className="travel-drag-note"><span aria-hidden="true">✥</span><p>Drag this dossier onto a station—or tap a numbered station.</p></div>
+          </article>
+
+          <section className="destination-board" aria-labelledby="destination-board-title">
+            <div className="destination-board-heading">
+              <span aria-hidden="true">⌖</span>
+              <div><p>Choose the arrival station</p><h3 id="destination-board-title">Where does this evidence belong?</h3></div>
+            </div>
+            <div className="destination-stations">
+              {options.map((destination, index) => {
+                const isBlocked = blocked.includes(destination.id);
+                return (
+                  <button
+                    key={destination.id}
+                    type="button"
+                    className={`${isBlocked ? "is-blocked" : ""} ${wrongDestination === destination.id ? "is-wrong" : ""}`}
+                    disabled={phase !== "routing" || isBlocked}
+                    onClick={() => chooseDestination(destination.id)}
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={(event) => dropDossier(event, destination.id)}
+                    aria-label={`${index + 1}. Send dossier to ${destination.place}${isBlocked ? ", ruled out" : ""}`}
+                  >
+                    <span className="station-number">{index + 1}</span>
+                    <span className="station-stamp" aria-hidden="true">{destination.stamp}</span>
+                    <span className="station-copy"><strong>{destination.shortPlace}</strong><small>{destination.region}</small></span>
+                    <span className="station-action">{isBlocked ? "Ruled out" : "Send dossier"}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <p className="global-announcement" aria-live="polite">{announcement}</p>
+          </section>
+        </section>
+
+        <p className="global-source-note">Historical dossiers draw from your instructor’s Module 5 and linked institutional sources. Instructor review remains required before formal classroom release.</p>
+      </main>
+
+      {phase === "feedback" && feedback && (
+        <div className="global-feedback" ref={feedbackRef} tabIndex={-1}>
+          <FeedbackPanel feedback={feedback} onNext={nextDossier} isLast={lives <= 0 || round === deck.length - 1} />
         </div>
       )}
-    </div>
+    </>
   );
 }

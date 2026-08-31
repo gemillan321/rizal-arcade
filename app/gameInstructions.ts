@@ -85,13 +85,13 @@ export const gameInstructions: Record<InstructionGameId, GameInstruction> = {
   global: {
     title: "Global Sojourn",
     topic: "Rizal’s international travels, reform work, medical training, and publications abroad",
-    goal: "Identify each global destination from its period, mission, and three pieces of historical evidence.",
+    goal: "Build an eight-stop route by sending each historical travel dossier to the destination where its evidence belongs.",
     steps: [
-      "Read the period, mission, and three historical evidence clues for the current journey stop.",
-      "Choose the city and country that best match the evidence presented in the travel file.",
-      "Your selection immediately advances to the next stop, so study every clue before answering.",
+      "Read the period, mission, and all three pieces of evidence in the travel dossier.",
+      "Drag the dossier onto a destination station, or tap one of the three numbered stations.",
+      "A correct station stamps the passport and advances the traveler. A wrong station costs one life and is ruled out.",
     ],
-    scoring: "Complete six travel files. Every correct destination earns 100 points; incorrect choices earn no points.",
-    tip: "Connect publications, mentors, institutions, and dates with the city where each event occurred.",
+    scoring: "Complete eight randomized dossiers before four lives run out. Correct streaks and first-try routes earn bonus points.",
+    tip: "Use keys 1, 2, and 3 when you prefer the keyboard. Connect people, publications, institutions, and dates—not geography alone.",
   },
 };
