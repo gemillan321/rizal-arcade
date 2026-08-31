@@ -28,7 +28,8 @@ test("server-renders the Rizal Arcade home page", async () => {
   assert.match(html, /Scholar’s Journey/);
   assert.match(html, /Hearts &(?:amp;|) Horizons/);
   assert.match(html, /Masterpiece Museum/);
-  assert.match(html, /300[\s\S]*sourced challenges/i);
+  assert.match(html, /Global Sojourn/);
+  assert.match(html, /310[\s\S]*sourced challenges/i);
   assert.match(html, /Classroom high scores/i);
   assert.match(html, /Student sign-in/i);
   assert.match(html, /Private section leaderboards/i);

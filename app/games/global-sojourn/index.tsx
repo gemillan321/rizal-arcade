@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { GameHeader } from "../shared/ArcadeGameKit";
 import type { GameProps } from "../types";
 import { globalSojournChallenges } from "./content";

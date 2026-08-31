@@ -24,8 +24,9 @@ test("the arcade shell mounts games through the registry instead of owning gamep
   }
 });
 
-test("unfinished contributor scaffolds cannot appear in the live registry", async () => {
+test("unfinished contributor templates cannot appear in the live registry", async () => {
   const registry = await readFile(new URL("../app/games/registry.tsx", import.meta.url), "utf8");
-  assert.doesNotMatch(registry, /GlobalSojournGame|GameTemplate/);
+  assert.doesNotMatch(registry, /GameTemplate/);
+  assert.match(registry, /global: GlobalSojournGame/);
   assert.match(registry, /museum: MasterpieceMuseumGame/);
 });

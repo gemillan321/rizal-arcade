@@ -1,4 +1,4 @@
-export type InstructionGameId = "values" | "novels" | "codebreaker" | "scholar" | "hearts" | "museum";
+export type InstructionGameId = "values" | "novels" | "codebreaker" | "scholar" | "hearts" | "museum" | "global";
 
 export type GameInstruction = {
   title: string;
@@ -81,5 +81,17 @@ export const gameInstructions: Record<InstructionGameId, GameInstruction> = {
     ],
     scoring: "Complete six exhibits. A wrong gallery, plaque, or both costs one of four lives; correct streaks earn bonus points.",
     tip: "Genre tells you where a work belongs; the evidence tells you which interpretation belongs on its plaque.",
+  },
+  global: {
+    title: "Global Sojourn",
+    topic: "Rizal’s international travels, reform work, medical training, and publications abroad",
+    goal: "Identify each global destination from its period, mission, and three pieces of historical evidence.",
+    steps: [
+      "Read the period, mission, and three historical evidence clues for the current journey stop.",
+      "Choose the city and country that best match the evidence presented in the travel file.",
+      "Your selection immediately advances to the next stop, so study every clue before answering.",
+    ],
+    scoring: "Complete six travel files. Every correct destination earns 100 points; incorrect choices earn no points.",
+    tip: "Connect publications, mentors, institutions, and dates with the city where each event occurred.",
   },
 };
