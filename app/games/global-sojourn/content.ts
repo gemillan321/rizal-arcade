@@ -1,6 +1,13 @@
 export type GlobalDestinationId = "barcelona" | "madrid" | "paris" | "heidelberg" | "berlin" | "litomerice" | "yokohama" | "london" | "brussels" | "biarritz" | "ghent" | "hong-kong";
 
-export type GlobalDestination = { id: GlobalDestinationId; place: string; shortPlace: string; region: string; stamp: string };
+export type GlobalDestination = {
+  id: GlobalDestinationId;
+  place: string;
+  shortPlace: string;
+  region: string;
+  stamp: string;
+  map: { x: number; y: number };
+};
 export type GlobalSojournChallenge = {
   id: string;
   destinationId: GlobalDestinationId;
@@ -13,18 +20,18 @@ export type GlobalSojournChallenge = {
 };
 
 export const globalDestinations: GlobalDestination[] = [
-  { id: "barcelona", place: "Barcelona, Spain", shortPlace: "Barcelona", region: "Spain", stamp: "BCN" },
-  { id: "madrid", place: "Madrid, Spain", shortPlace: "Madrid", region: "Spain", stamp: "MAD" },
-  { id: "paris", place: "Paris, France", shortPlace: "Paris", region: "France", stamp: "PAR" },
-  { id: "heidelberg", place: "Heidelberg, Germany", shortPlace: "Heidelberg", region: "Germany", stamp: "HD" },
-  { id: "berlin", place: "Berlin, Germany", shortPlace: "Berlin", region: "Germany", stamp: "BER" },
-  { id: "litomerice", place: "Litoměřice, Czech lands", shortPlace: "Litoměřice", region: "Czech lands", stamp: "LTM" },
-  { id: "yokohama", place: "Yokohama, Japan", shortPlace: "Yokohama", region: "Japan", stamp: "YOK" },
-  { id: "london", place: "London, United Kingdom", shortPlace: "London", region: "United Kingdom", stamp: "LON" },
-  { id: "brussels", place: "Brussels, Belgium", shortPlace: "Brussels", region: "Belgium", stamp: "BRU" },
-  { id: "biarritz", place: "Biarritz, France", shortPlace: "Biarritz", region: "France", stamp: "BIA" },
-  { id: "ghent", place: "Ghent, Belgium", shortPlace: "Ghent", region: "Belgium", stamp: "GNT" },
-  { id: "hong-kong", place: "Hong Kong", shortPlace: "Hong Kong", region: "East Asia", stamp: "HKG" },
+  { id: "barcelona", place: "Barcelona, Spain", shortPlace: "Barcelona", region: "Spain", stamp: "BCN", map: { x: 45.5, y: 38 } },
+  { id: "madrid", place: "Madrid, Spain", shortPlace: "Madrid", region: "Spain", stamp: "MAD", map: { x: 43.5, y: 42 } },
+  { id: "paris", place: "Paris, France", shortPlace: "Paris", region: "France", stamp: "PAR", map: { x: 48, y: 32 } },
+  { id: "heidelberg", place: "Heidelberg, Germany", shortPlace: "Heidelberg", region: "Germany", stamp: "HD", map: { x: 51, y: 34 } },
+  { id: "berlin", place: "Berlin, Germany", shortPlace: "Berlin", region: "Germany", stamp: "BER", map: { x: 53, y: 29 } },
+  { id: "litomerice", place: "Litoměřice, Czech lands", shortPlace: "Litoměřice", region: "Czech lands", stamp: "LTM", map: { x: 54, y: 36 } },
+  { id: "yokohama", place: "Yokohama, Japan", shortPlace: "Yokohama", region: "Japan", stamp: "YOK", map: { x: 87, y: 45 } },
+  { id: "london", place: "London, United Kingdom", shortPlace: "London", region: "United Kingdom", stamp: "LON", map: { x: 46, y: 26 } },
+  { id: "brussels", place: "Brussels, Belgium", shortPlace: "Brussels", region: "Belgium", stamp: "BRU", map: { x: 49.5, y: 29 } },
+  { id: "biarritz", place: "Biarritz, France", shortPlace: "Biarritz", region: "France", stamp: "BIA", map: { x: 45, y: 35 } },
+  { id: "ghent", place: "Ghent, Belgium", shortPlace: "Ghent", region: "Belgium", stamp: "GNT", map: { x: 49, y: 25 } },
+  { id: "hong-kong", place: "Hong Kong", shortPlace: "Hong Kong", region: "East Asia", stamp: "HKG", map: { x: 80, y: 56 } },
 ];
 
 export const globalDestinationsById = Object.fromEntries(globalDestinations.map((destination) => [destination.id, destination])) as Record<GlobalDestinationId, GlobalDestination>;

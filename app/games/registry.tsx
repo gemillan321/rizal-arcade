@@ -82,9 +82,9 @@ export const gameCards: Array<{
   {
     id: "global",
     number: "07",
-    title: "Global Sojourn",
-    description: "Route evidence dossiers through Rizal’s travels, stamp the right destinations, and rebuild his international journey.",
-    meta: "50 dossiers · 5 min",
+    title: "Global Sojourn — Chart the Journey",
+    description: "Decode travel telegrams, draw routes across a living world atlas, and follow Rizal’s international journey.",
+    meta: "50 telegrams · 5 min",
     tone: "teal",
     symbol: "G",
     skill: "Travels & reform work",
@@ -112,6 +112,6 @@ export function GameCardScene({ game }: { game: GameId }) {
   if (game === "codebreaker") return <div className="card-scene code-card-scene"><span className="mini-code">IRAZO</span><span className="mini-wheel">A=Z</span><span className="mini-drawer">ROOTS</span><strong>Read · Decode · File</strong></div>;
   if (game === "scholar") return <div className="card-scene scholar-card-scene"><img src="/art/universidad-central.jpg" alt="" /><span className="mini-passport passport-a">01</span><span className="mini-passport passport-b">?</span><span className="mini-passport passport-c">06</span><strong>Study · Close · Recall</strong></div>;
   if (game === "hearts") return <div className="card-scene hearts-card-scene"><img src="/art/rizal-letter.webp" alt="" /><span className="mini-envelope envelope-a">?</span><span className="mini-envelope envelope-b">YK</span><span className="mini-wax">RA</span><strong>Read · Seal · Send</strong></div>;
-  if (game === "global") return <div className="card-scene museum-card-scene"><img src="/art/global-sojourn-map.webp" alt="" /><span className="mini-frame frame-a">1882</span><span className="mini-frame frame-b">1892</span><span className="mini-plaque">ROUTE</span><strong>Read · Route · Stamp</strong></div>;
+  if (game === "global") return <div className="card-scene global-card-scene"><img src="/art/global-sojourn-atlas-v2.webp" alt="" /><span className="mini-world-route">••••••</span><span className="mini-world-ship">⛵</span><strong>Read · Chart · Sail</strong></div>;
   return <div className="card-scene museum-card-scene"><img src="/art/masterpiece-museum.png" alt="" /><span className="mini-frame frame-a">✉</span><span className="mini-frame frame-b">❧</span><span className="mini-plaque">CURATE</span><strong>Inspect · Label · Install</strong></div>;
 }

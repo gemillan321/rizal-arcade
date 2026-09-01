@@ -23,18 +23,21 @@ test("Global Sojourn has 50 distinct sourced travel dossiers", () => {
 test("Global Sojourn provides a varied destination pool", () => {
   assert.equal(globalDestinations.length, 12);
   assert.equal(new Set(globalDestinations.map((destination) => destination.id)).size, 12);
-  assert.ok(globalDestinations.every((destination) => destination.place && destination.region && destination.stamp));
+  assert.ok(globalDestinations.every((destination) => destination.place && destination.region && destination.stamp && destination.map.x > 0 && destination.map.y > 0));
   assert.ok(new Set(globalSojournChallenges.map((item) => item.destinationId)).size >= 10);
 });
 
 test("Global Sojourn packages visual and audio assets and complete mechanics", async () => {
-  for (const file of ["../public/art/global-sojourn-map.webp", "../public/audio/arcade-adventure.mp3", "../public/audio/scholar-page-turn.mp3"]) {
+  for (const file of ["../public/art/global-sojourn-atlas-v2.webp", "../public/audio/arcade-adventure.mp3", "../public/audio/scholar-page-turn.mp3"]) {
     assert.ok(existsSync(new URL(file, import.meta.url)), `${file} is missing`);
   }
   const implementation = await readFile(new URL("../app/games/global-sojourn/index.tsx", import.meta.url), "utf8");
   assert.match(implementation, /drawChallengeSet\(globalBank, roundSize\)/);
   assert.match(implementation, /useArcadeSound\("\/audio\/arcade-adventure\.mp3"\)/);
   assert.match(implementation, /Results game="global"/);
-  assert.match(implementation, /onDrop=/);
+  assert.match(implementation, /onPointerMove=/);
+  assert.match(implementation, /onPointerUp=/);
+  assert.match(implementation, /routePath/);
+  assert.match(implementation, /global-telegram/);
   assert.match(implementation, /keydown/);
 });

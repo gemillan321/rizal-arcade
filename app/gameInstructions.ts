@@ -83,15 +83,15 @@ export const gameInstructions: Record<InstructionGameId, GameInstruction> = {
     tip: "Genre tells you where a work belongs; the evidence tells you which interpretation belongs on its plaque.",
   },
   global: {
-    title: "Global Sojourn",
+    title: "Global Sojourn — Chart the Journey",
     topic: "Rizal’s international travels, reform work, medical training, and publications abroad",
-    goal: "Build an eight-stop route by sending each historical travel dossier to the destination where its evidence belongs.",
+    goal: "Build an eight-stop world journey by drawing each route from Rizal’s traveler token to the port identified by a historical telegram.",
     steps: [
-      "Read the period, mission, and all three pieces of evidence in the travel dossier.",
-      "Drag the dossier onto a destination station, or tap one of the three numbered stations.",
-      "A correct station stamps the passport and advances the traveler. A wrong station costs one life and is ruled out.",
+      "Read the period, mission, and all three clues in the incoming telegram below the map.",
+      "Drag Rizal’s ship from its current position to a glowing destination port. You may also tap a port or press 1, 2, or 3.",
+      "A correct route sails across the map and stamps the city. A wrong route is crossed out and punches one travel permit.",
     ],
-    scoring: "Complete eight randomized dossiers before four lives run out. Correct streaks and first-try routes earn bonus points.",
-    tip: "Use keys 1, 2, and 3 when you prefer the keyboard. Connect people, publications, institutions, and dates—not geography alone.",
+    scoring: "Chart eight randomized routes before all four travel permits are punched. Correct streaks and first-try navigation earn bonus points.",
+    tip: "Do not rely on geography alone. Connect the dates, people, publications, institutions, and events in all three clues.",
   },
 };
