@@ -61,7 +61,7 @@ export const gameInstructions: Record<InstructionGameId, GameInstruction> = {
   hearts: {
     title: "Hearts & Horizons",
     topic: "Rizal’s documented relationships and the women he met",
-    goal: "Use each three-clue portrait dossier to identify the woman and connect her with the correct place in Rizal’s journey.",
+    goal: "Use each anonymous three-clue dossier to identify the woman and connect her with the correct place in Rizal’s journey.",
     steps: [
       "Read all three pieces of evidence in the center dossier.",
       "Choose an identity seal on the left and a journey postmark on the right.",

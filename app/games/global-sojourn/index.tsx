@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { defineChallengeBank, drawChallengeSet, shuffleList } from "../../challengeBank";
 import { GameHeader, Results, useArcadeSound, useHighScore, type Feedback } from "../shared/ArcadeGameKit";
@@ -16,7 +18,7 @@ const roundSize = 8;
 const MANILA = { x: 83, y: 60 };
 type MapPoint = { x: number; y: number };
 type RouteSegment = { from: MapPoint; to: MapPoint; destinationId: GlobalDestinationId };
-type PlottedDestination = GlobalDestination & { plot: MapPoint };
+type FocusLens = { destinations: GlobalDestination[]; left: number; top: number; width: number; height: number };
 type GamePhase = "routing" | "traveling" | "arrival" | "finished";
 
 const globalBank = defineChallengeBank({
@@ -53,7 +55,6 @@ export function GlobalSojournGame({ onClose }: GameProps) {
   const [dragPoint, setDragPoint] = useState<MapPoint | null>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [travelingDestination, setTravelingDestination] = useState<GlobalDestinationId | null>(null);
-  const [compactMap, setCompactMap] = useState(false);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [announcement, setAnnouncement] = useState("A telegram has arrived. Read its clues, then chart a route from Rizal to the correct port.");
   const boardRef = useRef<HTMLDivElement>(null);
@@ -69,33 +70,35 @@ export function GlobalSojournGame({ onClose }: GameProps) {
     const distractors = shuffleList(globalDestinations.filter((destination) => destination.id !== current.destinationId)).slice(0, 2);
     return shuffleList([correctDestination, ...distractors]);
   }, [correctDestination, current.destinationId]);
-  const plottedOptions = useMemo<PlottedDestination[]>(() => {
-    const crowded = options.some((destination, index) => options.some((other, otherIndex) => (
-      index !== otherIndex && Math.hypot(destination.map.x - other.map.x, destination.map.y - other.map.y) < 9
-    )));
-    if (!compactMap || !crowded) return options.map((destination) => ({ ...destination, plot: destination.map }));
-    const center = options.reduce((point, destination) => ({ x: point.x + destination.map.x / options.length, y: point.y + destination.map.y / options.length }), { x: 0, y: 0 });
-    const offsets = [{ x: -6, y: 3 }, { x: 6, y: 3 }, { x: 0, y: -8 }];
-    return options.map((destination, index) => ({
-      ...destination,
-      plot: {
-        x: Math.max(41, Math.min(57, center.x + offsets[index].x)),
-        y: Math.max(20, Math.min(46, center.y + offsets[index].y)),
-      },
+  const focusLens = useMemo<FocusLens | null>(() => {
+    const crowdedIds = new Set<GlobalDestinationId>();
+    options.forEach((destination, index) => options.forEach((other, otherIndex) => {
+      if (index !== otherIndex && Math.hypot(destination.map.x - other.map.x, destination.map.y - other.map.y) < 11) {
+        crowdedIds.add(destination.id);
+        crowdedIds.add(other.id);
+      }
     }));
-  }, [compactMap, options]);
+    const destinations = options.filter((destination) => crowdedIds.has(destination.id));
+    if (destinations.length < 2) return null;
+
+    const xs = destinations.map((destination) => destination.map.x);
+    const ys = destinations.map((destination) => destination.map.y);
+    const centerX = (Math.min(...xs) + Math.max(...xs)) / 2;
+    const centerY = (Math.min(...ys) + Math.max(...ys)) / 2;
+    const width = Math.max(8, Math.max(...xs) - Math.min(...xs) + 6);
+    const height = Math.max(8, Math.max(...ys) - Math.min(...ys) + 6);
+    return {
+      destinations,
+      left: Math.max(0, Math.min(100 - width, centerX - width / 2)),
+      top: Math.max(0, Math.min(100 - height, centerY - height / 2)),
+      width,
+      height,
+    };
+  }, [options]);
 
   useEffect(() => () => {
     if (travelTimerRef.current) clearTimeout(travelTimerRef.current);
     if (wrongTimerRef.current) clearTimeout(wrongTimerRef.current);
-  }, []);
-
-  useEffect(() => {
-    const query = window.matchMedia("(max-width: 980px)");
-    const update = () => setCompactMap(query.matches);
-    update();
-    query.addEventListener("change", update);
-    return () => query.removeEventListener("change", update);
   }, []);
 
   useEffect(() => {
@@ -105,7 +108,7 @@ export function GlobalSojournGame({ onClose }: GameProps) {
   const chooseDestination = useCallback((destinationId: GlobalDestinationId) => {
     if (phase !== "routing" || blocked.includes(destinationId)) return;
     const destination = globalDestinationsById[destinationId];
-    const targetPoint = plottedOptions.find((option) => option.id === destinationId)?.plot ?? destination.map;
+    const targetPoint = destination.map;
     if (destinationId === current.destinationId) {
       const nextStreak = streak + 1;
       const points = 120 + Math.min(streak, 4) * 25 + Math.max(0, 20 - blocked.length * 10);
@@ -151,7 +154,7 @@ export function GlobalSojournGame({ onClose }: GameProps) {
       });
       setPhase("arrival");
     }
-  }, [blocked, correctDestination, current, currentPosition, permits, phase, play, plottedOptions, streak]);
+  }, [blocked, correctDestination, current, currentPosition, permits, phase, play, streak]);
 
   useEffect(() => {
     function useNumberKey(event: KeyboardEvent) {
@@ -191,15 +194,20 @@ export function GlobalSojournGame({ onClose }: GameProps) {
 
   function finishRoute(event: ReactPointerEvent<HTMLDivElement>) {
     if (!isDrawing) return;
-    const point = pointFromPointer(event.clientX, event.clientY);
     setIsDrawing(false);
     setDragPoint(null);
-    if (!point) return;
-    const nearest = plottedOptions
-      .filter((destination) => !blocked.includes(destination.id))
-      .map((destination) => ({ destination, distance: Math.hypot(point.x - destination.plot.x, point.y - destination.plot.y) }))
+    const board = boardRef.current;
+    if (!board) return;
+    const nearest = Array.from(board.querySelectorAll<HTMLButtonElement>("[data-global-destination]:not(:disabled)"))
+      .map((target) => {
+        const rect = target.getBoundingClientRect();
+        return {
+          destinationId: target.dataset.globalDestination as GlobalDestinationId,
+          distance: Math.hypot(event.clientX - (rect.left + rect.width / 2), event.clientY - (rect.top + rect.height / 2)),
+        };
+      })
       .sort((a, b) => a.distance - b.distance)[0];
-    if (nearest && nearest.distance <= 9) chooseDestination(nearest.destination.id);
+    if (nearest && nearest.distance <= 68) chooseDestination(nearest.destinationId);
     else {
       setAnnouncement("The pencil missed a port. Start from Rizal again, then release inside a glowing destination marker.");
       play("flip");
@@ -291,14 +299,16 @@ export function GlobalSojournGame({ onClose }: GameProps) {
               return <span key={segment.destinationId + "-stamp-" + index} className="global-visited-stamp" style={{ left: segment.to.x + "%", top: segment.to.y + "%" }} aria-label={destination.shortPlace + " visited"}><b>{destination.stamp}</b></span>;
             })}
 
-            {plottedOptions.map((destination, index) => {
+            {options.filter((destination) => !focusLens?.destinations.some((focused) => focused.id === destination.id)).map((destination) => {
+              const index = options.findIndex((option) => option.id === destination.id);
               const isBlocked = blocked.includes(destination.id);
               return (
                 <button
                   key={destination.id}
                   type="button"
                   className={"global-port global-port-" + (index + 1) + (isBlocked ? " is-blocked" : "")}
-                  style={{ left: destination.plot.x + "%", top: destination.plot.y + "%" }}
+                  style={{ left: destination.map.x + "%", top: destination.map.y + "%" }}
+                  data-global-destination={destination.id}
                   disabled={phase !== "routing" || isBlocked}
                   onClick={() => chooseDestination(destination.id)}
                   aria-label={(index + 1) + ". Chart a route to " + destination.place + (isBlocked ? ", crossed out" : "")}
@@ -308,6 +318,55 @@ export function GlobalSojournGame({ onClose }: GameProps) {
                 </button>
               );
             })}
+
+            {focusLens?.destinations.map((destination) => {
+              const index = options.findIndex((option) => option.id === destination.id);
+              return <span key={destination.id + "-anchor"} className={"global-port-anchor global-port-anchor-" + (index + 1)} style={{ left: destination.map.x + "%", top: destination.map.y + "%" }} aria-hidden="true"><b>{index + 1}</b></span>;
+            })}
+
+            {focusLens && (
+              <aside className="global-focus-lens" aria-label="Magnified view of nearby destination ports">
+                <div className="global-focus-heading">
+                  <div><span>Cartographer’s lens</span><small>Nearby ports · enlarged</small></div>
+                  <button type="button" className="global-lens-start" onPointerDown={startRoute} disabled={phase !== "routing"} aria-label="Draw a route from Rizal using the cartographer’s lens"><b aria-hidden="true">⛵</b><small>Draw</small></button>
+                </div>
+                <div className="global-focus-map">
+                  <img
+                    src="/art/global-sojourn-atlas-v2.webp"
+                    alt=""
+                    aria-hidden="true"
+                    draggable="false"
+                    style={{
+                      left: -(focusLens.left / focusLens.width) * 100 + "%",
+                      top: -(focusLens.top / focusLens.height) * 100 + "%",
+                      width: (100 / focusLens.width) * 100 + "%",
+                      height: (100 / focusLens.height) * 100 + "%",
+                    }}
+                  />
+                  {focusLens.destinations.map((destination) => {
+                    const index = options.findIndex((option) => option.id === destination.id);
+                    const isBlocked = blocked.includes(destination.id);
+                    return (
+                      <button
+                        key={destination.id}
+                        type="button"
+                        className={"global-lens-port global-lens-port-" + (index + 1) + (isBlocked ? " is-blocked" : "")}
+                        style={{
+                          left: ((destination.map.x - focusLens.left) / focusLens.width) * 100 + "%",
+                          top: ((destination.map.y - focusLens.top) / focusLens.height) * 100 + "%",
+                        }}
+                        data-global-destination={destination.id}
+                        disabled={phase !== "routing" || isBlocked}
+                        onClick={() => chooseDestination(destination.id)}
+                        aria-label={(index + 1) + ". Chart a route to " + destination.place + (isBlocked ? ", crossed out" : "")}
+                      >
+                        <b>{index + 1}</b><span>{destination.shortPlace}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </aside>
+            )}
 
             <button
               type="button"
@@ -346,7 +405,7 @@ export function GlobalSojournGame({ onClose }: GameProps) {
             <ol>
               {current.evidence.map((clue, index) => <li key={clue}><span>{index + 1}</span><p>{clue}</p></li>)}
             </ol>
-            <div className="global-telegram-help"><span>Drag the Rizal ship to a glowing port</span><small>Tap a port or press 1–3 as an alternative.</small></div>
+            <div className="global-telegram-help"><span>Drag the ship or lens token to a port</span><small>Tap a port or press 1–3 as an alternative.</small></div>
           </section>
         </section>
       </main>

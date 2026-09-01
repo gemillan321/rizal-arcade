@@ -63,7 +63,7 @@ export const gameCards: Array<{
     id: "hearts",
     number: "05",
     title: "Hearts & Horizons",
-    description: "Read a portrait dossier, identify the woman, match her to the right place in Rizal’s journey, then seal and send the evidence.",
+    description: "Read an anonymous evidence dossier, identify the woman, match her to the right place in Rizal’s journey, then seal and send the evidence.",
     meta: "Module 5 correspondence · 4 min",
     tone: "rose",
     symbol: "H",

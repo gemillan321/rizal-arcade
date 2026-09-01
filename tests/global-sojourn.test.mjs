@@ -17,6 +17,9 @@ test("Global Sojourn has 50 distinct sourced travel dossiers", () => {
     assert.ok(dossier.source.length >= 25, `${dossier.id} needs a named source`);
     assert.doesNotMatch(dossier.sourceUrl, /example\.com/i, `${dossier.id} still uses a placeholder source`);
     assert.ok(globalDestinationsById[dossier.destinationId], `${dossier.id} has an unknown destination`);
+    const visibleClues = `${dossier.mission} ${dossier.evidence.join(" ")}`.toLocaleLowerCase();
+    const answerLabel = globalDestinationsById[dossier.destinationId].shortPlace.toLocaleLowerCase();
+    assert.ok(!visibleClues.includes(answerLabel), `${dossier.id} reveals its destination label before the player answers`);
   }
 });
 

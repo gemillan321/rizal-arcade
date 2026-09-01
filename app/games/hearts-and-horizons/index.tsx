@@ -180,8 +180,8 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
           </aside>
 
           <article className="hearts-dossier">
-            <div className="dossier-topline"><span>{current.id} · confidential correspondence</span><b>{currentProfile.period}</b></div>
-            <div className="dossier-portrait"><HeartsPortrait womanId={current.womanId} /><span>{currentProfile.art ? "Archival portrait" : "Artistic interpretation"}</span></div>
+            <div className="dossier-topline"><span>{current.id} · confidential correspondence</span><b>Archive copy · identity sealed</b></div>
+            <AnonymousDossierArt />
             <div className="dossier-copy"><p className="eyebrow">Evidence file</p><h3>{current.evidenceTitle}</h3><ol>{current.evidence.map((clue, index) => <li key={clue}><span>0{index + 1}</span>{clue}</li>)}</ol></div>
             <span className="dossier-thread" aria-hidden="true" />
             <span className="dossier-stamp" aria-hidden="true">RA<br />ARCHIVE</span>
@@ -191,7 +191,7 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
             <span className="hearts-panel-label">02 · Journey postmark</span>
             <h3>Where does this chapter belong?</h3>
             <div role="group" aria-label="Choose the place associated with the dossier">
-              {options.places.map((profile) => <button key={profile.id} type="button" className={selectedPlace === profile.id ? "is-selected" : ""} aria-pressed={selectedPlace === profile.id} disabled={phase !== "selecting"} onClick={() => selectHorizon(profile.id)}><i>{profile.routeCode}</i><span><strong>{profile.place}</strong><small>{profile.period}</small></span></button>)}
+              {options.places.map((profile) => <button key={profile.id} type="button" className={selectedPlace === profile.id ? "is-selected" : ""} aria-pressed={selectedPlace === profile.id} disabled={phase !== "selecting"} onClick={() => selectHorizon(profile.id)}><i>{profile.routeCode}</i><span><strong>{profile.place}</strong><small>Journey postmark</small></span></button>)}
             </div>
           </aside>
         </div>
@@ -201,5 +201,16 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
         <p className="hearts-accuracy-note">Relationship histories can contain later recollections and disputed details. This game uses the course module and named institutional sources, and avoids presenting artistic cameos as documentary likenesses.</p>
       </section>
     </>
+  );
+}
+
+function AnonymousDossierArt() {
+  return (
+    <div className="anonymous-dossier-art" aria-label="Anonymous correspondence evidence; identity withheld until the answer is sealed">
+      <span className="anonymous-cameo" aria-hidden="true"><i /></span>
+      <span className="anonymous-letter" aria-hidden="true"><b>?</b><i /></span>
+      <strong>Identity withheld</strong>
+      <small>Use the written evidence—not a matching portrait.</small>
+    </div>
   );
 }
