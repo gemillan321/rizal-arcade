@@ -5,6 +5,7 @@ import { GlobalSojournGame } from "./global-sojourn";
 import { HeartsGame } from "./hearts-and-horizons";
 import { MasterpieceMuseumGame } from "./masterpiece-museum";
 import { NovelsGame } from "./noli-case-files";
+import { RizalCrosswordGame } from "./rizal-crossword";
 import { ValuesGame } from "./river-quest";
 import { ScholarMemoryGame } from "./scholars-journey";
 import type { GameId, GameProps } from "./types";
@@ -89,6 +90,16 @@ export const gameCards: Array<{
     symbol: "G",
     skill: "Travels & reform work",
   },
+  {
+    id: "crossword",
+    number: "10",
+    title: "Rizal & the Nation: Crossword Chronicle",
+    description: "Typeset a living crossword about the Rizal Law, the world that shaped Rizal, heroism, and Filipino national consciousness.",
+    meta: "50 clues · 5 min",
+    tone: "press",
+    symbol: "#",
+    skill: "Law, context & nationhood",
+  },
 ];
 
 export const comingSoon = [
@@ -104,6 +115,7 @@ export const gameComponents: Record<GameId, ComponentType<GameProps>> = {
   hearts: HeartsGame,
   museum: MasterpieceMuseumGame,
   global: GlobalSojournGame,
+  crossword: RizalCrosswordGame,
 };
 
 export function GameCardScene({ game }: { game: GameId }) {
@@ -113,5 +125,6 @@ export function GameCardScene({ game }: { game: GameId }) {
   if (game === "scholar") return <div className="card-scene scholar-card-scene"><img src="/art/universidad-central.jpg" alt="" /><span className="mini-passport passport-a">01</span><span className="mini-passport passport-b">?</span><span className="mini-passport passport-c">06</span><strong>Study · Close · Recall</strong></div>;
   if (game === "hearts") return <div className="card-scene hearts-card-scene"><img src="/art/rizal-letter.webp" alt="" /><span className="mini-envelope envelope-a">?</span><span className="mini-envelope envelope-b">YK</span><span className="mini-wax">RA</span><strong>Read · Seal · Send</strong></div>;
   if (game === "global") return <div className="card-scene global-card-scene"><img src="/art/global-sojourn-atlas-v2.webp" alt="" /><span className="mini-world-route">••••••</span><span className="mini-world-ship">⛵</span><strong>Read · Chart · Sail</strong></div>;
+  if (game === "crossword") return <div className="card-scene crossword-card-scene"><img src="/art/crossword-pressroom.jpg" alt="" /><span className="mini-crossword-grid" aria-hidden="true"><i>R</i><i /><i /><i>I</i><i>Z</i><i>A</i><i /><i>L</i><i /></span><strong>Clue · Cross · Print</strong></div>;
   return <div className="card-scene museum-card-scene"><img src="/art/masterpiece-museum.png" alt="" /><span className="mini-frame frame-a">✉</span><span className="mini-frame frame-b">❧</span><span className="mini-plaque">CURATE</span><strong>Inspect · Label · Install</strong></div>;
 }

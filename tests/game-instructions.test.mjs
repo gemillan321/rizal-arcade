@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { gameInstructions } from "../app/gameInstructions.ts";
 
-const expectedGames = ["values", "novels", "codebreaker", "scholar", "hearts", "museum", "global"];
+const expectedGames = ["values", "novels", "codebreaker", "scholar", "hearts", "museum", "global", "crossword"];
 
 test("every playable game has a complete pre-game briefing", () => {
   assert.deepEqual(Object.keys(gameInstructions), expectedGames);
@@ -27,4 +27,5 @@ test("instructions name the interaction that makes each game distinct", () => {
   assert.match(gameInstructions.hearts.steps.join(" "), /identity seal|postmark/i);
   assert.match(gameInstructions.museum.steps.join(" "), /gallery|plaque/i);
   assert.match(gameInstructions.global.steps.join(" "), /city|destination|journey stop/i);
+  assert.match(gameInstructions.crossword.steps.join(" "), /Across|Down|crossing|grid/i);
 });

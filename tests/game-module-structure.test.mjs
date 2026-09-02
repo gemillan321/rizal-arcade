@@ -10,6 +10,7 @@ const modules = [
   "hearts-and-horizons/index.tsx",
   "masterpiece-museum/index.tsx",
   "global-sojourn/index.tsx",
+  "rizal-crossword/index.tsx",
   "game-template/GameTemplate.tsx",
 ];
 
@@ -29,4 +30,5 @@ test("unfinished contributor templates cannot appear in the live registry", asyn
   assert.doesNotMatch(registry, /GameTemplate/);
   assert.match(registry, /global: GlobalSojournGame/);
   assert.match(registry, /museum: MasterpieceMuseumGame/);
+  assert.match(registry, /crossword: RizalCrosswordGame/);
 });

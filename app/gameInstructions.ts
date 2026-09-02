@@ -1,4 +1,4 @@
-export type InstructionGameId = "values" | "novels" | "codebreaker" | "scholar" | "hearts" | "museum" | "global";
+export type InstructionGameId = "values" | "novels" | "codebreaker" | "scholar" | "hearts" | "museum" | "global" | "crossword";
 
 export type GameInstruction = {
   title: string;
@@ -93,5 +93,17 @@ export const gameInstructions: Record<InstructionGameId, GameInstruction> = {
     ],
     scoring: "Chart eight randomized routes before all four travel permits are punched. Correct streaks and first-try navigation earn bonus points.",
     tip: "Do not rely on geography alone. Connect the dates, people, publications, institutions, and events in all three clues.",
+  },
+  crossword: {
+    title: "Rizal & the Nation: Crossword Chronicle",
+    topic: "The Rizal Law, nineteenth-century society, Rizalian heroism, and Filipino national consciousness",
+    goal: "Complete an eight-word newspaper crossword by using course evidence and the letters created where answers intersect.",
+    steps: [
+      "Choose an Across or Down clue from the compositor’s desk; its cells will light up on the printing form.",
+      "Type the complete answer without spaces, using solved crossing letters to test what fits, then press Lock word.",
+      "Solve all eight entries before four incorrect checks use up the press’s ink; each round draws from fifty clues and builds a new grid.",
+    ],
+    scoring: "A correct word earns 100 points plus a streak bonus. A wrong check uses one of four ink ribbons; revealing a letter costs 20 points.",
+    tip: "Move to another clue when stuck. A confirmed crossing letter is stronger evidence than an early guess.",
   },
 };
