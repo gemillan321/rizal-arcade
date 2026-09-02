@@ -1,4 +1,4 @@
-export type InstructionGameId = "values" | "novels" | "codebreaker" | "scholar" | "hearts" | "museum";
+export type InstructionGameId = "values" | "novels" | "codebreaker" | "scholar" | "hearts" | "museum" | "global";
 
 export type GameInstruction = {
   title: string;
@@ -61,7 +61,7 @@ export const gameInstructions: Record<InstructionGameId, GameInstruction> = {
   hearts: {
     title: "Hearts & Horizons",
     topic: "Rizal’s documented relationships and the women he met",
-    goal: "Use each three-clue portrait dossier to identify the woman and connect her with the correct place in Rizal’s journey.",
+    goal: "Use each anonymous three-clue dossier to identify the woman and connect her with the correct place in Rizal’s journey.",
     steps: [
       "Read all three pieces of evidence in the center dossier.",
       "Choose an identity seal on the left and a journey postmark on the right.",
@@ -81,5 +81,17 @@ export const gameInstructions: Record<InstructionGameId, GameInstruction> = {
     ],
     scoring: "Complete six exhibits. A wrong gallery, plaque, or both costs one of four lives; correct streaks earn bonus points.",
     tip: "Genre tells you where a work belongs; the evidence tells you which interpretation belongs on its plaque.",
+  },
+  global: {
+    title: "Global Sojourn — Chart the Journey",
+    topic: "Rizal’s international travels, reform work, medical training, and publications abroad",
+    goal: "Build an eight-stop world journey by drawing each route from Rizal’s traveler token to the port identified by a historical telegram.",
+    steps: [
+      "Read the period, mission, and all three clues in the incoming telegram below the map.",
+      "Drag Rizal’s ship from its current position to a glowing destination port. You may also tap a port or press 1, 2, or 3.",
+      "A correct route sails across the map and stamps the city. A wrong route is crossed out and punches one travel permit.",
+    ],
+    scoring: "Chart eight randomized routes before all four travel permits are punched. Correct streaks and first-try navigation earn bonus points.",
+    tip: "Do not rely on geography alone. Connect the dates, people, publications, institutions, and events in all three clues.",
   },
 };

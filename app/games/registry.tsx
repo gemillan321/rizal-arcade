@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import type { ComponentType } from "react";
 import { CodebreakerGame } from "./codebreaker";
+import { GlobalSojournGame } from "./global-sojourn";
 import { HeartsGame } from "./hearts-and-horizons";
 import { MasterpieceMuseumGame } from "./masterpiece-museum";
 import { NovelsGame } from "./noli-case-files";
@@ -62,7 +63,7 @@ export const gameCards: Array<{
     id: "hearts",
     number: "05",
     title: "Hearts & Horizons",
-    description: "Read a portrait dossier, identify the woman, match her to the right place in Rizal’s journey, then seal and send the evidence.",
+    description: "Read an anonymous evidence dossier, identify the woman, match her to the right place in Rizal’s journey, then seal and send the evidence.",
     meta: "Module 5 correspondence · 4 min",
     tone: "rose",
     symbol: "H",
@@ -78,10 +79,19 @@ export const gameCards: Array<{
     symbol: "A",
     skill: "Works, genres & significance",
   },
+  {
+    id: "global",
+    number: "07",
+    title: "Global Sojourn — Chart the Journey",
+    description: "Decode travel telegrams, draw routes across a living world atlas, and follow Rizal’s international journey.",
+    meta: "50 telegrams · 5 min",
+    tone: "teal",
+    symbol: "G",
+    skill: "Travels & reform work",
+  },
 ];
 
 export const comingSoon = [
-  { title: "Global Sojourn", label: "Travels & reform work", symbol: "G", art: "/art/manila-map.webp", alt: "Historic map representing Rizal’s journeys" },
   { title: "Trial & Legacy", label: "Exile, trial & execution", symbol: "T", art: "/art/rizal-poster.webp", alt: "Historic public-domain José Rizal poster" },
 ];
 
@@ -93,6 +103,7 @@ export const gameComponents: Record<GameId, ComponentType<GameProps>> = {
   scholar: ScholarMemoryGame,
   hearts: HeartsGame,
   museum: MasterpieceMuseumGame,
+  global: GlobalSojournGame,
 };
 
 export function GameCardScene({ game }: { game: GameId }) {
@@ -101,5 +112,6 @@ export function GameCardScene({ game }: { game: GameId }) {
   if (game === "codebreaker") return <div className="card-scene code-card-scene"><span className="mini-code">IRAZO</span><span className="mini-wheel">A=Z</span><span className="mini-drawer">ROOTS</span><strong>Read · Decode · File</strong></div>;
   if (game === "scholar") return <div className="card-scene scholar-card-scene"><img src="/art/universidad-central.jpg" alt="" /><span className="mini-passport passport-a">01</span><span className="mini-passport passport-b">?</span><span className="mini-passport passport-c">06</span><strong>Study · Close · Recall</strong></div>;
   if (game === "hearts") return <div className="card-scene hearts-card-scene"><img src="/art/rizal-letter.webp" alt="" /><span className="mini-envelope envelope-a">?</span><span className="mini-envelope envelope-b">YK</span><span className="mini-wax">RA</span><strong>Read · Seal · Send</strong></div>;
+  if (game === "global") return <div className="card-scene global-card-scene"><img src="/art/global-sojourn-atlas-v2.webp" alt="" /><span className="mini-world-route">••••••</span><span className="mini-world-ship">⛵</span><strong>Read · Chart · Sail</strong></div>;
   return <div className="card-scene museum-card-scene"><img src="/art/masterpiece-museum.png" alt="" /><span className="mini-frame frame-a">✉</span><span className="mini-frame frame-b">❧</span><span className="mini-plaque">CURATE</span><strong>Inspect · Label · Install</strong></div>;
 }

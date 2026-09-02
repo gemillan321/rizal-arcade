@@ -12,7 +12,7 @@ Every game owns one folder. Contributors should work only inside the folder assi
 | `scholars-journey/` | Scholar's Journey | Live |
 | `hearts-and-horizons/` | Hearts & Horizons | Live |
 | `masterpiece-museum/` | Masterpiece Museum | Live |
-| `global-sojourn/` | Global Sojourn | Contributor scaffold; not live |
+| `global-sojourn/` | Global Sojourn | Live route-building game with 50 travel dossiers |
 | `game-template/` | Reusable starter | Copy this for a new game |
 
 ## Architecture

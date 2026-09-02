@@ -25,6 +25,20 @@ test("every relationship dossier maps to a distinct identity and historical hori
     assert.ok(dossier.evidence.every((clue) => clue.length >= 20), `${dossier.id} needs clear, specific evidence`);
     assert.ok(dossier.rationale.length >= 60, `${dossier.id} needs a useful review explanation`);
     assert.ok(dossier.source.trim(), `${dossier.id} needs a course or institutional source`);
+
+    const answerTerms = {
+      segunda: ["segunda", "katigbak", "lipa"],
+      valenzuela: ["valenzuela", "orang", "manila"],
+      rivera: ["rivera", "camiling"],
+      consuelo: ["consuelo", "ortiga", "madrid"],
+      seiko: ["seiko", "usui", "o-sei-san", "yokohama"],
+      gertrude: ["gertrude", "beckett", "london"],
+      nellie: ["nellie", "boustead", "biarritz"],
+      suzanne: ["suzanne", "jacoby", "brussels"],
+      josephine: ["josephine", "bracken", "dapitan"],
+    }[dossier.womanId];
+    const visibleClues = `${dossier.evidenceTitle} ${dossier.evidence.join(" ")}`.toLocaleLowerCase();
+    for (const term of answerTerms) assert.ok(!visibleClues.includes(term), `${dossier.id} reveals “${term}” before the player answers`);
   }
 });
 

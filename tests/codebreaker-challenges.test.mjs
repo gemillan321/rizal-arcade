@@ -31,6 +31,7 @@ test("every roots file is complete and belongs to one focused topic drawer", () 
     assert.ok(challenge.variants.map(normalize).includes(normalize(challenge.answer)), `${challenge.id} must accept its display answer`);
     assert.ok(challenge.source.includes("Module 4"), `${challenge.id} needs its course basis`);
     assert.doesNotMatch(challenge.answer, /\d/, `${challenge.id} exposes digits that Atbash would not encode`);
+    assert.ok(!normalize(challenge.clues.join(" ")).includes(normalize(challenge.answer)), `${challenge.id} prints its decoded answer inside the clues`);
   }
 
   const counts = Object.fromEntries([...groups].map((group) => [group, codebreakerChallenges.filter((item) => item.category === group).length]));
