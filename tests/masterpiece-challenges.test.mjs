@@ -32,6 +32,9 @@ test("every exhibit has specific evidence, a meaningful plaque, and review mater
     assert.ok(exhibit.correctPlaque.length >= 45, `${exhibit.id} needs a substantive curatorial plaque`);
     assert.ok(exhibit.rationale.length >= 65, `${exhibit.id} needs a useful review explanation`);
     assert.ok(exhibit.source.length >= 20, `${exhibit.id} needs a named source`);
+    const visibleClues = `${exhibit.clueTitle} ${exhibit.evidence.join(" ")}`.toLocaleLowerCase();
+    const galleryLabel = museumGalleriesById[exhibit.galleryId].shortTitle.toLocaleLowerCase();
+    assert.ok(!visibleClues.includes(galleryLabel), `${exhibit.id} prints its gallery label inside the clues`);
   }
 });
 

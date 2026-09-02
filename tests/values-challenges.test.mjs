@@ -18,6 +18,7 @@ test("every River Quest challenge contains reviewable learning content", () => {
     assert.ok(challenge.value.trim(), `${challenge.id} needs a value`);
     assert.ok(challenge.rationale.length >= 45, `${challenge.id} needs an explanation`);
     assert.ok(challenge.source.trim(), `${challenge.id} needs a source or course basis`);
+    assert.ok(!challenge.scenario.toLocaleLowerCase().includes(challenge.value.toLocaleLowerCase()), `${challenge.id} reveals its value label inside the scenario`);
   }
   assert.ok(new Set(valuesChallenges.map((item) => item.value)).size >= 10);
 });

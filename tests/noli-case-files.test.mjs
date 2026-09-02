@@ -22,6 +22,7 @@ test("the Noli pool balances characters, plot, and themes without El Fili answer
     assert.ok(file.hint.length >= 70, `${file.id} needs specific identifying clues`);
     assert.ok(file.rationale.length >= 55, `${file.id} needs a review explanation`);
     assert.ok(file.source.trim(), `${file.id} needs a course or primary source basis`);
+    assert.ok(!file.hint.toLocaleLowerCase().includes(file.answer.toLocaleLowerCase()), `${file.id} prints its matching answer inside the hint`);
     if (file.portraitIndex !== undefined) assert.ok(file.portraitIndex >= 0 && file.portraitIndex <= 3, `${file.id} uses a non-Noli sprite portrait`);
   }
 
