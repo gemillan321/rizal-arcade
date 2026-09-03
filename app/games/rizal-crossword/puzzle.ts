@@ -24,6 +24,7 @@ export type CrosswordPuzzle = {
   cols: number;
   entries: CrosswordEntry[];
   cells: CrosswordCell[];
+  gaps: Array<{ row: number; col: number }>;
 };
 
 type BoardCell = { letter: string; directions: Set<CrosswordDirection>; entryIds: Set<string> };
@@ -69,6 +70,14 @@ function canPlace(
     const cellCol = direction === "across" ? col + index : col;
     if (cellRow < 1 || cellCol < 1 || cellRow >= boardSize - 1 || cellCol >= boardSize - 1) return -1;
     const existing = board.get(key(cellRow, cellCol));
+    if (solution[index] === " ") {
+      if (existing) return -1;
+      const neighbors = direction === "across"
+        ? [key(cellRow - 1, cellCol), key(cellRow + 1, cellCol)]
+        : [key(cellRow, cellCol - 1), key(cellRow, cellCol + 1)];
+      if (neighbors.some((neighbor) => board.has(neighbor))) return -1;
+      continue;
+    }
     if (existing) {
       if (existing.letter !== solution[index] || existing.directions.has(direction)) return -1;
       crossings += 1;
@@ -88,6 +97,10 @@ function addEntry(board: Map<string, BoardCell>, placed: PlacedEntry) {
     const cellLocation = location(placed, index);
     const cellKey = key(cellLocation.row, cellLocation.col);
     const existing = board.get(cellKey);
+    if (placed.solution[index] === " ") {
+      board.set(cellKey, { letter: " ", directions: new Set([placed.direction]), entryIds: new Set([placed.id]) });
+      continue;
+    }
     if (existing) {
       existing.directions.add(placed.direction);
       existing.entryIds.add(placed.id);
@@ -103,8 +116,10 @@ function bestPlacement(clue: CrosswordClue, board: Map<string, BoardCell>, place
   for (const anchor of placed) {
     const direction: CrosswordDirection = anchor.direction === "across" ? "down" : "across";
     for (let anchorIndex = 0; anchorIndex < anchor.solution.length; anchorIndex += 1) {
+      if (anchor.solution[anchorIndex] === " ") continue;
       const anchorLocation = location(anchor, anchorIndex);
       for (let candidateIndex = 0; candidateIndex < solution.length; candidateIndex += 1) {
+        if (solution[candidateIndex] === " ") continue;
         if (solution[candidateIndex] !== anchor.solution[anchorIndex]) continue;
         const row = direction === "across" ? anchorLocation.row : anchorLocation.row - candidateIndex;
         const col = direction === "across" ? anchorLocation.col - candidateIndex : anchorLocation.col;
@@ -167,10 +182,15 @@ function finalize(placed: PlacedEntry[]): CrosswordPuzzle {
   const numbers = new Map(startKeys.map((startKey, index) => [startKey, index + 1]));
   const entries: CrosswordEntry[] = shifted.map((entry) => ({ ...entry, number: numbers.get(key(entry.row, entry.col)) ?? 0 }));
   const board = new Map<string, CrosswordCell>();
+  const gaps = new Map<string, { row: number; col: number }>();
   for (const entry of entries) {
     for (let index = 0; index < entry.solution.length; index += 1) {
       const cellLocation = location(entry, index);
       const cellKey = key(cellLocation.row, cellLocation.col);
+      if (entry.solution[index] === " ") {
+        gaps.set(cellKey, cellLocation);
+        continue;
+      }
       const existing = board.get(cellKey);
       if (existing) existing.entryIds.push(entry.id);
       else board.set(cellKey, {
@@ -187,6 +207,7 @@ function finalize(placed: PlacedEntry[]): CrosswordPuzzle {
     cols: maxCol - minCol + 1,
     entries,
     cells: [...board.values()],
+    gaps: [...gaps.values()],
   };
 }
 

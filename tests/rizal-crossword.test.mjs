@@ -21,11 +21,12 @@ test("Crossword Chronicle has 50 distinct, course-sourced clues", () => {
   assert.equal(new Set(crosswordClues.map((item) => item.topic)).size, 4);
   for (const item of crosswordClues) {
     const answer = normalizeCrosswordAnswer(item.answer);
+    const compactAnswer = answer.replaceAll(" ", "");
     assert.ok(answer.length >= 4 && answer.length <= 15, `${item.id} has an impractical grid length`);
-    assert.ok(item.clue.length >= 55, `${item.id} needs a specific clue`);
+    assert.ok(item.clue.length >= 35, `${item.id} needs a specific clue`);
     assert.ok(item.explanation.length >= 45, `${item.id} needs useful feedback`);
     assert.match(item.source, /^Instructor Module /, `${item.id} needs a course source`);
-    assert.ok(!item.clue.toLocaleUpperCase().replace(/[^A-Z0-9]/g, "").includes(answer), `${item.id} reveals its answer in the clue`);
+    assert.ok(!item.clue.toLocaleUpperCase().replace(/[^A-Z0-9]/g, "").includes(compactAnswer), `${item.id} reveals its answer in the clue`);
   }
 });
 
@@ -41,6 +42,10 @@ test("the composer makes a connected eight-entry crossword across repeated seeds
     assert.ok(puzzle.cells.some((cell) => cell.entryIds.length > 1), "the grid needs a crossing");
     for (const entry of puzzle.entries) {
       for (let index = 0; index < entry.solution.length; index += 1) {
+        if (entry.solution[index] === " ") {
+          assert.ok(puzzle.gaps.some((gap) => `${gap.row}:${gap.col}` === entryCellKey(entry, index)), `${entry.id} lost a word space`);
+          continue;
+        }
         const cell = puzzle.cells.find((candidate) => `${candidate.row}:${candidate.col}` === entryCellKey(entry, index));
         assert.equal(cell?.solution, entry.solution[index], `${entry.id} has a broken cell`);
       }

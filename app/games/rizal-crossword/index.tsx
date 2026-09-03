@@ -9,6 +9,20 @@ import type { CrosswordTopic } from "./content";
 const entryCount = 8;
 const maxScore = 1080;
 
+function letterCount(solution: string) {
+  return solution.replaceAll(" ", "").length;
+}
+
+function wordCount(solution: string) {
+  return solution.split(" ").filter(Boolean).length;
+}
+
+function formatDraft(value: string, solution: string): string {
+  const letters = value.toLocaleUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, letterCount(solution));
+  let letterIndex = 0;
+  return solution.split("").map((character) => character === " " ? " " : (letters[letterIndex++] ?? "")).join("").trimEnd();
+}
+
 function newRound() {
   const puzzle = createCrosswordPuzzle();
   return { puzzle, selectedId: puzzle.entries[0].id };
@@ -29,8 +43,8 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
   const [round, setRound] = useState(newRound);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [solvedIds, setSolvedIds] = useState<string[]>([]);
-  const [lives, setLives] = useState(4);
-  const [hints, setHints] = useState(3);
+  const [lives, setLives] = useState(5);
+  const [hints, setHints] = useState(5);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
@@ -45,6 +59,7 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
   const solvedSet = useMemo(() => new Set(solvedIds), [solvedIds]);
   const entriesById = useMemo(() => new Map(puzzle.entries.map((entry) => [entry.id, entry])), [puzzle]);
   const cellsByKey = useMemo(() => new Map(puzzle.cells.map((cell) => [`${cell.row}:${cell.col}`, cell])), [puzzle]);
+  const gapKeys = useMemo(() => new Set(puzzle.gaps.map((gap) => `${gap.row}:${gap.col}`)), [puzzle]);
   const across = useMemo(() => puzzle.entries.filter((entry) => entry.direction === "across").sort((a, b) => a.number - b.number), [puzzle]);
   const down = useMemo(() => puzzle.entries.filter((entry) => entry.direction === "down").sort((a, b) => a.number - b.number), [puzzle]);
   const finished = (solvedIds.length === entryCount || lives === 0) && feedback === null;
@@ -62,12 +77,12 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
     setRound((current) => ({ ...current, selectedId: entryId }));
     setWrongAttempt(false);
     const entry = entriesById.get(entryId);
-    if (entry) setAnnouncement(`${entry.number} ${entry.direction}. ${archiveLabel(entry.topic)}. ${entry.solution.length} letters.`);
+    if (entry) setAnnouncement(`${entry.number} ${entry.direction}. ${archiveLabel(entry.topic)}. ${wordCount(entry.solution)} ${wordCount(entry.solution) === 1 ? "word" : "words"}, ${letterCount(entry.solution)} letters.`);
     play("flip");
   }
 
   function updateDraft(value: string) {
-    const normalized = value.toLocaleUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, selected.solution.length);
+    const normalized = formatDraft(value, selected.solution);
     setDrafts((current) => ({ ...current, [selected.id]: normalized }));
     setWrongAttempt(false);
   }
@@ -105,13 +120,13 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
     const index = selected.solution.split("").findIndex((letter, letterIndex) => {
       const cell = cellsByKey.get(entryCellKey(selected, letterIndex));
       const crossingSolved = cell?.entryIds.some((id) => id !== selected.id && solvedSet.has(id));
-      return !crossingSolved && draft[letterIndex] !== letter;
+      return letter !== " " && !crossingSolved && draft[letterIndex] !== letter;
     });
     if (index < 0) return;
     draft[index] = selected.solution[index];
     setDrafts((current) => ({ ...current, [selected.id]: draft.join("").trimEnd() }));
     setHints((current) => current - 1);
-    setScore((current) => Math.max(0, current - 20));
+    setScore((current) => Math.max(0, current - 10));
     setWrongAttempt(false);
     setAnnouncement(`The compositor revealed letter ${index + 1}. Two points of type are now aligned.`);
     play("pickup");
@@ -133,8 +148,8 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
     setRound(newRound());
     setDrafts({});
     setSolvedIds([]);
-    setLives(4);
-    setHints(3);
+    setLives(5);
+    setHints(5);
     setScore(0);
     setStreak(0);
     setFeedback(null);
@@ -161,6 +176,7 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
   }
 
   const pattern = selected.solution.split("").map((letter, index) => {
+    if (letter === " ") return " / ";
     const cellKey = entryCellKey(selected, index);
     const cell = cellsByKey.get(cellKey);
     const crossingSolved = cell?.entryIds.some((id) => id !== selected.id && solvedSet.has(id));
@@ -188,7 +204,9 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
                   const row = Math.floor(index / puzzle.cols);
                   const col = index % puzzle.cols;
                   const cell = cellsByKey.get(`${row}:${col}`);
-                  if (!cell) return <span className="crossword-void" key={`${row}:${col}`} aria-hidden="true" />;
+                  if (!cell) return gapKeys.has(`${row}:${col}`)
+                    ? <span className="crossword-gap" key={`${row}:${col}`} aria-label="word space"><i /></span>
+                    : <span className="crossword-void" key={`${row}:${col}`} aria-hidden="true" />;
                   const active = cell.entryIds.includes(selected.id);
                   const solved = cell.entryIds.some((id) => solvedSet.has(id));
                   return <button className={`crossword-cell ${active ? "is-active" : ""} ${solved ? "is-solved" : ""}`} key={`${row}:${col}`} type="button" onClick={() => selectCell(cell)} aria-label={`${cell.number ? `Clue ${cell.number}, ` : ""}${cellLetter(cell) || "blank"}`}><small>{cell.number}</small><strong>{cellLetter(cell)}</strong></button>;
@@ -201,10 +219,10 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
           <aside className={`crossword-editor ${wrongAttempt ? "is-wrong" : ""}`}>
             <div className="editor-clip" aria-hidden="true" />
             <p className="eyebrow">Compositor’s desk</p>
-            <div className="active-clue-heading"><span>{selected.number}</span><div><small>{selected.direction} · {selected.solution.length} letters</small><strong>{archiveLabel(selected.topic)}</strong></div></div>
+            <div className="active-clue-heading"><span>{selected.number}</span><div><small>{selected.direction} · {wordCount(selected.solution)} {wordCount(selected.solution) === 1 ? "word" : "words"} · {letterCount(selected.solution)} letters</small><strong>{archiveLabel(selected.topic)}</strong></div></div>
             <p className="active-crossword-clue">{selected.clue}</p>
             <output className="crossword-pattern" aria-label="Current letter pattern">{pattern}</output>
-            <label className="crossword-answer"><span>Typeset the answer</span><input ref={answerRef} value={drafts[selected.id] ?? ""} onChange={(event) => updateDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") checkWord(); }} maxLength={selected.solution.length} disabled={solvedSet.has(selected.id)} autoComplete="off" spellCheck={false} inputMode="text" /></label>
+            <label className="crossword-answer"><span>Typeset the answer — spaces are added for you</span><input ref={answerRef} value={drafts[selected.id] ?? ""} onChange={(event) => updateDraft(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") checkWord(); }} maxLength={selected.solution.length} disabled={solvedSet.has(selected.id)} autoComplete="off" spellCheck={false} inputMode="text" /></label>
             <div className="crossword-actions"><button type="button" onClick={revealLetter} disabled={hints === 0 || solvedSet.has(selected.id)}>Reveal one letter <span>{hints} left</span></button><button type="button" onClick={checkWord} disabled={solvedSet.has(selected.id)}>Lock word</button></div>
             {wrongAttempt && <p className="typeset-warning" role="alert"><strong>Typeset rejected.</strong> The word does not fit this clue. Correct it before another ink ribbon is used.</p>}
             <button className="next-crossword-clue" type="button" onClick={nextClue}>Skip to another clue →</button>

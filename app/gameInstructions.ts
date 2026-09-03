@@ -100,10 +100,10 @@ export const gameInstructions: Record<InstructionGameId, GameInstruction> = {
     goal: "Complete an eight-word newspaper crossword by using course evidence and the letters created where answers intersect.",
     steps: [
       "Choose an Across or Down clue from the compositor’s desk; its cells will light up on the printing form.",
-      "Type the complete answer without spaces, using solved crossing letters to test what fits, then press Lock word.",
-      "Solve all eight entries before four incorrect checks use up the press’s ink; each round draws from fifty clues and builds a new grid.",
+      "Type the complete answer using solved crossing letters to test what fits. Multi-word answers display a visible space, which the game inserts for you.",
+      "Solve all eight entries before five incorrect checks use up the press’s ink; each round draws from fifty clues and builds a new grid.",
     ],
-    scoring: "A correct word earns 100 points plus a streak bonus. A wrong check uses one of four ink ribbons; revealing a letter costs 20 points.",
+    scoring: "A correct word earns 100 points plus a streak bonus. A wrong check uses one of five ink ribbons; five letter reveals are available and each costs 10 points.",
     tip: "Move to another clue when stuck. A confirmed crossing letter is stronger evidence than an early guess.",
   },
 };

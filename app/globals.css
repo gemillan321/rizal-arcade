@@ -2829,8 +2829,10 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
 .crossword-broadsheet > header strong { font: 900 11px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .12em; text-transform: uppercase; }
 .crossword-broadsheet > header i { font-size: 11px; font-style: normal; font-weight: 760; }
 .crossword-grid-scroll { max-width: 100%; overflow: auto; padding: 18px 4px 20px; scrollbar-color: var(--press-red) rgba(91,50,28,.18); }
-.crossword-grid { --crossword-cell: clamp(27px,2.75vw,41px); width: max-content; display: grid; grid-template-columns: repeat(var(--crossword-cols), var(--crossword-cell)); grid-template-rows: repeat(var(--crossword-rows), var(--crossword-cell)); margin: 0 auto; border: 4px solid #1c1915; background: #1c1915; box-shadow: 5px 6px 0 rgba(83,52,29,.34); }
-.crossword-void { background: #1c1915; }
+.crossword-grid { --crossword-cell: clamp(27px,2.75vw,41px); width: max-content; display: grid; grid-template-columns: repeat(var(--crossword-cols), var(--crossword-cell)); grid-template-rows: repeat(var(--crossword-rows), var(--crossword-cell)); margin: 0 auto; border: 4px solid #4f301d; background: linear-gradient(rgba(16,65,62,.7),rgba(31,80,73,.83)), url('/art/crossword-pressroom.jpg') center / cover; box-shadow: 5px 6px 0 rgba(83,52,29,.34); }
+.crossword-void { background: linear-gradient(135deg,rgba(25,85,79,.56),rgba(11,50,49,.7)); box-shadow: inset 0 0 0 1px rgba(246,222,174,.055); }
+.crossword-gap { position: relative; display: grid; place-items: center; background: rgba(232,192,108,.56); box-shadow: inset 0 0 0 1px rgba(80,47,23,.34); }
+.crossword-gap i { width: 54%; height: 3px; border-radius: 999px; background: rgba(74,45,25,.62); transform: rotate(-12deg); }
 .crossword-cell { position: relative; display: grid; place-items: center; min-width: 0; min-height: 0; border: 1px solid #1c1915; padding: 0; color: #1b1a17; background: rgba(255,246,219,.96); cursor: pointer; }
 .crossword-cell small { position: absolute; left: 2px; top: 2px; font: 800 clamp(5px,.55vw,8px)/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
 .crossword-cell strong { font: 950 clamp(14px,1.7vw,24px)/1 ui-monospace, SFMono-Regular, Consolas, monospace; text-transform: uppercase; }
