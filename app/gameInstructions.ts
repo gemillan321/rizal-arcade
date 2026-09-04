@@ -1,4 +1,4 @@
-export type InstructionGameId = "values" | "novels" | "codebreaker" | "scholar" | "hearts" | "museum" | "global" | "revolution" | "crossword";
+export type InstructionGameId = "values" | "novels" | "codebreaker" | "scholar" | "hearts" | "museum" | "global" | "dapitan" | "revolution" | "crossword";
 
 export type GameInstruction = {
   title: string;
@@ -93,6 +93,18 @@ export const gameInstructions: Record<InstructionGameId, GameInstruction> = {
     ],
     scoring: "Chart eight randomized routes before all four travel permits are punched. Correct streaks and first-try navigation earn bonus points.",
     tip: "Do not rely on geography alone. Connect the dates, people, publications, institutions, and events in all three clues.",
+  },
+  dapitan: {
+    title: "Dapitan to Bagumbayan",
+    topic: "Rizal’s persecution, exile, trial, execution, and legacy",
+    goal: "Reconstruct Rizal’s final years by filing each historical record under the correct timeline stage, evidence category, or Rizalian theme.",
+    steps: [
+      "Read the archive card and note whether it is a Timeline File, Evidence Check, or Rizalian Theme.",
+      "Select the classification that best fits the record.",
+      "Review the historical explanation before opening the next file.",
+    ],
+    scoring: "Classify ten randomized files. Each correct answer earns 100 points, while consecutive correct answers add a streak bonus.",
+    tip: "For Evidence Check files, distinguish carefully between claims the module supports, debates, or contradicts.",
   },
   revolution: {
     title: "El Fili: Revolution Files",

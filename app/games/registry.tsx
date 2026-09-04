@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 import type { ComponentType } from "react";
 import { CodebreakerGame } from "./codebreaker";
+import { DapitanToBagumbayanGame } from "./dapitan-to-bagumbayan";
 import { ElFiliRevolutionGame } from "./el-fili-revolution-files";
 import { GlobalSojournGame } from "./global-sojourn";
 import { HeartsGame } from "./hearts-and-horizons";
@@ -92,6 +93,16 @@ export const gameCards: Array<{
     skill: "Travels & reform work",
   },
   {
+    id: "dapitan",
+    number: "08",
+    title: "Dapitan to Bagumbayan",
+    description: "Reconstruct Rizal’s final years by sorting timeline events, testing historical claims, and identifying Rizalian themes.",
+    meta: "50 archive files · 5 min",
+    tone: "burgundy",
+    symbol: "D",
+    skill: "Exile, trial & legacy",
+  },
+  {
     id: "revolution",
     number: "09",
     title: "El Fili: Revolution Files",
@@ -113,9 +124,7 @@ export const gameCards: Array<{
   },
 ];
 
-export const comingSoon = [
-  { title: "Trial & Legacy", label: "Exile, trial & execution", symbol: "T", art: "/art/rizal-poster.webp", alt: "Historic public-domain José Rizal poster" },
-];
+export const comingSoon: Array<{ title: string; label: string; symbol: string; art: string; alt: string }> = [];
 
 
 export const gameComponents: Record<GameId, ComponentType<GameProps>> = {
@@ -126,6 +135,7 @@ export const gameComponents: Record<GameId, ComponentType<GameProps>> = {
   hearts: HeartsGame,
   museum: MasterpieceMuseumGame,
   global: GlobalSojournGame,
+  dapitan: DapitanToBagumbayanGame,
   revolution: ElFiliRevolutionGame,
   crossword: RizalCrosswordGame,
 };
@@ -137,6 +147,7 @@ export function GameCardScene({ game }: { game: GameId }) {
   if (game === "scholar") return <div className="card-scene scholar-card-scene"><img src="/art/universidad-central.jpg" alt="" /><span className="mini-passport passport-a">01</span><span className="mini-passport passport-b">?</span><span className="mini-passport passport-c">06</span><strong>Study · Close · Recall</strong></div>;
   if (game === "hearts") return <div className="card-scene hearts-card-scene"><img src="/art/rizal-letter.webp" alt="" /><span className="mini-envelope envelope-a">?</span><span className="mini-envelope envelope-b">YK</span><span className="mini-wax">RA</span><strong>Read · Seal · Send</strong></div>;
   if (game === "global") return <div className="card-scene global-card-scene"><img src="/art/global-sojourn-atlas-v2.webp" alt="" /><span className="mini-world-route">••••••</span><span className="mini-world-ship">⛵</span><strong>Read · Chart · Sail</strong></div>;
+  if (game === "dapitan") return <div className="card-scene museum-card-scene"><img src="/art/rizal-poster.webp" alt="" /><span className="mini-frame frame-a">1892</span><span className="mini-frame frame-b">1896</span><span className="mini-plaque">ARCHIVE</span><strong>Classify · Verify · Reconstruct</strong></div>;
   if (game === "revolution") return <div className="card-scene revolution-card-scene"><img src="/art/el-fili-revolution-table.webp" alt="" /><span className="mini-revolution-thread" /><span className="mini-revolution-file file-a">CAUSE</span><span className="mini-revolution-file file-b">MOVE</span><span className="mini-revolution-file file-c">FALLOUT</span><strong>Inspect · Thread · Expose</strong></div>;
   if (game === "crossword") return <div className="card-scene crossword-card-scene"><img src="/art/crossword-pressroom.jpg" alt="" /><span className="mini-crossword-grid" aria-hidden="true"><i>R</i><i /><i /><i>I</i><i>Z</i><i>A</i><i /><i>L</i><i /></span><strong>Clue · Cross · Print</strong></div>;
   return <div className="card-scene museum-card-scene"><img src="/art/masterpiece-museum.png" alt="" /><span className="mini-frame frame-a">✉</span><span className="mini-frame frame-b">❧</span><span className="mini-plaque">CURATE</span><strong>Inspect · Label · Install</strong></div>;

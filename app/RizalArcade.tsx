@@ -181,7 +181,7 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
   const closeSources = useCallback(() => setShowSources(false), []);
   const launchGame = useCallback((game: GameId) => {
     const localPreview = typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
-    if (game === "global" || localPreview) { setActiveGame(game); return; }
+    if (game === "global" || game === "dapitan" || localPreview) { setActiveGame(game); return; }
     if (!profile) { onRequestLogin(); return; }
     setActiveGame(game);
   }, [onRequestLogin, profile]);
@@ -204,8 +204,8 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
           <p className="eyebrow">The José Rizal history arcade</p>
           <h1>Press play through <em>José Rizal’s life, works, and legacy.</em></h1>
           <p className="hero-intro">Hop across ideas, match characters, and crack archive codes in quick games built from Rizal’s life, works, and world.</p>
-          <div className="hero-actions"><button className="button button-primary" type="button" onClick={() => launchGame("values")}>Start playing <span>▶</span></button><span>9 games · Student sign-in · Global Sojourn guest preview</span></div>
-          <div className="hero-proof"><span><strong>9</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>400+</strong> sourced challenges</span></div>
+          <div className="hero-actions"><button className="button button-primary" type="button" onClick={() => launchGame("values")}>Start playing <span>▶</span></button><span>10 games · Student sign-in · Games 7–8 guest preview</span></div>
+          <div className="hero-proof"><span><strong>10</strong> playable games</span><span><strong>2–5</strong> minute rounds</span><span><strong>450+</strong> sourced challenges</span></div>
         </div>
         <div className="hero-art arcade-cabinet-wrap">
           <div className="arcade-cabinet">
@@ -248,10 +248,10 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
         <div className="classroom-panel"><span className="panel-label">A typical five-minute round</span><div className="timeline-row"><strong>00:00</strong><span>Sign in and choose a game</span></div><div className="timeline-row"><strong>00:30</strong><span>Hop, match, decode, or recall</span></div><div className="timeline-row"><strong>04:00</strong><span>Review the historical evidence</span></div><div className="timeline-row"><strong>05:00</strong><span>Save a section score and discuss</span></div><button className="button button-light" type="button" onClick={() => launchGame("values")}>Start River Quest</button></div>
       </section>
 
-      <section className="coming-section">
+      {comingSoon.length > 0 ? <section className="coming-section">
         <div className="section-heading"><div><p className="eyebrow">Next in the archive</p><h2>The arcade can keep growing.</h2></div><p>A modular format makes it easy to add new games after your instructor reviews the learning content.</p></div>
-        <div className="coming-grid">{comingSoon.map((game, index) => <article key={game.title}><div><img src={game.art} alt={game.alt} loading="lazy" /><span>{game.symbol}</span><small>0{index + 8}</small></div><p>{game.label}</p><h3>{game.title}</h3><span className="soon-pill">Next cabinet</span></article>)}</div>
-      </section>
+        <div className="coming-grid">{comingSoon.map((game, index) => <article key={game.title}><div><img src={game.art} alt={game.alt} loading="lazy" /><span>{game.symbol}</span><small>{String(index + 11).padStart(2, "0")}</small></div><p>{game.label}</p><h3>{game.title}</h3><span className="soon-pill">Next cabinet</span></article>)}</div>
+      </section> : null}
 
       <section className="manifesto"><img src="/art/rizal-poster.webp" alt="Public-domain poster reading Rizal died for you—be worthy of him" loading="lazy" /><div><p className="eyebrow">A new way into history</p><p>Not a quiz wearing a costume. Every room gives history a rule, a rhythm, and a reason to try again.</p><button type="button" onClick={() => setShowSources(true)}>How we handle historical accuracy <span>→</span></button></div></section>
 

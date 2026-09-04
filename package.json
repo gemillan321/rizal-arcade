@@ -10,7 +10,7 @@
     "build": "vinext build",
     "build:vercel": "vite build --config vite.vercel.config.ts",
     "start": "vinext start",
-    "test": "npm run build && npm run build:vercel && node --test tests/rendered-html.test.mjs tests/vercel-output.test.mjs tests/roster-parser.test.mjs tests/challenge-bank.test.mjs tests/values-challenges.test.mjs tests/codebreaker-challenges.test.mjs tests/noli-case-files.test.mjs tests/scholar-memory.test.mjs tests/hearts-challenges.test.mjs tests/masterpiece-challenges.test.mjs tests/global-sojourn.test.mjs tests/el-fili-revolution.test.mjs tests/rizal-crossword.test.mjs tests/game-instructions.test.mjs tests/game-module-structure.test.mjs",
+    "test": "npm run build && npm run build:vercel && node --test tests/rendered-html.test.mjs tests/vercel-output.test.mjs tests/roster-parser.test.mjs tests/challenge-bank.test.mjs tests/values-challenges.test.mjs tests/codebreaker-challenges.test.mjs tests/noli-case-files.test.mjs tests/scholar-memory.test.mjs tests/hearts-challenges.test.mjs tests/masterpiece-challenges.test.mjs tests/global-sojourn.test.mjs app/games/dapitan-to-bagumbayan/content.test.mjs tests/el-fili-revolution.test.mjs tests/rizal-crossword.test.mjs tests/game-instructions.test.mjs tests/game-module-structure.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
   },
