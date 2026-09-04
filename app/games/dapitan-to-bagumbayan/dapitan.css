@@ -1,0 +1,2162 @@
+/* =========================================================
+   DAPITAN TO BAGUMBAYAN — CHRONICLE EXPRESS
+   Symbolic railway reconstruction game.
+   ========================================================= */
+
+.chronicle-game,
+.chronicle-loading,
+.chronicle-results {
+  --ink: #071c24;
+  --deep-ink: #041116;
+  --cream: #f8e8ba;
+  --paper: #ead8a6;
+  --brass: #d8a847;
+  --brass-light: #ffd572;
+  --red: #9e2938;
+  --green: #4f956c;
+  --signal-red: #d84c56;
+  --sky-a: #305c67;
+  --sky-b: #c98557;
+  min-height: calc(100vh - 82px);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.chronicle-game {
+  position: relative;
+  overflow: hidden;
+  color: var(--cream);
+  background: var(--deep-ink);
+}
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+.chronicle-loading {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 1.25rem;
+  color: var(--cream);
+  background:
+    radial-gradient(circle at 50% 40%, rgba(216, 168, 71, 0.12), transparent 24%),
+    #061820;
+}
+
+.chronicle-loading p {
+  margin: 0;
+  font: 800 0.76rem/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.chronicle-loading-engine {
+  position: relative;
+  width: 170px;
+  height: 78px;
+  border: 4px solid #2a1116;
+  border-radius: 42px 18px 12px 12px;
+  background: linear-gradient(#b63a43, #771e2b);
+  box-shadow: inset 0 0 0 4px rgba(255,255,255,.06), 0 14px 30px rgba(0,0,0,.4);
+  animation: engine-idle 700ms ease-in-out infinite alternate;
+}
+
+.chronicle-loading-engine::before {
+  content: "";
+  position: absolute;
+  left: 16px;
+  top: -35px;
+  width: 30px;
+  height: 42px;
+  background: #26191a;
+  border-radius: 5px 5px 0 0;
+}
+
+.chronicle-loading-wheel {
+  position: absolute;
+  bottom: -20px;
+  width: 42px;
+  height: 42px;
+  border: 7px solid #1b1514;
+  border-radius: 50%;
+  background: #b78234;
+  box-shadow: inset 0 0 0 4px #46311c;
+  animation: wheel-spin 650ms linear infinite;
+}
+
+.chronicle-loading-wheel:first-of-type { left: 26px; }
+.chronicle-loading-wheel:last-of-type { right: 24px; }
+
+/* =========================================================
+   WORLD / DIORAMA
+   ========================================================= */
+
+.chronicle-world {
+  position: relative;
+  height: clamp(330px, 46vh, 510px);
+  overflow: hidden;
+  isolation: isolate;
+  border-bottom: 4px solid #221711;
+  background: linear-gradient(180deg, var(--sky-a), var(--sky-b));
+  transition: background 700ms ease;
+}
+
+.scene-dapitan {
+  --sky-a: #2a6873;
+  --sky-b: #d98f56;
+}
+
+.scene-fort {
+  --sky-a: #273d4a;
+  --sky-b: #875c51;
+}
+
+.scene-bagumbayan {
+  --sky-a: #5c7180;
+  --sky-b: #d3a463;
+}
+
+.chronicle-sky,
+.chronicle-horizon,
+.chronicle-landmark,
+.telegraph-poles,
+.chronicle-track-bed,
+.chronicle-train-wrap {
+  position: absolute;
+  inset-inline: 0;
+}
+
+.chronicle-sky {
+  inset: 0;
+  z-index: -8;
+  overflow: hidden;
+}
+
+.chronicle-sky::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(rgba(7, 28, 36, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(7, 28, 36, 0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mix-blend-mode: multiply;
+}
+
+.chronicle-sun {
+  position: absolute;
+  top: 38px;
+  right: clamp(80px, 12vw, 220px);
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: #f7d078;
+  box-shadow: 0 0 50px rgba(255, 211, 111, .36);
+  transition: transform 800ms ease, opacity 800ms ease;
+}
+
+.scene-fort .chronicle-sun {
+  opacity: .45;
+  transform: translateY(20px);
+}
+
+.scene-bagumbayan .chronicle-sun {
+  opacity: .92;
+  transform: translate(-6vw, 55px) scale(.78);
+}
+
+.chronicle-cloud {
+  position: absolute;
+  width: 150px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(239, 225, 186, .25);
+  filter: blur(.3px);
+  animation: cloud-drift 26s linear infinite;
+}
+
+.chronicle-cloud::before,
+.chronicle-cloud::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  border-radius: 50%;
+  background: inherit;
+}
+
+.chronicle-cloud::before {
+  left: 24px;
+  width: 55px;
+  height: 55px;
+}
+
+.chronicle-cloud::after {
+  right: 20px;
+  width: 76px;
+  height: 44px;
+}
+
+.cloud-a { top: 66px; left: -120px; animation-delay: -4s; }
+.cloud-b { top: 128px; left: 30%; animation-delay: -14s; transform: scale(.7); }
+.cloud-c { top: 42px; left: 72%; animation-delay: -20s; transform: scale(.52); }
+
+.chronicle-horizon.far {
+  z-index: -6;
+  bottom: 98px;
+  height: 155px;
+  opacity: .55;
+  background:
+    linear-gradient(145deg, transparent 0 20%, rgba(12, 43, 43, .55) 20% 32%, transparent 32% 38%, rgba(11, 48, 40, .58) 38% 54%, transparent 54%),
+    linear-gradient(35deg, rgba(10, 42, 37, .6), rgba(10, 42, 37, .2));
+  clip-path: polygon(0 72%, 8% 55%, 17% 66%, 28% 34%, 40% 66%, 54% 42%, 67% 64%, 81% 36%, 100% 67%, 100% 100%, 0 100%);
+  transform: translateX(calc(var(--journey) * -.08));
+  transition: transform 700ms ease;
+}
+
+.chronicle-horizon.near {
+  z-index: -4;
+  bottom: 72px;
+  height: 100px;
+  background: #0d302d;
+  clip-path: polygon(0 66%, 8% 44%, 17% 69%, 27% 47%, 41% 72%, 50% 48%, 61% 68%, 72% 44%, 83% 73%, 93% 48%, 100% 67%, 100% 100%, 0 100%);
+  box-shadow: inset 0 25px 34px rgba(0,0,0,.18);
+  transform: translateX(calc(var(--journey) * -.14));
+  transition: transform 700ms ease;
+}
+
+.chronicle-landmark {
+  z-index: -3;
+  bottom: 78px;
+  height: 180px;
+  pointer-events: none;
+}
+
+.landmark-shape {
+  position: absolute;
+  right: 10vw;
+  bottom: 0;
+  width: 210px;
+  height: 120px;
+  opacity: .72;
+  transition: all 700ms ease;
+}
+
+.scene-dapitan .landmark-shape {
+  border-bottom: 10px solid #112d29;
+}
+
+.scene-dapitan .landmark-shape::before,
+.scene-dapitan .landmark-shape::after {
+  content: "";
+  position: absolute;
+  bottom: 10px;
+}
+
+.scene-dapitan .landmark-shape::before {
+  left: 70px;
+  width: 72px;
+  height: 72px;
+  background: #193f35;
+  clip-path: polygon(50% 0, 57% 42%, 92% 18%, 67% 53%, 100% 61%, 60% 66%, 70% 100%, 50% 72%, 29% 100%, 39% 66%, 0 61%, 33% 53%, 8% 18%, 44% 42%);
+}
+
+.scene-dapitan .landmark-shape::after {
+  right: 0;
+  width: 86px;
+  height: 52px;
+  border: 8px solid #17362f;
+  border-bottom: 0;
+  background: #c08b53;
+  clip-path: polygon(0 36%, 50% 0, 100% 36%, 100% 100%, 0 100%);
+}
+
+.scene-fort .landmark-shape {
+  right: 8vw;
+  width: 260px;
+  height: 145px;
+  background: #26312f;
+  clip-path: polygon(0 30%, 12% 30%, 12% 12%, 27% 12%, 27% 30%, 70% 30%, 70% 8%, 86% 8%, 86% 30%, 100% 30%, 100% 100%, 0 100%);
+  box-shadow: inset 0 15px 0 rgba(255,255,255,.04);
+}
+
+.scene-fort .landmark-shape::before {
+  content: "";
+  position: absolute;
+  left: 96px;
+  bottom: 0;
+  width: 68px;
+  height: 72px;
+  border: 10px solid #111c1b;
+  border-bottom: 0;
+  border-radius: 40px 40px 0 0;
+}
+
+.scene-bagumbayan .landmark-shape {
+  right: 10vw;
+  width: 120px;
+  height: 170px;
+}
+
+.scene-bagumbayan .landmark-shape::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 24px;
+  height: 142px;
+  transform: translateX(-50%);
+  background: #303c38;
+  clip-path: polygon(42% 0, 58% 0, 65% 68%, 95% 100%, 5% 100%, 35% 68%);
+}
+
+.scene-bagumbayan .landmark-shape::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -6px;
+  width: 40px;
+  height: 40px;
+  transform: translateX(-50%) rotate(45deg);
+  border: 6px solid #303c38;
+}
+
+.telegraph-poles {
+  z-index: -2;
+  bottom: 80px;
+  height: 125px;
+  display: flex;
+  justify-content: space-around;
+  opacity: .5;
+  transform: translateX(calc(var(--journey) * -.2));
+  transition: transform 700ms ease;
+}
+
+.telegraph-poles::before,
+.telegraph-poles::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 18px;
+  border-top: 2px solid rgba(7, 28, 36, .58);
+}
+
+.telegraph-poles::after { top: 29px; }
+
+.telegraph-poles i {
+  position: relative;
+  width: 7px;
+  height: 120px;
+  background: #1f2624;
+}
+
+.telegraph-poles i::before {
+  content: "";
+  position: absolute;
+  left: -23px;
+  top: 12px;
+  width: 53px;
+  height: 7px;
+  background: #1f2624;
+}
+
+.chronicle-scene-caption {
+  position: absolute;
+  z-index: 6;
+  top: 28px;
+  left: clamp(20px, 5vw, 78px);
+  display: grid;
+  max-width: 370px;
+  padding: .85rem 1rem;
+  color: #f9edc7;
+  background: rgba(4, 17, 22, .58);
+  border-left: 4px solid var(--brass);
+  backdrop-filter: blur(4px);
+}
+
+.chronicle-scene-caption span,
+.chronicle-progress-board span {
+  color: var(--brass-light);
+  font: 900 .62rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.chronicle-scene-caption strong {
+  margin-top: .25rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.4rem, 2.4vw, 2.3rem);
+  line-height: 1;
+}
+
+.chronicle-scene-caption small {
+  margin-top: .4rem;
+  color: rgba(249, 237, 199, .76);
+  line-height: 1.4;
+}
+
+.chronicle-progress-board {
+  position: absolute;
+  z-index: 7;
+  top: 28px;
+  right: clamp(20px, 5vw, 78px);
+  width: min(280px, 34vw);
+  padding: .8rem 1rem;
+  background: rgba(4, 17, 22, .72);
+  border: 1px solid rgba(255, 213, 114, .48);
+  box-shadow: 6px 7px 0 rgba(158, 41, 56, .44);
+  backdrop-filter: blur(5px);
+}
+
+.chronicle-progress-board strong {
+  float: right;
+  font: 900 .76rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.chronicle-progress-track {
+  clear: both;
+  height: 8px;
+  margin: .7rem 0 .45rem;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.18);
+  background: #071c24;
+}
+
+.chronicle-progress-track i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--red), var(--brass));
+  transition: width 620ms cubic-bezier(.22,1,.36,1);
+}
+
+.chronicle-progress-board small {
+  color: rgba(249, 237, 199, .58);
+  font-size: .6rem;
+  line-height: 1.2;
+}
+
+/* =========================================================
+   TRACK AND TRAIN
+   ========================================================= */
+
+.chronicle-track-bed {
+  z-index: 3;
+  bottom: 18px;
+  height: 73px;
+  background: linear-gradient(#4a3424, #1d1714 74%);
+  box-shadow: 0 -12px 30px rgba(0,0,0,.25);
+}
+
+.chronicle-rail {
+  position: absolute;
+  left: -5%;
+  width: 110%;
+  height: 6px;
+  background: linear-gradient(#b1aaa0, #49433e 55%, #1b1817);
+  box-shadow: 0 3px 0 #100e0d;
+}
+
+.rail-top { top: 19px; }
+.rail-bottom { bottom: 12px; }
+
+.chronicle-sleepers {
+  position: absolute;
+  inset: 8px 0 0;
+  background: repeating-linear-gradient(90deg, transparent 0 35px, #2b2018 35px 51px, transparent 51px 78px);
+}
+
+.chronicle-game.is-advancing .chronicle-sleepers {
+  animation: sleepers-rush 340ms linear infinite;
+}
+
+.chronicle-train-wrap {
+  z-index: 5;
+  bottom: 49px;
+  left: clamp(20px, 4vw, 70px);
+  width: calc(100% - clamp(40px, 8vw, 140px));
+  overflow: visible;
+}
+
+.steam-train {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  transform-origin: 20% 100%;
+}
+
+.steam-train.is-moving {
+  /*
+    The locomotive now faces right. Forward travel is communicated by
+    clockwise wheels + track motion, while the chassis only rocks slightly
+    so it never appears to reverse after each file.
+  */
+  animation: train-surge 720ms cubic-bezier(.22,1,.36,1) both;
+}
+
+.steam-locomotive {
+  position: relative;
+  flex: 0 0 210px;
+  height: 112px;
+
+  /* Original locomotive artwork was drawn facing left.
+     Mirror only the engine so it leads the consist toward Bagumbayan. */
+  transform: scaleX(-1);
+  transform-origin: center bottom;
+}
+
+.locomotive-boiler {
+  position: absolute;
+  left: 34px;
+  bottom: 28px;
+  width: 124px;
+  height: 58px;
+  border: 5px solid #251217;
+  border-radius: 34px 12px 12px 34px;
+  background: linear-gradient(180deg, #be3b45, #7d1f2b);
+  box-shadow: inset 0 7px 0 rgba(255,255,255,.08), 0 10px 18px rgba(0,0,0,.34);
+}
+
+.locomotive-cab {
+  position: absolute;
+  left: 140px;
+  bottom: 28px;
+  width: 62px;
+  height: 88px;
+  border: 5px solid #251217;
+  border-bottom-width: 8px;
+  background: linear-gradient(90deg, #a42d39, #6f1d28);
+}
+
+.locomotive-cab::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 12px;
+  height: 31px;
+  border: 4px solid #251217;
+  background: linear-gradient(#ffd881, #70433a);
+}
+
+.locomotive-front {
+  position: absolute;
+  left: 12px;
+  bottom: 29px;
+  width: 40px;
+  height: 45px;
+  border: 5px solid #251217;
+  border-radius: 8px 0 0 8px;
+  background: #8e2531;
+}
+
+.locomotive-chimney {
+  position: absolute;
+  left: 48px;
+  bottom: 79px;
+  width: 27px;
+  height: 58px;
+  z-index: 4;
+  border: 4px solid #1c1515;
+  border-radius: 4px 4px 0 0;
+  background: #392728;
+}
+
+.locomotive-chimney::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: -11px;
+  width: 35px;
+  height: 14px;
+  border: 4px solid #1c1515;
+  background: #4f3433;
+}
+
+.locomotive-lamp {
+  position: absolute;
+  left: 8px;
+  bottom: 63px;
+  width: 19px;
+  height: 19px;
+  z-index: 5;
+  border: 4px solid #2a1a14;
+  border-radius: 50%;
+  background: #ffd35f;
+  box-shadow: -15px 0 30px rgba(255,211,95,.5);
+}
+
+.train-wheel {
+  position: absolute;
+  bottom: 4px;
+  width: 42px;
+  height: 42px;
+  border: 7px solid #181313;
+  border-radius: 50%;
+  background: radial-gradient(circle, #d9a847 0 13%, #5b3a22 14% 26%, #a86f2f 27% 56%, #2c1c17 57%);
+  box-shadow: 0 4px 0 rgba(0,0,0,.28);
+}
+
+.wheel-a { left: 44px; }
+.wheel-b { left: 133px; }
+
+.steam-train.is-moving .train-wheel,
+.chronicle-loading-wheel {
+  animation: wheel-spin 360ms linear infinite;
+}
+
+.train-rod {
+  position: absolute;
+  left: 58px;
+  bottom: 23px;
+  width: 110px;
+  height: 6px;
+  z-index: 7;
+  background: #d0b16d;
+  transform-origin: left center;
+  box-shadow: 0 2px 0 #302016;
+}
+
+.steam-train.is-moving .train-rod {
+  animation: rod-pump 360ms linear infinite;
+}
+
+.steam-smoke {
+  position: absolute;
+  z-index: 0;
+  left: 38px;
+  bottom: 128px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(25, 27, 27, .55);
+  filter: blur(.4px);
+  animation: smoke-rise 2.4s ease-out infinite;
+}
+
+.smoke-2 { animation-delay: -.8s; }
+.smoke-3 { animation-delay: -1.6s; }
+
+.train-carriages {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  min-width: 0;
+}
+
+.train-carriage {
+  position: relative;
+  flex: 0 0 82px;
+  height: 72px;
+  margin-bottom: 28px;
+  border: 5px solid #221516;
+  border-radius: 7px 7px 4px 4px;
+  background: linear-gradient(#ad3540, #74212a);
+  box-shadow: inset 0 7px 0 rgba(255,255,255,.05), 0 8px 14px rgba(0,0,0,.28);
+  animation: carriage-arrive 420ms cubic-bezier(.22,1,.36,1) both;
+}
+
+.train-carriage.is-correct { border-top-color: #72bd78; }
+.train-carriage.is-wrong { border-top-color: #e3575d; }
+.train-carriage.is-next {
+  opacity: .3;
+  border-style: dashed;
+  filter: grayscale(.4);
+}
+
+.carriage-window {
+  position: absolute;
+  left: 13px;
+  right: 13px;
+  top: 18px;
+  height: 25px;
+  border: 4px solid #281717;
+  background: linear-gradient(#ffd97f, #81623f);
+}
+
+.carriage-number {
+  position: absolute;
+  left: 7px;
+  top: -21px;
+  color: #ffe5a0;
+  font: 900 .55rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.train-carriage .train-wheel {
+  bottom: -31px;
+  width: 29px;
+  height: 29px;
+  border-width: 5px;
+}
+
+.train-carriage .train-wheel:nth-of-type(3) { left: 8px; }
+.train-carriage .train-wheel:nth-of-type(4) { right: 8px; }
+
+/* =========================================================
+   CONSOLE / TELEGRAPH
+   ========================================================= */
+
+.chronicle-console {
+  position: relative;
+  z-index: 10;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: calc(54vh - 82px);
+  padding: clamp(16px, 2.4vw, 30px) clamp(18px, 4vw, 72px) 24px;
+  color: #f8e8ba;
+  background:
+    linear-gradient(rgba(4, 17, 22, .82), rgba(4, 17, 22, .9)),
+    repeating-linear-gradient(90deg, transparent 0 34px, rgba(255, 213, 114, .035) 34px 35px),
+    #061820;
+  border-top: 3px solid var(--brass);
+  box-shadow: inset 0 18px 50px rgba(0,0,0,.28);
+}
+
+.chronicle-console::before {
+  content: "";
+  position: absolute;
+  inset: 13px 18px auto;
+  z-index: 2;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,213,114,.42), transparent);
+}
+
+.chronicle-console::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(4, 17, 22, .18) 0%, rgba(4, 17, 22, .42) 48%, rgba(4, 17, 22, .7) 100%),
+    radial-gradient(circle at 18% 22%, rgba(255, 213, 114, .12), transparent 28%),
+    radial-gradient(circle at 82% 15%, rgba(158, 41, 56, .09), transparent 24%),
+    url("./chronicle-console-bg.png") center 38% / cover no-repeat;
+  opacity: .42;
+  filter: saturate(.92) contrast(.95);
+}
+
+.chronicle-console > * {
+  position: relative;
+  z-index: 1;
+}
+
+.chronicle-dispatch {
+  display: grid;
+  grid-template-columns: minmax(110px, .22fr) minmax(0, 1fr) minmax(145px, .2fr);
+  gap: 1rem;
+  align-items: stretch;
+  max-width: 1500px;
+  margin: 0 auto 1rem;
+}
+
+.dispatch-id,
+.dispatch-message,
+.boiler-gauge,
+.switchboard-panel,
+.signal-panel,
+.cargo-yard,
+.chronicle-resolution {
+  border: 1px solid rgba(255, 213, 114, .34);
+  background: rgba(7, 28, 36, .74);
+  box-shadow: 7px 8px 0 rgba(158, 41, 56, .28), inset 0 0 30px rgba(0,0,0,.18);
+}
+
+.dispatch-id {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  min-height: 115px;
+  padding: 1rem;
+}
+
+.dispatch-id span,
+.dispatch-message > span,
+.boiler-gauge > span,
+.switchboard-title > span,
+.cargo-yard-title > span {
+  color: var(--brass-light);
+  font: 900 .58rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.dispatch-id strong {
+  margin-top: .7rem;
+  padding: .55rem .7rem;
+  color: #f8e8ba;
+  border: 2px solid var(--red);
+  font: 900 .72rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .1em;
+}
+
+.dispatch-message {
+  position: relative;
+  min-width: 0;
+  padding: 1rem 1.2rem;
+  background:
+    linear-gradient(rgba(248,232,186,.97), rgba(248,232,186,.97)),
+    repeating-linear-gradient(0deg, transparent 0 23px, rgba(40,25,20,.08) 24px);
+  color: var(--ink);
+  border-color: #c89a38;
+  box-shadow: 7px 8px 0 rgba(158, 41, 56, .38);
+}
+
+.dispatch-message > span {
+  color: var(--red);
+}
+
+.dispatch-message h2 {
+  margin: .45rem 0 .4rem;
+  font-size: clamp(1.2rem, 2vw, 2rem);
+  line-height: 1.18;
+  letter-spacing: -.025em;
+}
+
+.dispatch-message p {
+  margin: 0;
+  color: rgba(7,28,36,.68);
+  font-size: .82rem;
+  line-height: 1.45;
+}
+
+.boiler-gauge {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  min-height: 115px;
+  padding: .7rem;
+}
+
+.boiler-dial {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  margin: .35rem 0;
+  border: 7px solid #3e2d21;
+  border-radius: 50%;
+  background: conic-gradient(from 225deg, #c94b51 0 28%, #d8a847 28% 62%, #4f956c 62% 82%, #151b1b 82%);
+  box-shadow: inset 0 0 0 7px #d4c295;
+}
+
+.boiler-dial::after {
+  content: "";
+  position: absolute;
+  inset: 15px;
+  border-radius: 50%;
+  background: #0b1718;
+}
+
+.boiler-dial i {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: 50%;
+  width: 3px;
+  height: 24px;
+  background: #ffdf8c;
+  transform-origin: 50% 100%;
+  transition: transform 280ms ease;
+}
+
+.boiler-gauge strong {
+  font: 900 .72rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.boiler-gauge small {
+  margin-top: .25rem;
+  color: #71c98a;
+  font: 800 .5rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .07em;
+}
+
+/* =========================================================
+   TIMELINE — MECHANICAL TRACK SWITCH
+   ========================================================= */
+
+.switchboard-panel,
+.signal-panel,
+.cargo-yard {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 1rem 1.15rem 1.15rem;
+}
+
+.switchboard-title,
+.cargo-yard-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: .9rem;
+}
+
+.switchboard-title strong,
+.cargo-yard-title strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.12rem;
+  font-weight: 700;
+}
+
+.junction-map {
+  position: relative;
+  height: 118px;
+  margin: 0 .5rem 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.08);
+  background:
+    radial-gradient(circle, rgba(255,213,114,.07) 1px, transparent 1.2px),
+    #08171b;
+  background-size: 18px 18px;
+}
+
+.junction-main {
+  position: absolute;
+  left: 2%;
+  right: 4%;
+  top: 58px;
+  height: 8px;
+  background: repeating-linear-gradient(90deg, #a8a099 0 25px, transparent 25px 31px);
+  box-shadow: 0 0 0 2px #3b3734;
+}
+
+.junction-engine {
+  position: absolute;
+  left: 3%;
+  top: 41px;
+  padding: .35rem .5rem;
+  color: #ffd572;
+  background: #8b2732;
+  border: 2px solid #2b1517;
+  font: 900 .55rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.junction-branch {
+  position: absolute;
+  left: 26%;
+  width: 64%;
+  height: 7px;
+  transform-origin: 0 50%;
+  background: #4b4640;
+  border-block: 1px solid #7e7770;
+  transition: background 160ms ease, box-shadow 160ms ease;
+}
+
+.branch-1 { top: 58px; transform: rotate(-15deg); }
+.branch-2 { top: 58px; transform: rotate(-5deg); }
+.branch-3 { top: 58px; transform: rotate(5deg); }
+.branch-4 { top: 58px; transform: rotate(15deg); }
+
+.junction-branch.is-active {
+  background: var(--brass-light);
+  box-shadow: 0 0 18px rgba(255,213,114,.42);
+}
+
+.junction-branch span {
+  position: absolute;
+  right: 0;
+  top: -18px;
+  width: 190px;
+  color: rgba(248,232,186,.6);
+  font: 800 .52rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  text-align: right;
+  transform: rotate(calc(var(--cancel-rotation, 0deg)));
+}
+
+.branch-1 span { transform: rotate(15deg); }
+.branch-2 span { transform: rotate(5deg); }
+.branch-3 span { transform: rotate(-5deg); }
+.branch-4 span { transform: rotate(-15deg); }
+
+.switch-lever-track {
+  position: relative;
+  height: 94px;
+  margin: 0 1.3rem;
+  touch-action: none;
+  cursor: ew-resize;
+  user-select: none;
+}
+
+.switch-lever-track::before {
+  content: "";
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 46px;
+  height: 15px;
+  border: 4px solid #3a271b;
+  border-radius: 999px;
+  background: #16100e;
+  box-shadow: inset 0 3px 7px rgba(0,0,0,.65), 0 2px 0 rgba(255,255,255,.05);
+}
+
+.switch-detents {
+  position: absolute;
+  inset: 0 4%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.switch-detents span {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  color: rgba(248,232,186,.55);
+  background: #2d2119;
+  border: 3px solid #594431;
+  border-radius: 50%;
+  font: 900 .58rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  transition: all 150ms ease;
+}
+
+.switch-detents span.is-active {
+  color: #1c1713;
+  background: var(--brass-light);
+  border-color: #fff0a4;
+  box-shadow: 0 0 14px rgba(255,213,114,.42);
+}
+
+.brass-lever {
+  position: absolute;
+  z-index: 4;
+  left: var(--lever-x);
+  top: 7px;
+  width: 64px;
+  height: 78px;
+  transform: translateX(-50%);
+  transition: left 80ms linear;
+  pointer-events: none;
+}
+
+.lever-stem {
+  position: absolute;
+  left: 27px;
+  top: 19px;
+  width: 10px;
+  height: 56px;
+  border: 2px solid #553819;
+  background: linear-gradient(90deg, #8c5f21, #f5cc64 48%, #704818);
+  box-shadow: 3px 3px 0 rgba(0,0,0,.25);
+}
+
+.lever-grip {
+  position: absolute;
+  z-index: 2;
+  left: 11px;
+  top: 0;
+  width: 42px;
+  height: 31px;
+  border: 3px solid #4f2919;
+  border-radius: 12px;
+  background: linear-gradient(#9a4738, #68271f);
+  box-shadow: inset 0 4px 0 rgba(255,255,255,.07), 0 5px 8px rgba(0,0,0,.3);
+}
+
+.brass-lever strong {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  right: 0;
+  top: 7px;
+  color: #ffe8b0;
+  font: 900 .65rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  text-align: center;
+}
+
+.switch-lever-track.is-disabled,
+.signal-lever-slot.is-disabled { opacity: .55; cursor: not-allowed; }
+
+/* =========================================================
+   EVIDENCE — SEMAPHORE MACHINE
+   ========================================================= */
+
+.signal-panel {
+  display: grid;
+  grid-template-columns: minmax(220px, .35fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.signal-machine {
+  position: relative;
+  min-height: 235px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.08);
+  background: linear-gradient(#172d31, #081619 76%);
+}
+
+.semaphore-post {
+  position: absolute;
+  left: 50%;
+  bottom: 31px;
+  width: 16px;
+  height: 158px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, #4b3c2c, #b89555 50%, #423126);
+  border: 3px solid #231a14;
+}
+
+.semaphore-arm {
+  position: absolute;
+  left: 6px;
+  top: 26px;
+  width: 112px;
+  height: 18px;
+  transform: rotate(var(--signal-angle));
+  transform-origin: 0 50%;
+  border: 3px solid #3c171b;
+  background: repeating-linear-gradient(90deg, #d74953 0 25px, #f0d89b 25px 43px);
+  transition: transform 120ms ease;
+}
+
+.semaphore-arm::after {
+  content: "";
+  position: absolute;
+  right: -14px;
+  top: -3px;
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+  border-left: 14px solid #d74953;
+}
+
+.semaphore-lamp {
+  position: absolute;
+  left: -12px;
+  top: 67px;
+  width: 34px;
+  height: 34px;
+  border: 6px solid #2d211a;
+  border-radius: 50%;
+  background: var(--brass-light);
+  box-shadow: 0 0 22px rgba(255,213,114,.35);
+}
+
+.signal-track-mini {
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  bottom: 24px;
+  height: 18px;
+  border-block: 4px solid #645c56;
+  background: repeating-linear-gradient(90deg, #33241b 0 18px, transparent 18px 35px);
+}
+
+.signal-controls {
+  min-width: 0;
+}
+
+.signal-control-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 90px;
+  gap: 1rem;
+  min-height: 178px;
+}
+
+.signal-labels {
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+  gap: .45rem;
+}
+
+.signal-labels span {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  padding: .7rem 1rem;
+  color: rgba(248,232,186,.56);
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.14);
+  font-weight: 800;
+  transition: all 160ms ease;
+}
+
+.signal-labels span.is-active {
+  color: #ffe6a4;
+  border-color: rgba(255,213,114,.5);
+  background: rgba(216,168,71,.12);
+  transform: translateX(5px);
+}
+
+.signal-labels b {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #101615;
+  background: var(--brass);
+  font: 900 .62rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.signal-lever-slot {
+  position: relative;
+  touch-action: none;
+  cursor: ns-resize;
+  border: 4px solid #3b2a1d;
+  border-radius: 20px;
+  background: linear-gradient(90deg, #120d0b, #332419 50%, #120d0b);
+  box-shadow: inset 0 5px 12px rgba(0,0,0,.75), 0 3px 0 rgba(255,255,255,.04);
+}
+
+.signal-lever-slot::before,
+.signal-lever-slot::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  height: 2px;
+  background: rgba(255,213,114,.28);
+}
+
+.signal-lever-slot::before { top: 33.33%; }
+.signal-lever-slot::after { top: 66.66%; }
+
+.signal-lever-handle {
+  position: absolute;
+  left: 50%;
+  top: var(--signal-y);
+  width: 56px;
+  height: 42px;
+  transform: translate(-50%, -50%);
+  border: 4px solid #4b261c;
+  border-radius: 13px;
+  background: linear-gradient(#a04436, #67261f);
+  box-shadow: 0 6px 10px rgba(0,0,0,.4), inset 0 4px 0 rgba(255,255,255,.07);
+  transition: top 80ms linear;
+  pointer-events: none;
+}
+
+.signal-lever-handle i {
+  position: absolute;
+  left: 50%;
+  top: 37px;
+  width: 10px;
+  height: 58px;
+  transform: translateX(-50%);
+  background: linear-gradient(90deg, #755122, #f2c65e, #674319);
+  border: 2px solid #442c16;
+}
+
+/* =========================================================
+   THEME — FREIGHT CRANE / MANIFEST
+   ========================================================= */
+
+.cargo-yard {
+  position: relative;
+  overflow: hidden;
+  padding-top: .9rem;
+}
+
+.crane-gantry {
+  position: relative;
+  height: 93px;
+  margin: 0 1.2rem;
+}
+
+.gantry-beam {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 13px;
+  height: 12px;
+  border: 3px solid #3a2a1d;
+  background: repeating-linear-gradient(135deg, #aa762d 0 15px, #d9aa4a 15px 28px);
+  box-shadow: 0 5px 0 rgba(0,0,0,.22);
+}
+
+.gantry-beam::before,
+.gantry-beam::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  width: 12px;
+  height: 93px;
+  background: #5e4326;
+  border: 3px solid #2b1d15;
+}
+
+.gantry-beam::before { left: -8px; }
+.gantry-beam::after { right: -8px; }
+
+.crane-trolley {
+  position: absolute;
+  z-index: 4;
+  left: var(--crane-x);
+  top: 0;
+  width: 70px;
+  height: 28px;
+  transform: translateX(-50%);
+  border: 3px solid #312014;
+  background: var(--brass);
+  transition: left 280ms cubic-bezier(.22,1,.36,1);
+}
+
+.crane-trolley::before,
+.crane-trolley::after {
+  content: "";
+  position: absolute;
+  top: -8px;
+  width: 17px;
+  height: 17px;
+  border: 4px solid #261b15;
+  border-radius: 50%;
+  background: #7c5527;
+}
+
+.crane-trolley::before { left: 4px; }
+.crane-trolley::after { right: 4px; }
+
+.crane-cable {
+  position: absolute;
+  left: 50%;
+  top: 25px;
+  width: 3px;
+  height: 45px;
+  background: #c5b27d;
+  transform: translateX(-50%);
+  transition: height 220ms ease;
+}
+
+.crane-hook {
+  position: absolute;
+  left: 50%;
+  top: 65px;
+  width: 18px;
+  height: 18px;
+  border-right: 4px solid #d4bd82;
+  border-bottom: 4px solid #d4bd82;
+  border-radius: 0 0 12px 0;
+  transform: translateX(-50%) rotate(35deg);
+}
+
+.crane-trolley.has-cargo .crane-cable { height: 57px; }
+.crane-trolley.has-cargo .crane-hook { top: 78px; }
+
+.crane-trolley b {
+  position: absolute;
+  left: 50%;
+  top: 76px;
+  width: 132px;
+  padding: .3rem .45rem;
+  transform: translateX(-50%);
+  color: #21170f;
+  background: #d5a44c;
+  border: 3px solid #563819;
+  font: 900 .52rem/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
+  text-align: center;
+  text-transform: uppercase;
+  box-shadow: 0 6px 8px rgba(0,0,0,.3);
+}
+
+.cargo-platform {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: .7rem;
+  margin-top: .15rem;
+}
+
+.theme-crate {
+  position: relative;
+  min-height: 92px;
+  padding: .8rem .7rem;
+  color: #23170f;
+  background:
+    linear-gradient(90deg, transparent 15%, rgba(74,45,21,.14) 15% 18%, transparent 18% 82%, rgba(74,45,21,.14) 82% 85%, transparent 85%),
+    #c9964a;
+  border: 4px solid #583719;
+  box-shadow: inset 0 0 0 3px rgba(255,232,166,.14), 0 7px 0 rgba(0,0,0,.24);
+  cursor: grab;
+  transition: transform 150ms ease, filter 150ms ease, box-shadow 150ms ease;
+}
+
+.theme-crate::before,
+.theme-crate::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  right: 7px;
+  height: 5px;
+  background: rgba(74,45,21,.27);
+}
+
+.theme-crate::before { top: 12px; }
+.theme-crate::after { bottom: 12px; }
+
+.theme-crate:not(:disabled):hover,
+.theme-crate:not(:disabled):focus-visible {
+  z-index: 4;
+  transform: translateY(-7px) rotate(-1deg);
+  filter: brightness(1.08);
+  box-shadow: inset 0 0 0 3px rgba(255,232,166,.18), 0 13px 0 rgba(0,0,0,.26);
+  outline: 3px solid #53d7cb;
+  outline-offset: 3px;
+}
+
+.theme-crate.is-selected {
+  color: #24170d;
+  background-color: #e0b159;
+  border-color: var(--brass-light);
+  transform: translateY(-5px);
+}
+
+.theme-crate span,
+.theme-crate strong,
+.theme-crate small {
+  position: relative;
+  z-index: 2;
+  display: block;
+}
+
+.theme-crate span,
+.theme-crate small {
+  font: 900 .48rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .08em;
+}
+
+.theme-crate strong {
+  margin: .75rem 0 .35rem;
+  font-size: .75rem;
+  line-height: 1.18;
+}
+
+.cargo-carriage-drop {
+  position: relative;
+  min-height: 82px;
+  margin: 1rem auto 0;
+  width: min(520px, 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: .8rem 2rem 1rem;
+  color: rgba(248,232,186,.48);
+  border: 4px dashed #5e4735;
+  border-radius: 8px;
+  background: #341f1c;
+  cursor: default;
+  transition: all 180ms ease;
+}
+
+.cargo-carriage-drop.is-armed {
+  color: #ffe8aa;
+  border-style: solid;
+  border-color: var(--brass);
+  cursor: pointer;
+  box-shadow: 0 0 22px rgba(216,168,71,.14);
+}
+
+.cargo-carriage-drop.is-loaded {
+  transform: translateY(5px);
+}
+
+.cargo-carriage-door {
+  width: 82px;
+  height: 52px;
+  border: 4px solid #261617;
+  background: repeating-linear-gradient(90deg, #7b292f 0 13px, #96343b 13px 25px);
+}
+
+.cargo-carriage-drop small,
+.cargo-carriage-drop strong {
+  display: block;
+}
+
+.cargo-carriage-drop small {
+  color: var(--brass-light);
+  font: 900 .5rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .1em;
+}
+
+.cargo-carriage-drop strong {
+  margin-top: .3rem;
+  font-size: .83rem;
+}
+
+.cargo-wheel {
+  position: absolute;
+  bottom: -18px;
+  width: 28px;
+  height: 28px;
+  border: 5px solid #171010;
+  border-radius: 50%;
+  background: #8d5d28;
+}
+
+.cargo-wheel:nth-last-child(2) { left: 24%; }
+.cargo-wheel:last-child { right: 24%; }
+
+/* =========================================================
+   FEEDBACK / DISPATCH RESOLUTION
+   ========================================================= */
+
+.chronicle-resolution {
+  max-width: 1500px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem;
+}
+
+.chronicle-resolution.is-correct {
+  border-color: rgba(79,149,108,.7);
+  box-shadow: 7px 8px 0 rgba(79,149,108,.25);
+}
+
+.chronicle-resolution.is-wrong {
+  border-color: rgba(216,76,86,.72);
+  box-shadow: 7px 8px 0 rgba(216,76,86,.25);
+}
+
+.resolution-signal {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border: 5px solid #33251a;
+  border-radius: 50%;
+  background: #111717;
+}
+
+.resolution-signal span {
+  width: 33px;
+  height: 33px;
+  border-radius: 50%;
+  background: var(--signal-red);
+  box-shadow: 0 0 24px rgba(216,76,86,.42);
+}
+
+.chronicle-resolution.is-correct .resolution-signal span {
+  background: #69c783;
+  box-shadow: 0 0 24px rgba(105,199,131,.44);
+}
+
+.resolution-copy > span {
+  color: var(--brass-light);
+  font: 900 .56rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .13em;
+}
+
+.resolution-copy h3 {
+  margin: .32rem 0 .35rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.22rem;
+}
+
+.resolution-copy p {
+  margin: 0;
+  color: rgba(248,232,186,.75);
+  font-size: .79rem;
+  line-height: 1.45;
+}
+
+.resolution-copy small {
+  display: block;
+  margin-top: .45rem;
+  color: rgba(248,232,186,.48);
+  font-size: .61rem;
+}
+
+.chronicle-action-button {
+  min-height: 48px;
+  padding: .75rem 1rem;
+  color: #17120d;
+  background: var(--brass-light);
+  border: 0;
+  box-shadow: 5px 6px 0 var(--red);
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 140ms ease, box-shadow 140ms ease, filter 140ms ease;
+}
+
+.chronicle-action-button:not(:disabled):hover,
+.chronicle-action-button:not(:disabled):focus-visible {
+  transform: translate(-2px, -2px);
+  box-shadow: 8px 9px 0 var(--red);
+  filter: brightness(1.04);
+  outline: 3px solid #53d7cb;
+  outline-offset: 3px;
+}
+
+.chronicle-action-button:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+.chronicle-action-button.is-secondary {
+  color: var(--cream);
+  background: #0c2730;
+  border: 1px solid rgba(255,213,114,.5);
+}
+
+.chronicle-console-footer {
+  max-width: 1500px;
+  margin: .85rem auto 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: rgba(248,232,186,.52);
+  font: 800 .57rem/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .05em;
+}
+
+/* =========================================================
+   RESULTS — BAGUMBAYAN STATION
+   ========================================================= */
+
+.chronicle-results {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  color: var(--cream);
+  background: linear-gradient(#596f7e, #d3a463 53%, #1b2926 54%);
+}
+
+.chronicle-results-sky {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(7,28,36,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(7,28,36,.05) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+
+.chronicle-results-sun {
+  position: absolute;
+  right: 12vw;
+  top: 9vh;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: #f6d27a;
+  box-shadow: 0 0 70px rgba(246,210,122,.4);
+}
+
+.chronicle-results-station {
+  position: relative;
+  z-index: 2;
+  width: min(1220px, 100%);
+  min-height: 610px;
+  display: grid;
+  align-content: end;
+  padding: 2rem;
+  border: 3px solid #2b1d17;
+  background:
+    linear-gradient(rgba(5,18,22,.1), rgba(5,18,22,.36)),
+    transparent;
+}
+
+.station-sign {
+  position: absolute;
+  top: 4%;
+  left: 50%;
+  width: min(520px, 80%);
+  padding: 1rem 1.2rem;
+  transform: translateX(-50%);
+  color: #f6e8bd;
+  background: #17252a;
+  border: 6px solid #47331f;
+  box-shadow: 0 10px 0 rgba(0,0,0,.25);
+  text-align: center;
+}
+
+.station-sign span {
+  display: block;
+  color: var(--brass-light);
+  font: 900 .56rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .16em;
+}
+
+.station-sign strong {
+  display: block;
+  margin-top: .45rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 5vw, 4rem);
+  letter-spacing: .08em;
+}
+
+.chronicle-results-train {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: 245px;
+  transform: scale(.82);
+  transform-origin: left bottom;
+}
+
+.station-board {
+  position: relative;
+  z-index: 5;
+  width: min(760px, 96%);
+  margin-inline: auto;
+  padding: clamp(1.3rem, 3vw, 2.5rem);
+  color: #10232a;
+  background:
+    linear-gradient(rgba(248,232,186,.97), rgba(248,232,186,.97)),
+    repeating-linear-gradient(0deg, transparent 0 25px, rgba(30,30,20,.09) 26px);
+  border: 3px solid #2a1c16;
+  box-shadow: 12px 13px 0 var(--red), 0 24px 55px rgba(0,0,0,.28);
+}
+
+.station-board-kicker {
+  margin: 0;
+  color: var(--red);
+  font: 900 .62rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.station-board h2 {
+  margin: .7rem 0 .55rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 5vw, 4.2rem);
+  line-height: .96;
+}
+
+.station-board > p:not(.station-board-kicker) {
+  max-width: 620px;
+  margin: 0;
+  color: rgba(16,35,42,.72);
+  line-height: 1.55;
+}
+
+.station-board-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 1.4rem 0;
+  border: 2px solid #10232a;
+}
+
+.station-board-stats > div {
+  min-width: 0;
+  padding: .8rem;
+  text-align: center;
+}
+
+.station-board-stats > div + div {
+  border-left: 1px solid #10232a;
+}
+
+.station-board-stats span,
+.station-board-stats strong {
+  display: block;
+}
+
+.station-board-stats span {
+  font: 800 .53rem/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.station-board-stats strong {
+  margin-top: .45rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.65rem;
+}
+
+.station-board-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+}
+
+/* =========================================================
+   MOTION
+   ========================================================= */
+
+@keyframes wheel-spin { to { transform: rotate(360deg); } }
+@keyframes engine-idle { to { transform: translateY(-3px); } }
+@keyframes train-surge {
+  0% { transform: translateY(0); }
+  28% { transform: translateY(-2px); }
+  55% { transform: translateY(1px); }
+  78% { transform: translateY(-1px); }
+  100% { transform: translateY(0); }
+}
+@keyframes rod-pump {
+  0%, 100% { transform: rotate(-4deg) translateX(0); }
+  50% { transform: rotate(4deg) translateX(5px); }
+}
+@keyframes smoke-rise {
+  0% { opacity: .12; transform: translate(0, 0) scale(.55); }
+  55% { opacity: .55; }
+  /*
+    The locomotive is mirrored. Positive local X therefore drifts visually
+    left, leaving the smoke behind a train traveling to the right.
+  */
+  100% { opacity: 0; transform: translate(22px, -70px) scale(1.55); }
+}
+@keyframes sleepers-rush { to { background-position-x: -78px; } }
+@keyframes carriage-arrive {
+  /*
+    A newly reconstructed carriage locks in from the locomotive/front side,
+    reinforcing left-to-right travel instead of looking like the train backs up.
+  */
+  from { opacity: 0; transform: translateX(22px) scale(.86); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes cloud-drift {
+  from { transform: translateX(-18vw); }
+  to { transform: translateX(118vw); }
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+  .chronicle-world { height: 370px; }
+  .chronicle-dispatch { grid-template-columns: 110px minmax(0,1fr); }
+  .boiler-gauge {
+    grid-column: 1 / -1;
+    grid-template-columns: auto 62px auto auto;
+    gap: .6rem;
+    min-height: auto;
+    justify-content: center;
+  }
+  .boiler-dial { margin: 0; width: 54px; height: 54px; }
+  .boiler-dial i { height: 19px; }
+  .cargo-platform { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .train-carriage { flex-basis: 66px; }
+  .chronicle-scene-caption { max-width: 310px; }
+}
+
+@media (max-width: 760px) {
+  .chronicle-world { height: 330px; }
+  .chronicle-scene-caption {
+    top: 16px;
+    left: 14px;
+    right: 14px;
+    max-width: none;
+    padding: .65rem .75rem;
+  }
+  .chronicle-scene-caption small { display: none; }
+  .chronicle-progress-board {
+    top: auto;
+    bottom: 92px;
+    left: 14px;
+    right: 14px;
+    width: auto;
+    padding: .55rem .7rem;
+  }
+  .chronicle-progress-board small { display: none; }
+  .chronicle-train-wrap { left: 8px; width: calc(100% - 16px); bottom: 46px; }
+  .steam-locomotive {
+    flex-basis: 164px;
+    transform: scale(-.78, .78);
+    transform-origin: right bottom;
+    margin-left: -36px;
+    margin-right: 0;
+  }
+  .train-carriage { flex-basis: 54px; height: 60px; }
+  .train-carriage:nth-child(n+7) { display: none; }
+  .chronicle-console { padding-inline: 12px; }
+  .chronicle-dispatch { grid-template-columns: 1fr; }
+  .dispatch-id {
+    min-height: auto;
+    grid-template-columns: auto auto;
+    justify-content: space-between;
+    justify-items: start;
+  }
+  .dispatch-id strong { margin-top: 0; }
+  .boiler-gauge { grid-column: auto; }
+  .switchboard-title,
+  .cargo-yard-title { align-items: start; flex-direction: column; }
+  .junction-map { height: 132px; }
+  .junction-branch span { width: 120px; font-size: .44rem; }
+  .signal-panel { grid-template-columns: 1fr; }
+  .signal-machine { min-height: 180px; }
+  .semaphore-post { height: 120px; }
+  .signal-control-row { min-height: 170px; }
+  .cargo-platform { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .theme-crate { min-height: 80px; }
+  .chronicle-resolution {
+    grid-template-columns: 55px minmax(0,1fr);
+  }
+  .chronicle-resolution .chronicle-action-button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+  .resolution-signal { width: 52px; height: 52px; }
+  .resolution-signal span { width: 25px; height: 25px; }
+  .chronicle-console-footer { flex-direction: column; gap: .35rem; }
+  .chronicle-results-station { min-height: 690px; padding: 1rem; }
+  .chronicle-results-train { bottom: 325px; transform: scale(.55); }
+  .station-board-stats { grid-template-columns: 1fr; }
+  .station-board-stats > div + div { border-left: 0; border-top: 1px solid #10232a; }
+}
+
+@media (max-width: 470px) {
+  .chronicle-world { height: 295px; }
+  .chronicle-scene-caption strong { font-size: 1.35rem; }
+  .chronicle-progress-board { bottom: 80px; }
+  .chronicle-track-bed { height: 62px; }
+  .chronicle-train-wrap { bottom: 38px; }
+  .train-carriage { flex-basis: 46px; height: 52px; }
+  .train-carriage:nth-child(n+6) { display: none; }
+  .carriage-window { left: 7px; right: 7px; top: 13px; height: 20px; }
+  .switch-lever-track { margin-inline: .3rem; }
+  .cargo-platform { grid-template-columns: 1fr 1fr; }
+  .cargo-carriage-drop { padding-inline: .7rem; }
+  .cargo-carriage-door { width: 58px; }
+  .station-board-actions .chronicle-action-button { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .steam-train,
+  .steam-train *,
+  .chronicle-cloud,
+  .chronicle-horizon,
+  .telegraph-poles,
+  .crane-trolley,
+  .brass-lever,
+  .signal-lever-handle,
+  .semaphore-arm {
+    animation: none !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+
+/* =========================================================
+   TIMELINE ROUTE CLARITY — RAILWAY DESTINATION PANEL
+   ========================================================= */
+
+.route-selection-readout {
+  border: 1px solid rgba(255, 213, 114, .42);
+  border-left: 5px solid #e5b850;
+  background:
+    linear-gradient(90deg, rgba(255, 213, 114, .11), rgba(255,255,255,.015)),
+    #0b1e22;
+  box-shadow:
+    inset 0 0 22px rgba(0,0,0,.2),
+    0 4px 0 rgba(0,0,0,.18);
+}
+
+.route-readout-kicker {
+  color: #d8aa49;
+  font: 900 .58rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .16em;
+}
+
+.route-readout-value {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  color: #fff0bd;
+  font: 900 .88rem/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
+  text-transform: uppercase;
+}
+
+.route-readout-value > b {
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  color: #fff2b6;
+  background: #8c2934;
+  border: 2px solid #e6b650;
+  border-radius: 50%;
+  box-shadow: 0 3px 0 #3c171b;
+}
+
+.route-readout-value > span {
+  min-width: 0;
+}
+
+.route-readout-cue,
+.route-readout-instruction {
+  display: block;
+  color: rgba(239, 229, 193, .72);
+  font-size: .72rem;
+  line-height: 1.4;
+}
+
+.route-readout-cue {
+  color: #d9c68f;
+}
+
+.route-readout-instruction {
+  padding-top: .35rem;
+  margin-top: .1rem;
+  border-top: 1px dashed rgba(255, 225, 145, .24);
+}
+
+.switch-destination-signs {
+  align-items: stretch;
+}
+
+.destination-sign {
+  position: relative;
+  min-width: 0;
+  min-height: 88px;
+  padding: .7rem .7rem .75rem;
+  color: rgba(248, 232, 186, .63);
+  background:
+    linear-gradient(180deg, #203337, #122428);
+  border: 2px solid #425457;
+  box-shadow:
+    inset 0 0 0 2px rgba(0,0,0,.16),
+    0 5px 0 #091316;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.destination-sign::before,
+.destination-sign::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  width: 3px;
+  height: 10px;
+  background: #7c6640;
+}
+
+.destination-sign::before { left: 18%; }
+.destination-sign::after { right: 18%; }
+
+.destination-sign-topline {
+  display: grid;
+  grid-template-columns: 27px minmax(0, 1fr);
+  gap: .48rem;
+  align-items: center;
+}
+
+.destination-sign-topline > b {
+  width: 27px;
+  height: 27px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #e0b958;
+  border: 2px solid #796238;
+  background: #111a1c;
+  font: 900 .64rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.destination-sign-topline > span {
+  min-width: 0;
+  color: inherit;
+  font: 900 .63rem/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+
+.destination-sign > small {
+  display: block;
+  margin-top: .52rem;
+  color: rgba(237, 224, 185, .55);
+  font-size: .6rem;
+  line-height: 1.35;
+}
+
+.destination-sign > em {
+  display: inline-block;
+  margin-top: .55rem;
+  padding: .22rem .4rem;
+  color: #fff4c3;
+  background: #872631;
+  border: 1px solid #efc15d;
+  font: 900 .52rem/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-style: normal;
+  letter-spacing: .1em;
+}
+
+.destination-sign.is-active {
+  color: #172328;
+  border-color: #fff0a4;
+  background:
+    linear-gradient(180deg, #f5dc8d, #c99639);
+  transform: translateY(-4px);
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,.18),
+    0 8px 0 #6e4721,
+    0 0 22px rgba(255, 213, 114, .18);
+}
+
+.destination-sign.is-active .destination-sign-topline > b {
+  color: #fff3bf;
+  background: #8b2732;
+  border-color: #551a22;
+}
+
+.destination-sign.is-active .destination-sign-topline > span {
+  color: #172328;
+}
+
+.destination-sign.is-active > small {
+  color: rgba(23, 35, 40, .72);
+}
+
+/* The route names are now intentionally presented as station boards.
+   The rail drawing itself stays uncluttered. */
+.junction-branch span {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .switch-destination-signs {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .route-readout-value {
+    align-items: flex-start;
+  }
+
+  .destination-sign {
+    min-height: 82px;
+  }
+}
+
+@media (max-width: 470px) {
+  .switch-destination-signs {
+    gap: .45rem !important;
+    margin-inline: .2rem !important;
+  }
+
+  .destination-sign {
+    min-height: 76px;
+    padding: .55rem;
+  }
+
+  .destination-sign-topline {
+    grid-template-columns: 24px minmax(0, 1fr);
+  }
+
+  .destination-sign-topline > b {
+    width: 24px;
+    height: 24px;
+  }
+
+  .destination-sign-topline > span {
+    font-size: .54rem;
+  }
+
+  .destination-sign > small {
+    font-size: .54rem;
+  }
+
+  .route-selection-readout {
+    margin-inline: .2rem !important;
+  }
+}
+
+
+@media (max-width: 760px) {
+  .chronicle-console::after {
+    background-position: center 50%;
+    opacity: .34;
+  }
+}
