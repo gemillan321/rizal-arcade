@@ -18,11 +18,13 @@ The generated `novel-character-sprite-v2.webp` contains artistic interpretations
 
 The generated `masterpiece-museum.png` is an original period-inspired game illustration made for Masterpiece Museum. It depicts a fictional museum interior and symbolic books, letters, poetry, and sculpture; it is not a documentary image of a real room or artifact arrangement.
 
+The generated `el-fili-revolution-table.webp` is original atmosphere art for Revolution Files. Its map, blank dossiers, silhouettes, lamp, and evidence threads create a fictional investigation table; no element is presented as a documentary artifact or canonical character portrait.
+
 ## Audio
 
 - **Turn a Page** by CreatorsHome — used locally as the Scholar’s Journey page-turn cue under the Pixabay Content License. [Pixabay source and license](https://pixabay.com/sound-effects/film-special-effects-turn-a-page-336933/)
 - **Adventure** by JuliusH, **Mystery Of The Investigation** by PaoloArgento, and **Background Sentimental Waltz** by MusicLFiles — locally hosted background tracks used under the Pixabay Content License. Source links are also available in the in-app Source Desk.
-- All other arcade effects are generated locally by the browser's audio system and do not download third-party audio while students play.
+- All other arcade effects are generated locally by the browser's audio system and do not download third-party audio while students play. Revolution Files adds a fully procedural, exposure-responsive ambient drone, filtered room texture, and custom evidence cues.
 
 ## Fonts
 

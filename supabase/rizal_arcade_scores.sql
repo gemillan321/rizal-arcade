@@ -49,7 +49,7 @@ create table public.rizal_arcade_scores (
   student_id uuid not null references public.rizal_arcade_profiles(id) on delete cascade,
   section_id uuid not null references public.rizal_arcade_sections(id) on delete cascade,
   player_name text not null,
-  game_id text not null check (game_id in ('values', 'novels', 'codebreaker', 'scholar', 'hearts', 'museum', 'global', 'crossword')),
+  game_id text not null check (game_id in ('values', 'novels', 'codebreaker', 'scholar', 'hearts', 'museum', 'global', 'revolution', 'crossword')),
   score integer not null,
   achieved_at timestamptz not null default now(),
   primary key (student_id, section_id, game_id),
@@ -61,6 +61,7 @@ create table public.rizal_arcade_scores (
     or (game_id = 'hearts' and score between 0 and 1110)
     or (game_id = 'museum' and score between 0 and 1110)
     or (game_id = 'global' and score between 0 and 1670)
+    or (game_id = 'revolution' and score between 0 and 1275)
     or (game_id = 'crossword' and score between 0 and 1080)
   )
 );
@@ -163,6 +164,7 @@ begin
     when 'hearts' then 1110
     when 'museum' then 1110
     when 'global' then 1670
+    when 'revolution' then 1275
     when 'crossword' then 1080
     else null
   end;

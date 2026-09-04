@@ -1,4 +1,4 @@
-export type InstructionGameId = "values" | "novels" | "codebreaker" | "scholar" | "hearts" | "museum" | "global" | "crossword";
+export type InstructionGameId = "values" | "novels" | "codebreaker" | "scholar" | "hearts" | "museum" | "global" | "revolution" | "crossword";
 
 export type GameInstruction = {
   title: string;
@@ -93,6 +93,18 @@ export const gameInstructions: Record<InstructionGameId, GameInstruction> = {
     ],
     scoring: "Chart eight randomized routes before all four travel permits are punched. Correct streaks and first-try navigation earn bonus points.",
     tip: "Do not rely on geography alone. Connect the dates, people, publications, institutions, and events in all three clues.",
+  },
+  revolution: {
+    title: "El Fili: Revolution Files",
+    topic: "El Filibusterismo: characters, plot, blocked reform, revolution, and national awakening",
+    goal: "Reconstruct six causal chains from the novel by threading evidence from its starting position through pressure, decisive action, and consequence.",
+    steps: [
+      "Inspect the loose evidence, select or drag a fragment, then pin it into one of the four numbered thread positions.",
+      "Fill the complete chain and test it; correct links lock in place while false links fall away and increase colonial exposure.",
+      "Spend one of three lamplight clues to reveal a thread when needed, then read the debrief before unsealing the next file.",
+    ],
+    scoring: "Resolve six randomized files before four failed chain tests expose the operation. Clean chains and streaks earn bonus points; lamplight costs 20 points.",
+    tip: "Build a sequence, not a list of facts: ask what creates pressure, which action follows, and what consequence that action produces.",
   },
   crossword: {
     title: "Rizal & the Nation: Crossword Chronicle",

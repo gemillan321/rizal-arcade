@@ -13,6 +13,8 @@ Every game owns one folder. Contributors should work only inside the folder assi
 | `hearts-and-horizons/` | Hearts & Horizons | Live |
 | `masterpiece-museum/` | Masterpiece Museum | Live |
 | `global-sojourn/` | Global Sojourn | Live route-building game with 50 travel dossiers |
+| `el-fili-revolution-files/` | El Fili: Revolution Files | Live causal-chain strategy game with 12 sourced case files |
+| `rizal-crossword/` | Rizal & the Nation: Crossword Chronicle | Live randomized connected crossword |
 | `game-template/` | Reusable starter | Copy this for a new game |
 
 ## Architecture

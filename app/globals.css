@@ -2924,3 +2924,189 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
 @media (prefers-reduced-motion: reduce) {
   .crossword-editor.is-wrong { animation: none; }
 }
+
+/* El Fili: Revolution Files — a gaslit causal-strategy table. */
+.game-visual-revolution { background: #07121a; }
+.revolution-card-scene { overflow: hidden; background: #07121a; }
+.revolution-card-scene > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(.92) contrast(1.08); transform: scale(1.02); }
+.revolution-card-scene::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, rgba(2,8,13,.08), rgba(2,8,13,.2) 50%, rgba(2,8,13,.62)); }
+.mini-revolution-thread { position: absolute; z-index: 2; left: 13%; right: 11%; top: 49%; height: 3px; background: #b22f42; box-shadow: 0 0 9px rgba(255,68,92,.75); transform: rotate(-8deg); }
+.mini-revolution-thread::before,
+.mini-revolution-thread::after { content: ""; position: absolute; width: 14px; height: 14px; top: 50%; border: 3px solid #25160a; border-radius: 50%; background: #d9a84d; box-shadow: 0 0 0 3px rgba(255,245,203,.25); transform: translateY(-50%); }
+.mini-revolution-thread::before { left: 0; }
+.mini-revolution-thread::after { right: 0; }
+.mini-revolution-file { position: absolute; z-index: 3; width: 94px; min-height: 65px; display: grid; place-items: center; border: 2px solid #321c0d; color: #21160e; background: #f0dfb9; box-shadow: 5px 6px 0 rgba(2,8,13,.7); font: 900 14px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.mini-revolution-file.file-a { left: 15%; top: 28%; transform: rotate(-7deg); }
+.mini-revolution-file.file-b { left: 43%; top: 51%; transform: rotate(4deg); }
+.mini-revolution-file.file-c { right: 12%; top: 24%; transform: rotate(8deg); }
+.revolution-card-scene > strong { position: absolute; z-index: 4; right: 18px; bottom: 16px; border: 2px solid #f9edca; padding: 9px 11px; color: #f9edca; background: rgba(7,18,26,.9); box-shadow: 4px 4px 0 #a42b3f; font: 950 11px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .08em; }
+
+.game-intro-revolution { --intro-accent: #a42b3f; --intro-accent-dark: #5e1727; }
+.game-revolution { color: #f8ecc9; background: #050b12; }
+.game-revolution .game-header { border-bottom-color: #a42b3f; background: rgba(4,10,16,.98); }
+.game-revolution .game-header .icon-button { background: #a42b3f; }
+.game-revolution .game-header-title span,
+.game-revolution .game-hud > span > small { color: #e6b85e; }
+.game-revolution .sound-toggle { border-color: rgba(230,184,94,.5); color: #f8ecc9; }
+.revolution-game { position: relative; min-height: calc(100svh - 88px); overflow: hidden; padding: 18px clamp(12px,2.4vw,34px) 38px; color: #f8ecc9; background: radial-gradient(circle at 80% 12%, rgba(70,134,89,.2), transparent 24%), radial-gradient(circle at 12% 10%, rgba(164,43,63,.16), transparent 24%), #050b12; }
+.revolution-atmosphere { position: absolute; inset: 0; pointer-events: none; }
+.revolution-atmosphere::before { content: ""; position: absolute; inset: 0; opacity: .12; background-image: linear-gradient(rgba(233,191,105,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(233,191,105,.08) 1px, transparent 1px); background-size: 42px 42px; }
+.revolution-atmosphere i { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #e8bd67; box-shadow: 0 0 12px #e8bd67; animation: revolution-dust 8s ease-in-out infinite; }
+.revolution-atmosphere i:nth-child(1) { left: 16%; top: 21%; }
+.revolution-atmosphere i:nth-child(2) { right: 18%; top: 38%; animation-delay: -2.7s; }
+.revolution-atmosphere i:nth-child(3) { left: 54%; bottom: 15%; animation-delay: -5.2s; }
+@keyframes revolution-dust { 0%,100% { opacity: .12; transform: translate(0,8px) scale(.7); } 50% { opacity: .72; transform: translate(16px,-20px) scale(1); } }
+.revolution-masthead { position: relative; z-index: 2; width: min(1480px,100%); display: flex; justify-content: space-between; align-items: end; gap: 24px; margin: 0 auto 13px; padding: 0 8px; }
+.revolution-masthead p { margin: 0 0 2px; color: #e8bd67; font: 850 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .14em; text-transform: uppercase; }
+.revolution-masthead h2 { margin: 0; font-size: clamp(38px,4.4vw,66px); font-weight: 600; letter-spacing: -.04em; line-height: .84; text-shadow: 0 5px 24px rgba(0,0,0,.7); }
+.revolution-masthead h2 em { color: #d7495d; font-style: italic; }
+.revolution-heat { min-width: 250px; display: grid; grid-template-columns: 1fr auto; gap: 7px 12px; align-items: end; border: 1px solid rgba(231,190,105,.34); padding: 10px 12px; background: rgba(3,9,14,.72); box-shadow: 4px 5px 0 rgba(164,43,63,.48); }
+.revolution-heat > span { color: rgba(248,236,201,.76); font: 850 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .12em; text-transform: uppercase; }
+.revolution-heat > div { display: flex; gap: 5px; }
+.revolution-heat i { width: 25px; height: 7px; display: block; border: 1px solid #e8bd67; background: #3c965f; box-shadow: 0 0 7px rgba(60,150,95,.52); transition: background .3s, box-shadow .3s; }
+.revolution-heat i.is-burned { border-color: #7a2835; background: #7a2835; box-shadow: 0 0 9px rgba(187,45,67,.78); }
+.revolution-heat small { grid-column: 1 / -1; color: #d7495d; font: 900 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .1em; text-align: right; text-transform: uppercase; }
+
+.revolution-table { position: relative; z-index: 1; width: min(1480px,100%); min-height: 715px; display: grid; grid-template-columns: 174px minmax(0,1fr); overflow: hidden; margin: 0 auto; border: 3px solid #d0a653; border-radius: 10px; background: #100d0a; box-shadow: 0 22px 55px rgba(0,0,0,.62), 8px 9px 0 #5f1c2a; isolation: isolate; }
+.revolution-table::after { content: ""; position: absolute; z-index: -1; inset: 0; background: linear-gradient(90deg, rgba(3,8,12,.68), rgba(3,8,12,.35) 35%, rgba(3,8,12,.61)); pointer-events: none; }
+.revolution-table-art { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(.78) brightness(.62) contrast(1.13); }
+.revolution-file-rail { border-right: 2px solid rgba(232,189,103,.45); padding: 20px 13px; background: rgba(3,8,13,.84); backdrop-filter: blur(6px); }
+.revolution-file-rail > span { display: block; margin-bottom: 13px; color: #e8bd67; font: 900 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .12em; text-transform: uppercase; }
+.revolution-file-rail ol { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; }
+.revolution-file-rail li { min-width: 0; display: grid; grid-template-columns: 34px minmax(0,1fr); gap: 8px; align-items: center; border: 1px solid rgba(248,236,201,.15); padding: 8px; color: rgba(248,236,201,.42); background: rgba(1,5,8,.5); }
+.revolution-file-rail li > b { width: 31px; height: 31px; display: grid; place-items: center; border: 1px solid currentColor; border-radius: 50%; font: 900 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.revolution-file-rail li div { min-width: 0; }
+.revolution-file-rail li strong,
+.revolution-file-rail li small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.revolution-file-rail li strong { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; }
+.revolution-file-rail li small { margin-top: 3px; font-size: 8px; }
+.revolution-file-rail li.is-current { border-color: #e8bd67; color: #fff3cf; background: rgba(164,43,63,.78); box-shadow: 3px 3px 0 #e8bd67; }
+.revolution-file-rail li.is-solved { border-color: rgba(75,170,111,.54); color: #94e4ad; background: rgba(28,88,52,.34); }
+.revolution-file-rail li.is-solved > b { background: #236841; }
+
+.revolution-workspace { min-width: 0; display: grid; grid-template-columns: minmax(0,1fr) 240px; grid-template-areas: "brief brief" "chain chain" "evidence controls" "announce announce"; gap: 11px 14px; align-content: start; padding: 17px; }
+.revolution-briefing { grid-area: brief; position: relative; width: min(960px,96%); min-height: 118px; margin: 0 auto; border: 2px solid #4b311c; padding: 15px 20px 16px; color: #1f180f; background: linear-gradient(rgba(91,58,28,.07) 1px, transparent 1px), #f1e0b9; background-size: 100% 23px; box-shadow: 6px 7px 0 rgba(4,9,13,.72); transform: rotate(-.18deg); }
+.revolution-briefing::before { content: "CONFIDENTIAL"; position: absolute; right: 15px; top: 12px; border: 2px solid rgba(150,41,59,.62); padding: 5px 7px; color: rgba(150,41,59,.76); font: 950 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .12em; transform: rotate(3deg); }
+.revolution-briefing > div { display: flex; gap: 12px; align-items: center; color: #87263a; font: 900 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .1em; text-transform: uppercase; }
+.revolution-briefing > div small { color: #765d40; font-size: 9px; letter-spacing: .04em; }
+.revolution-briefing h3 { margin: 9px 0 3px; max-width: calc(100% - 130px); font-size: clamp(24px,2.6vw,38px); line-height: .9; }
+.revolution-briefing p { margin: 7px 0 0; max-width: 880px; font-size: 14px; font-weight: 700; line-height: 1.4; }
+
+.revolution-chain { grid-area: chain; position: relative; padding: 11px 8px 7px; }
+.revolution-chain-line { position: absolute; left: 7%; right: 7%; top: 51%; height: 4px; background: #b92e45; box-shadow: 0 0 9px rgba(255,46,80,.82), 0 2px 0 rgba(0,0,0,.48); transform: rotate(-.45deg); }
+.revolution-chain-slots { position: relative; display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px; }
+.revolution-chain-slots button { position: relative; min-width: 0; min-height: 128px; display: grid; grid-template-rows: auto 1fr; gap: 8px; border: 2px dashed rgba(248,236,201,.48); border-radius: 4px; padding: 12px 12px 18px; color: rgba(248,236,201,.72); background: rgba(4,10,15,.74); box-shadow: 4px 5px 0 rgba(0,0,0,.46); cursor: pointer; text-align: left; transition: transform .16s, border-color .16s, background .16s; }
+.revolution-chain-slots button:not(:disabled):hover,
+.revolution-chain-slots button.can-receive:not(:disabled) { border-color: #e8bd67; background: rgba(75,42,20,.86); transform: translateY(-2px); }
+.revolution-chain-slots button.is-filled { border-style: solid; border-color: #5b3a1e; color: #20170e; background: #ead5aa; transform: rotate(-.25deg); }
+.revolution-chain-slots button.is-filled:nth-child(even) { transform: rotate(.32deg); }
+.revolution-chain-slots button.is-locked { border-color: #4ca76d; background: #e0d9a9; box-shadow: 4px 5px 0 rgba(22,92,54,.74), inset 0 0 0 2px rgba(43,126,73,.2); cursor: default; }
+.revolution-chain-slots button > span { color: #e8bd67; font: 900 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .1em; text-transform: uppercase; }
+.revolution-chain-slots button.is-filled > span { color: #8a293b; }
+.revolution-chain-slots button > strong { align-self: center; font-size: clamp(12px,1vw,14px); line-height: 1.3; }
+.revolution-chain-slots button > em { align-self: center; font-size: 12px; line-height: 1.35; font-style: normal; font-weight: 750; }
+.revolution-chain-slots button > i { position: absolute; width: 27px; height: 27px; left: 50%; bottom: -14px; display: grid; place-items: center; border: 2px solid #25160a; border-radius: 50%; color: #27190e; background: #e8bd67; box-shadow: 0 0 0 3px rgba(248,236,201,.22); font: 950 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace; transform: translateX(-50%); }
+.revolution-chain-slots button.is-locked > i { color: #f7ebc7; background: #317d4d; }
+
+.revolution-evidence { grid-area: evidence; min-width: 0; border: 1px solid rgba(232,189,103,.34); padding: 11px; background: rgba(2,7,11,.7); }
+.revolution-evidence-heading { display: flex; justify-content: space-between; gap: 16px; align-items: end; margin-bottom: 8px; }
+.revolution-evidence-heading span,
+.revolution-evidence-heading strong { display: block; }
+.revolution-evidence-heading span { color: #e8bd67; font: 900 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .12em; text-transform: uppercase; }
+.revolution-evidence-heading strong { margin-top: 4px; font-size: 13px; }
+.revolution-evidence-heading p { margin: 0; color: rgba(248,236,201,.56); font-size: 11px; }
+.revolution-evidence-tray { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 8px; }
+.revolution-evidence-tray button { position: relative; min-width: 0; min-height: 78px; border: 2px solid #49311d; padding: 9px 9px 13px; color: #25190f; background: #f0dfb8; box-shadow: 3px 4px 0 rgba(0,0,0,.62); cursor: grab; text-align: left; transform: rotate(var(--evidence-turn)); transition: transform .14s, box-shadow .14s, background .14s; }
+.revolution-evidence-tray button:hover,
+.revolution-evidence-tray button.is-selected { z-index: 2; border-color: #d5a84f; background: #fff0c9; box-shadow: 4px 5px 0 #9f2a3e, 0 0 0 3px rgba(232,189,103,.34); transform: rotate(0) translateY(-3px); }
+.revolution-evidence-tray button > span { display: block; margin-bottom: 5px; color: #95283d; font: 900 8px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .08em; }
+.revolution-evidence-tray button > strong { display: block; font-size: clamp(10px,.82vw,12px); line-height: 1.27; }
+.revolution-evidence-tray button > i { position: absolute; width: 8px; height: 8px; right: 7px; top: 7px; border: 1px solid #29190c; border-radius: 50%; background: #c79b43; box-shadow: 0 1px 2px rgba(0,0,0,.45); }
+
+.revolution-controls { grid-area: controls; display: grid; gap: 10px; align-content: end; }
+.revolution-controls button { min-height: 74px; border: 2px solid #e8bd67; padding: 10px 12px; cursor: pointer; }
+.revolution-controls button:disabled { opacity: .42; filter: grayscale(.7); cursor: default; }
+.revolution-insight { display: grid; grid-template-columns: 29px 1fr; gap: 2px 8px; align-items: center; color: #f8ecc9; background: rgba(8,31,28,.9); text-align: left; }
+.revolution-insight > span { grid-row: 1 / 3; color: #66c98b; font-size: 24px; }
+.revolution-insight strong { font-size: 12px; }
+.revolution-insight small { color: rgba(248,236,201,.58); font-size: 9px; }
+.revolution-commit { display: flex; justify-content: space-between; align-items: center; color: #1c120a; background: #e8bd67; box-shadow: 5px 6px 0 #9d293d; font: 950 13px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .08em; text-transform: uppercase; }
+.revolution-commit b { font-size: 25px; }
+.revolution-announcement { grid-area: announce; min-height: 29px; margin: 0; border-top: 1px solid rgba(248,236,201,.18); padding: 8px 4px 0; color: rgba(248,236,201,.75); font: 750 11px/1.35 ui-monospace, SFMono-Regular, Consolas, monospace; text-align: center; }
+
+.revolution-debrief { position: absolute; z-index: 8; inset: 0 0 0 174px; display: grid; grid-template-columns: 135px minmax(0,1fr) 210px; gap: 24px; align-items: center; padding: clamp(24px,4vw,58px); color: #f8ecc9; background: radial-gradient(circle at 76% 18%, rgba(56,142,87,.24), transparent 27%), rgba(3,9,14,.94); backdrop-filter: blur(8px); outline: none; animation: revolution-debrief-in .32s ease-out both; }
+@keyframes revolution-debrief-in { from { opacity: 0; transform: scale(1.015); } }
+.revolution-debrief-seal { width: 132px; height: 132px; display: grid; place-items: center; border: 5px double #58b779; border-radius: 50%; color: #86d89f; font: 950 13px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .08em; transform: rotate(-8deg); }
+.revolution-debrief.is-exposed .revolution-debrief-seal { border-color: #d7495d; color: #ef8090; }
+.revolution-debrief-copy > p { margin: 0 0 6px; color: #e8bd67; font: 900 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .13em; text-transform: uppercase; }
+.revolution-debrief-copy h3 { margin: 0 0 13px; font-size: clamp(39px,5vw,70px); font-weight: 600; line-height: .88; }
+.revolution-debrief-copy > span { display: block; max-width: 760px; color: rgba(248,236,201,.82); font-size: 16px; line-height: 1.55; }
+.revolution-debrief-copy blockquote { max-width: 700px; margin: 18px 0 14px; border-left: 5px solid #a42b3f; padding: 8px 13px; color: #f5dfae; background: rgba(164,43,63,.13); font-size: 15px; line-height: 1.45; }
+.revolution-debrief-copy blockquote strong { display: block; margin-bottom: 4px; color: #e8bd67; font: 900 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .12em; text-transform: uppercase; }
+.revolution-debrief-copy a { color: #82d49e; font-size: 12px; font-weight: 800; }
+.revolution-debrief > button { min-height: 66px; display: flex; justify-content: space-between; align-items: center; border: 2px solid #1b110a; padding: 12px 16px; color: #1b110a; background: #e8bd67; box-shadow: 6px 7px 0 #a42b3f; cursor: pointer; font-weight: 950; text-align: left; }
+.revolution-debrief > button span { font-size: 25px; }
+
+@media (max-width: 1100px) {
+  .revolution-table { grid-template-columns: 128px minmax(0,1fr); }
+  .revolution-file-rail { padding-inline: 9px; }
+  .revolution-file-rail li { grid-template-columns: 1fr; text-align: center; }
+  .revolution-file-rail li > b { margin: 0 auto; }
+  .revolution-workspace { grid-template-columns: minmax(0,1fr) 210px; padding: 13px; }
+  .revolution-chain-slots { gap: 8px; }
+  .revolution-chain-slots button { min-height: 142px; padding-inline: 9px; }
+  .revolution-evidence-tray { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .revolution-debrief { inset-inline-start: 128px; grid-template-columns: 105px minmax(0,1fr); }
+  .revolution-debrief-seal { width: 102px; height: 102px; font-size: 11px; }
+  .revolution-debrief > button { grid-column: 2; width: min(280px,100%); }
+}
+
+@media (max-width: 760px) {
+  .revolution-game { min-height: calc(100svh - 72px); padding: 12px 8px 28px; overflow: visible; }
+  .revolution-masthead { align-items: stretch; flex-direction: column; gap: 10px; padding-inline: 2px; }
+  .revolution-masthead h2 { font-size: 43px; }
+  .revolution-heat { min-width: 0; width: 100%; }
+  .revolution-table { display: block; min-height: 0; border-width: 2px; }
+  .revolution-file-rail { border: 0; border-bottom: 1px solid rgba(232,189,103,.38); padding: 10px; overflow-x: auto; }
+  .revolution-file-rail > span { margin-bottom: 7px; }
+  .revolution-file-rail ol { width: max-content; display: flex; gap: 7px; }
+  .revolution-file-rail li { width: 75px; padding: 6px; }
+  .revolution-file-rail li div small { display: none; }
+  .revolution-workspace { display: flex; flex-direction: column; gap: 11px; padding: 10px; }
+  .revolution-briefing { width: 100%; min-height: 0; padding: 13px 14px; }
+  .revolution-briefing::before { position: static; float: right; margin-left: 9px; }
+  .revolution-briefing h3 { max-width: none; font-size: 30px; }
+  .revolution-briefing p { font-size: 14px; }
+  .revolution-chain { padding: 5px 7px 10px; }
+  .revolution-chain-line { left: 21px; right: auto; top: 7%; bottom: 7%; width: 4px; height: auto; transform: rotate(.4deg); }
+  .revolution-chain-slots { grid-template-columns: 1fr; gap: 8px; }
+  .revolution-chain-slots button { min-height: 86px; padding: 11px 12px 11px 48px; }
+  .revolution-chain-slots button > i { left: 20px; bottom: 50%; transform: translate(-50%,50%); }
+  .revolution-evidence-heading { align-items: start; flex-direction: column; gap: 4px; }
+  .revolution-evidence-tray { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .revolution-evidence-tray button { min-height: 92px; }
+  .revolution-controls { grid-template-columns: 1fr 1fr; }
+  .revolution-controls button { min-height: 68px; }
+  .revolution-debrief { position: fixed; inset: 72px 0 0; grid-template-columns: 1fr; align-content: start; gap: 18px; overflow-y: auto; padding: 28px 20px 45px; }
+  .revolution-debrief-seal { width: 88px; height: 88px; }
+  .revolution-debrief-copy h3 { font-size: 45px; }
+  .revolution-debrief-copy > span { font-size: 16px; }
+  .revolution-debrief > button { grid-column: auto; width: 100%; }
+}
+
+@media (max-width: 450px) {
+  .revolution-masthead h2 { font-size: 38px; }
+  .revolution-heat i { width: 20px; }
+  .revolution-evidence-tray { grid-template-columns: 1fr; }
+  .revolution-evidence-tray button { min-height: 78px; }
+  .revolution-controls { grid-template-columns: 1fr; }
+  .revolution-debrief-copy h3 { font-size: 40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .revolution-atmosphere i,
+  .revolution-debrief { animation: none; }
+  .revolution-chain-slots button,
+  .revolution-evidence-tray button,
+  .revolution-heat i { transition: none; }
+}

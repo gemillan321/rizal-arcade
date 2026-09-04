@@ -12,10 +12,13 @@ The classroom edition takes the familiar pick-and-play feel of Friv or Y8 and gi
 - **Scholar’s Journey** — study six records along Rizal’s academic route, pack them into a passport tray, then stamp each record at its remembered learning station. Correct placements move the Rizal traveller forward.
 - **Hearts & Horizons** — inspect a portrait dossier, match the woman to the evidence and place in Rizal’s journey, then seal and send the correspondence.
 - **Masterpiece Museum** — inspect an artifact, choose among five genre galleries, attach the historically accurate curatorial plaque, and install a randomized six-exhibit collection.
+- **Global Sojourn — Chart the Journey** — decode travel telegrams and draw Rizal’s routes across an interactive world atlas.
+- **El Fili: Revolution Files** — reconstruct causal chains from *El Filibusterismo* on a gaslit evidence table while managing exposure and limited lamplight clues.
+- **Rizal & the Nation: Crossword Chronicle** — complete randomized, connected newspaper crosswords about the Rizal Law, historical context, heroism, and national consciousness.
 
-All six games include optional sound effects and locally hosted background music. Scholar’s Journey adds a licensed page-turn recording; the remaining action cues are synthesized by the browser. Nothing is downloaded from an external audio service while students play.
+All nine games include optional sound. Scholar’s Journey adds a licensed page-turn recording; Revolution Files generates an adaptive ambient score and action cues in the browser; other games combine synthesized cues with locally hosted music. Nothing is downloaded from an external audio service while students play.
 
-The home page also previews future modules about Rizal’s global journeys, trial, and legacy.
+The home page also previews the planned module about Rizal’s exile, trial, execution, and legacy.
 
 ## Classroom safeguards
 
