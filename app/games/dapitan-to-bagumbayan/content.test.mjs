@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import {
@@ -87,4 +89,23 @@ test("every ten-file session deliberately mixes all three archive tasks", () => 
   assert.equal(counts.timeline?.length, 3);
   assert.equal(counts.evidence?.length, 4);
   assert.equal(counts.theme?.length, 3);
+});
+
+test("Chronicle Express packages its full mechanical redesign", async () => {
+  assert.ok(existsSync(new URL("./chronicle-console-bg.png", import.meta.url)));
+
+  const [implementation, styles] = await Promise.all([
+    readFile(new URL("./index.tsx", import.meta.url), "utf8"),
+    readFile(new URL("./dapitan.css", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(implementation, /Chronicle Express/);
+  assert.match(implementation, /TimelineSwitch/);
+  assert.match(implementation, /SemaphoreControl/);
+  assert.match(implementation, /CargoCrane/);
+  assert.match(implementation, /drawDapitanSession\(\)/);
+  assert.match(styles, /\.steam-train/);
+  assert.match(styles, /\.boiler-gauge/);
+  assert.match(styles, /\.semaphore-post/);
+  assert.match(styles, /\.cargo-yard/);
 });
