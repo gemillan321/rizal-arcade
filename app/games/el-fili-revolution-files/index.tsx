@@ -26,6 +26,7 @@ type RevolutionCue = "pick" | "thread" | "reveal" | "resolve" | "alarm" | "finis
 type AudioRig = {
   context: AudioContext;
   master: GainNode;
+  music: HTMLAudioElement;
   drone: OscillatorNode;
   droneGain: GainNode;
   undertone: OscillatorNode;
@@ -50,6 +51,7 @@ function useRevolutionAudio(exposure: number) {
     const current = rigRef.current;
     if (current) {
       if (current.context.state === "suspended") void current.context.resume();
+      void current.music.play().catch(() => { /* A later direct interaction can retry playback. */ });
       return current;
     }
     const AudioContextClass = window.AudioContext ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -58,6 +60,12 @@ function useRevolutionAudio(exposure: number) {
     const master = context.createGain();
     master.gain.value = .62;
     master.connect(context.destination);
+
+    const music = new Audio("/audio/arcade-mystery.mp3");
+    music.loop = true;
+    music.preload = "auto";
+    music.volume = .085;
+    void music.play().catch(() => { /* Browsers may wait for the next direct game interaction. */ });
 
     const drone = context.createOscillator();
     const droneGain = context.createGain();
@@ -97,7 +105,7 @@ function useRevolutionAudio(exposure: number) {
     noise.connect(noiseFilter).connect(noiseGain).connect(master);
     noise.start();
 
-    const rig = { context, master, drone, droneGain, undertone, undertoneGain, noise, noiseGain };
+    const rig = { context, master, music, drone, droneGain, undertone, undertoneGain, noise, noiseGain };
     rigRef.current = rig;
     return rig;
   }, [enabled, exposure]);
@@ -136,12 +144,18 @@ function useRevolutionAudio(exposure: number) {
     try { window.localStorage.setItem("rizal-arcade-sound", next ? "on" : "off"); } catch { /* Optional preference. */ }
     if (next) {
       const rig = start(true);
-      if (rig) rig.master.gain.setTargetAtTime(.62, rig.context.currentTime, .03);
+      if (rig) {
+        rig.master.gain.setTargetAtTime(.62, rig.context.currentTime, .03);
+        void rig.music.play().catch(() => { /* Optional background audio. */ });
+      }
       window.setTimeout(() => play("reveal", true), 0);
     } else if (rigRef.current) {
       rigRef.current.master.gain.setTargetAtTime(.0001, rigRef.current.context.currentTime, .025);
+      rigRef.current.music.pause();
     }
   }, [enabled, play, start]);
+
+  useEffect(() => { start(); }, [start]);
 
   useEffect(() => {
     const rig = rigRef.current;
@@ -151,11 +165,14 @@ function useRevolutionAudio(exposure: number) {
     rig.drone.frequency.setTargetAtTime(55 + danger * 4.5, now, .35);
     rig.undertone.frequency.setTargetAtTime(82.41 + danger * 3.2, now, .35);
     rig.noiseGain.gain.setTargetAtTime(.003 + danger * .0014, now, .3);
+    rig.music.volume = Math.min(.14, .085 + danger * .014);
   }, [exposure]);
 
   useEffect(() => () => {
     const rig = rigRef.current;
     if (!rig) return;
+    rig.music.pause();
+    rig.music.currentTime = 0;
     try { rig.drone.stop(); rig.undertone.stop(); rig.noise.stop(); } catch { /* Already stopped. */ }
     void rig.context.close();
   }, []);

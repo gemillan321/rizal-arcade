@@ -24,12 +24,14 @@ test("Revolution Files has twelve distinct sourced causal cases", () => {
   }
 });
 
-test("Revolution Files packages original art, causal mechanics, and adaptive procedural audio", async () => {
+test("Revolution Files packages original art, causal mechanics, and a layered adaptive soundtrack", async () => {
   assert.ok(existsSync(new URL("../public/art/el-fili-revolution-table.webp", import.meta.url)));
+  assert.ok(existsSync(new URL("../public/audio/arcade-mystery.mp3", import.meta.url)));
   const implementation = await readFile(new URL("../app/games/el-fili-revolution-files/index.tsx", import.meta.url), "utf8");
   assert.match(implementation, /drawChallengeSet\(revolutionBank, roundSize\)/);
   assert.match(implementation, /Results game="revolution"/);
   assert.match(implementation, /AudioContext/);
+  assert.match(implementation, /new Audio\("\/audio\/arcade-mystery\.mp3"\)/);
   assert.match(implementation, /noiseFilter/);
   assert.match(implementation, /onDragStart=/);
   assert.match(implementation, /onDrop=/);

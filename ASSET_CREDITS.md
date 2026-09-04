@@ -23,8 +23,8 @@ The generated `el-fili-revolution-table.webp` is original atmosphere art for Rev
 ## Audio
 
 - **Turn a Page** by CreatorsHome — used locally as the Scholar’s Journey page-turn cue under the Pixabay Content License. [Pixabay source and license](https://pixabay.com/sound-effects/film-special-effects-turn-a-page-336933/)
-- **Adventure** by JuliusH, **Mystery Of The Investigation** by PaoloArgento, and **Background Sentimental Waltz** by MusicLFiles — locally hosted background tracks used under the Pixabay Content License. Source links are also available in the in-app Source Desk.
-- All other arcade effects are generated locally by the browser's audio system and do not download third-party audio while students play. Revolution Files adds a fully procedural, exposure-responsive ambient drone, filtered room texture, and custom evidence cues.
+- **Adventure** by JuliusH, **Mystery Of The Investigation** by PaoloArgento, and **Background Sentimental Waltz** by MusicLFiles — locally hosted background tracks used under the Pixabay Content License. Revolution Files uses **Mystery Of The Investigation** as its musical bed. Source links are also available in the in-app Source Desk.
+- All other arcade effects are generated locally by the browser's audio system and do not download third-party audio while students play. Revolution Files layers its music with an exposure-responsive ambient drone, filtered room texture, and custom evidence cues.
 
 ## Fonts
 
