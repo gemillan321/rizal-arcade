@@ -180,7 +180,6 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
   const [selectedCargo, setSelectedCargo] = useState<string | null>(null);
   const [cargoLoaded, setCargoLoaded] = useState(false);
 
-  const initializedRef = useRef(false);
   const resolutionTimerRef = useRef<number | null>(null);
   const movementTimerRef = useRef<number | null>(null);
 
@@ -241,18 +240,12 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
   );
 
   useEffect(() => {
-    if (initializedRef.current) {
-      return;
-    }
-
-    initializedRef.current = true;
-
-    const frameId = window.requestAnimationFrame(() => {
+    const startupTimer = window.setTimeout(() => {
       beginSession(false);
-    });
+    }, 0);
 
     return () => {
-      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(startupTimer);
     };
   }, [beginSession]);
 
