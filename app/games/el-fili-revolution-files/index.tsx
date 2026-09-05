@@ -49,11 +49,12 @@ function useRevolutionAudio(exposure: number) {
   const start = useCallback((force = false) => {
     if ((!enabled && !force) || typeof window === "undefined") return null;
     const current = rigRef.current;
-    if (current) {
+    if (current && current.context.state !== "closed") {
       if (current.context.state === "suspended") void current.context.resume();
       void current.music.play().catch(() => { /* A later direct interaction can retry playback. */ });
       return current;
     }
+    rigRef.current = null;
     const AudioContextClass = window.AudioContext ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextClass) return null;
     const context = new AudioContextClass();
@@ -171,10 +172,11 @@ function useRevolutionAudio(exposure: number) {
   useEffect(() => () => {
     const rig = rigRef.current;
     if (!rig) return;
+    rigRef.current = null;
     rig.music.pause();
     rig.music.currentTime = 0;
     try { rig.drone.stop(); rig.undertone.stop(); rig.noise.stop(); } catch { /* Already stopped. */ }
-    void rig.context.close();
+    if (rig.context.state !== "closed") void rig.context.close().catch(() => { /* Already closing. */ });
   }, []);
 
   return { enabled, play, toggle };

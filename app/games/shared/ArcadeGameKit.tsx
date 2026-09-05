@@ -40,6 +40,7 @@ export function useArcadeSound(musicSrc: string) {
     }
     const AudioContextClass = window.AudioContext ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextClass) return;
+    if (contextRef.current?.state === "closed") contextRef.current = null;
     const context = contextRef.current ?? new AudioContextClass();
     contextRef.current = context;
     if (context.state === "suspended") void context.resume();
@@ -95,7 +96,9 @@ export function useArcadeSound(musicSrc: string) {
   useEffect(() => () => {
       musicRef.current?.pause();
       if (musicRef.current) musicRef.current.currentTime = 0;
-      void contextRef.current?.close();
+      const context = contextRef.current;
+      contextRef.current = null;
+      if (context && context.state !== "closed") void context.close().catch(() => { /* Already closing. */ });
   }, []);
   return { enabled, play, toggle };
 }
