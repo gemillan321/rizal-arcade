@@ -245,3 +245,27 @@ export function GameHeader({ title, status, onClose, soundEnabled, onToggleSound
     </header>
   );
 }
+
+export function MobilePanelNav({ label, active, items, onSelect }: {
+  label: string;
+  active: string;
+  items: Array<{ id: string; label: string; badge?: string }>;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <nav className="mobile-game-nav" aria-label={label}>
+      {items.map((item) => (
+        <button
+          key={item.id}
+          type="button"
+          className={active === item.id ? "is-active" : ""}
+          aria-pressed={active === item.id}
+          onClick={() => onSelect(item.id)}
+        >
+          <span>{item.label}</span>
+          {item.badge && <small>{item.badge}</small>}
+        </button>
+      ))}
+    </nav>
+  );
+}

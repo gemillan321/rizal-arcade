@@ -103,6 +103,7 @@ export function NovelsGame({ onClose }: { onClose: () => void }) {
   }
 
   if (finished) return <><GameHeader title="Noli Case Files" status={[{ label: "Pairs", value: "6 / 6" }, { label: "Moves", value: String(moves) }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} /><Results game="novels" title="Noli Case Files" score={score} best={best} maxScore={870} onReplay={replay} onClose={onClose} /></>;
+  const mobileOpenCards = cards.filter((card) => openIds.includes(card.uid));
   return (
     <>
       <GameHeader title="Noli Case Files" status={[{ label: "Pairs", value: `${matchedPairs.length} / 6` }, { label: "Moves", value: String(moves) }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} />
@@ -130,6 +131,11 @@ export function NovelsGame({ onClose }: { onClose: () => void }) {
             );
           })}
         </div>
+        <aside className={`memory-mobile-inspector ${mobileOpenCards.length ? "has-cards" : ""}`} aria-live="polite">
+          {mobileOpenCards.length === 0
+            ? <p>Tap two cards to compare their case details.</p>
+            : mobileOpenCards.map((card) => <div key={card.uid}><span>{card.face === "clue" ? `${card.caseType} clue` : "Case answer"}</span><strong>{card.text}</strong></div>)}
+        </aside>
         <p className="sr-announcement" aria-live="polite">{announcement}</p>
         {matchedFact && <aside className="match-note" ref={matchNoteRef} role="status"><span>Case ledger updated</span><strong>{matchedFact.title}</strong><p>{matchedFact.rationale}</p><div>{matchedFact.sourceUrl ? <a href={matchedFact.sourceUrl} target="_blank" rel="noreferrer">Read the source: {matchedFact.source} ↗</a> : <span>Course basis: {matchedFact.source}</span>}<button className="button button-dark" type="button" onClick={dismissMatchedFact}>Keep matching</button></div></aside>}
       </section>

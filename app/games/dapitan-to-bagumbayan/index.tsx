@@ -171,6 +171,7 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
   const [resolvedResults, setResolvedResults] = useState<boolean[]>([]);
   const [resolving, setResolving] = useState(false);
   const [trainMoving, setTrainMoving] = useState(false);
+  const [mobileMissionOpen, setMobileMissionOpen] = useState(true);
 
   const [timelineLeverIndex, setTimelineLeverIndex] = useState(1);
   const [signalIndex, setSignalIndex] = useState(1);
@@ -229,6 +230,7 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
       setResolvedResults([]);
       setThemeOrder(shuffle(THEME_OPTIONS));
       setTrainMoving(false);
+      setMobileMissionOpen(true);
       resetControls();
       setPhase("playing");
 
@@ -343,6 +345,7 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
       setThemeOrder(shuffle(THEME_OPTIONS));
       resetControls();
       setTrainMoving(false);
+      setMobileMissionOpen(true);
     }, 720);
   }, [
     currentChallenge,
@@ -767,7 +770,8 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
         </section>
 
         <section className="chronicle-console" aria-labelledby="chronicle-file-title">
-          <header className="chronicle-dispatch">
+          <button className="chronicle-mobile-mission-toggle" type="button" onClick={() => setMobileMissionOpen((open) => !open)} aria-expanded={mobileMissionOpen}>{mobileMissionOpen ? "Hide mission" : "Read mission"}</button>
+          <header className={`chronicle-dispatch ${mobileMissionOpen ? "is-mobile-open" : ""}`}>
             <div className="dispatch-id">
               <span>INCOMING FILE</span>
               <strong>
@@ -790,6 +794,7 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
               <strong>{pressure}%</strong>
               <small>{getPressureLabel(pressure)}</small>
             </div>
+            <button className="mobile-panel-close" type="button" onClick={() => setMobileMissionOpen(false)}>Use the controls</button>
           </header>
 
           {!feedback && currentChallenge.task === "timeline" && (

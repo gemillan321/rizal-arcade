@@ -43,6 +43,7 @@ export function ValuesGame({ onClose }: { onClose: () => void }) {
   const [phase, setPhase] = useState<"ready" | "jumping" | "feedback">("ready");
   const [selectedPad, setSelectedPad] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [mobileSituationOpen, setMobileSituationOpen] = useState(true);
   const jumpTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const feedbackRef = useRef<HTMLDivElement>(null);
   const questionRef = useRef<HTMLDivElement>(null);
@@ -112,6 +113,7 @@ export function ValuesGame({ onClose }: { onClose: () => void }) {
     setSelectedPad(null);
     setPhase("ready");
     setCaseIndex((value) => value + 1);
+    setMobileSituationOpen(true);
   }
   function replay() {
     saveBest(score);
@@ -124,6 +126,7 @@ export function ValuesGame({ onClose }: { onClose: () => void }) {
     setSelectedPad(null);
     setPhase("ready");
     setFeedback(null);
+    setMobileSituationOpen(true);
   }
 
   if (finished) return <><GameHeader title="Rizalian Values: River Quest" status={[{ label: "Lives", value: `${"♥".repeat(lives)}${"♡".repeat(3 - lives)}` }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} /><Results game="values" title="Rizalian Values: River Quest" score={score} best={best} maxScore={900} onReplay={replay} onClose={onClose} /></>;
@@ -132,10 +135,12 @@ export function ValuesGame({ onClose }: { onClose: () => void }) {
       <GameHeader title="Rizalian Values: River Quest" status={[{ label: "Lives", value: `${"♥".repeat(lives)}${"♡".repeat(3 - lives)}` }, { label: "To finish", value: `${progress} / ${goal}` }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} />
       <section className="river-game">
         <RiverCourse progress={progress} goal={goal} />
-        <div className="river-question" ref={questionRef}>
+        <button className="river-mobile-situation" type="button" onClick={() => setMobileSituationOpen(true)} aria-expanded={mobileSituationOpen}>Read situation</button>
+        <div className={`river-question ${mobileSituationOpen ? "is-mobile-open" : ""}`} ref={questionRef}>
           <span>Interpretive value · Case {current.id}</span>
           <h2>Choose the value that best fits this action.</h2>
           <p>{current.scenario}</p>
+          <button className="mobile-panel-close" type="button" onClick={() => setMobileSituationOpen(false)}>Choose a lily pad</button>
         </div>
         <div className="pond-stage">
           <div className="pond-sun" /><div className="pond-reeds reeds-left" /><div className="pond-reeds reeds-right" />

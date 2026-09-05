@@ -2160,3 +2160,141 @@
     opacity: .34;
   }
 }
+
+/* Phone cockpit: the journey stays visible while only the active control console
+   scrolls. This preserves the train mechanic without turning the whole game into
+   one long page. */
+.chronicle-mobile-mission-toggle { display: none; }
+
+@media (max-width: 650px) {
+  .chronicle-game {
+    height: calc(100svh - 72px);
+    min-height: 0;
+    display: grid;
+    grid-template-rows: 190px minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  .chronicle-world {
+    position: relative;
+    z-index: 5;
+    height: 190px;
+    min-height: 0;
+    box-shadow: 0 5px 16px rgba(0,0,0,.42);
+  }
+
+  .chronicle-scene-caption {
+    top: 7px;
+    left: 7px;
+    right: auto;
+    width: calc(58% - 10px);
+    max-width: 210px;
+    padding: .46rem .55rem;
+  }
+
+  .chronicle-scene-caption strong {
+    font-size: 1.05rem;
+    line-height: 1;
+  }
+
+  .chronicle-progress-board {
+    top: 7px;
+    right: 7px;
+    bottom: auto;
+    left: auto;
+    width: 116px;
+    padding: .44rem .5rem;
+  }
+
+  .chronicle-progress-board span { font-size: .48rem; }
+  .chronicle-progress-board strong { font-size: .68rem; }
+  .chronicle-progress-track { margin-top: .28rem; }
+
+  .chronicle-horizon.far { bottom: 47px; height: 95px; }
+  .chronicle-horizon.near { bottom: 43px; height: 62px; }
+  .chronicle-landmark { bottom: 46px; height: 100px; transform: scale(.62); transform-origin: right bottom; }
+  .telegraph-poles { bottom: 42px; height: 72px; transform: scaleY(.65); transform-origin: bottom; }
+  .chronicle-track-bed { height: 48px; }
+  .chronicle-train-wrap { left: 3px; bottom: 29px; width: calc(100% - 6px); }
+  .train-carriage { flex-basis: 39px; height: 44px; }
+  .train-carriage:nth-child(n+5) { display: none; }
+  .steam-locomotive { flex-basis: 124px; transform: scale(-.61, .61); margin-left: -47px; }
+
+  .chronicle-console {
+    min-height: 0;
+    height: 100%;
+    padding: 7px 7px max(12px, env(safe-area-inset-bottom));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .chronicle-mobile-mission-toggle {
+    position: sticky;
+    z-index: 5;
+    top: -7px;
+    width: 100%;
+    min-height: 40px;
+    display: block;
+    border: 2px solid #d8a847;
+    border-radius: 6px;
+    color: #f8e8ba;
+    background: #102c32;
+    box-shadow: 0 3px 0 #8d2935;
+    font-size: .76rem;
+    font-weight: 900;
+  }
+
+  .chronicle-dispatch {
+    display: none;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 5px;
+    padding: 6px;
+    background: rgba(5, 24, 30, .97);
+  }
+  .chronicle-dispatch.is-mobile-open { display: grid; }
+  .chronicle-dispatch .mobile-panel-close { grid-column: 1 / -1; display: block; min-height: 40px; }
+
+  .dispatch-id { display: none; }
+  .dispatch-message { padding: 8px 9px; }
+  .dispatch-message > span { font-size: .51rem; }
+  .dispatch-message h2 { margin: .25rem 0; font-size: 1.12rem; line-height: 1.08; }
+  .dispatch-message p { display: none; }
+
+  .boiler-gauge {
+    grid-column: auto;
+    min-width: 62px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2px;
+    align-content: center;
+    padding: 4px;
+  }
+  .boiler-gauge > span,
+  .boiler-gauge > small { display: none; }
+  .boiler-dial { width: 38px; height: 38px; margin: auto; }
+  .boiler-dial i { height: 13px; }
+  .boiler-gauge > strong { font-size: .62rem; }
+
+  .switchboard-panel,
+  .signal-panel,
+  .cargo-yard { margin-top: 6px; }
+  .switchboard-title,
+  .cargo-yard-title { align-items: center; flex-direction: row; gap: .45rem; }
+  .switchboard-title h3,
+  .cargo-yard-title h3 { font-size: 1rem; }
+  .junction-map { height: 82px; }
+  .route-selection-readout { padding: .55rem; }
+  .switch-destination-signs { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .destination-sign { min-height: 65px; padding: .44rem; }
+  .destination-sign > small { display: none; }
+  .signal-machine { min-height: 108px; }
+  .semaphore-post { height: 78px; }
+  .signal-control-row { height: 145px; min-height: 145px; grid-template-columns: minmax(0, 1fr) 64px; gap: 6px; }
+  .signal-labels { gap: 4px; }
+  .signal-labels span { gap: 6px; padding: 5px 7px; font-size: .7rem; line-height: 1.1; }
+  .signal-labels b { width: 22px; height: 22px; font-size: .52rem; }
+  .signal-lever-handle { width: 44px; height: 34px; }
+  .signal-lever-handle i { top: 29px; height: 43px; }
+  .theme-crate { min-height: 62px; }
+  .chronicle-console-footer { padding-bottom: 0; font-size: .55rem; }
+}

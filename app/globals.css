@@ -3207,3 +3207,369 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Phone play mode: keep the mechanic in one stable viewport and move supporting
+   information into explicit, touch-friendly panels. Desktop layouts are unchanged. */
+.mobile-game-nav,
+.mobile-panel-close,
+.river-mobile-situation,
+.memory-mobile-inspector,
+.global-mobile-destinations {
+  display: none;
+}
+
+@media (max-width: 650px) {
+  .mobile-game-nav {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+    padding: 4px;
+    border: 1px solid rgba(255, 241, 205, .28);
+    border-radius: 9px;
+    background: rgba(2, 12, 17, .92);
+  }
+
+  .mobile-game-nav button {
+    min-width: 0;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 5px 7px;
+    color: rgba(255, 244, 211, .72);
+    background: transparent;
+    font-size: 12px;
+    font-weight: 850;
+  }
+
+  .mobile-game-nav button.is-active {
+    border-color: #e6b950;
+    color: #071c24;
+    background: #e6b950;
+    box-shadow: 0 2px 0 #8c293b;
+  }
+
+  .mobile-game-nav small {
+    min-width: 20px;
+    padding: 2px 4px;
+    border-radius: 999px;
+    color: inherit;
+    background: rgba(255, 255, 255, .18);
+    font: 900 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  }
+
+  .mobile-panel-close {
+    width: 100%;
+    min-height: 48px;
+    border: 2px solid currentColor;
+    border-radius: 7px;
+    padding: 9px 14px;
+    color: #fff4d3;
+    background: #0b4f52;
+    box-shadow: 3px 4px 0 #a12e40;
+    font-size: 14px;
+    font-weight: 900;
+  }
+
+  /* Game 1: read the situation once, then keep the route and all answers visible. */
+  .game-values { overflow: hidden; }
+  .river-game {
+    height: calc(100svh - 72px);
+    min-height: 0;
+    grid-template-rows: 54px 42px minmax(0, 1fr);
+    gap: 6px;
+    padding: 6px 7px 8px;
+    overflow: hidden;
+  }
+  .river-course { height: 54px; border-width: 2px; border-radius: 10px; }
+  .course-pad { width: 23px; height: 18px; font-size: 7px; }
+  .course-pad.is-finish { width: 29px; height: 22px; font-size: 11px; }
+  .course-frog { font-size: 18px; }
+  .river-mobile-situation {
+    display: block;
+    width: 100%;
+    min-height: 42px;
+    border: 2px solid #06252f;
+    border-radius: 9px;
+    color: #fff7db;
+    background: #0b5660;
+    box-shadow: 3px 3px 0 #ffc83d;
+    font-size: 14px;
+    font-weight: 900;
+  }
+  .river-question {
+    position: fixed;
+    z-index: 45;
+    inset: 80px 9px 9px;
+    width: auto;
+    max-height: none;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+    margin: 0;
+    padding: 24px 19px;
+    overflow-y: auto;
+    border-radius: 14px;
+    box-shadow: 0 0 0 999px rgba(2, 13, 18, .76), 7px 8px 0 rgba(6,25,35,.43);
+    text-align: left;
+  }
+  .river-question.is-mobile-open { display: flex; }
+  .river-question > span { align-self: flex-start; font-size: 9px; }
+  .river-question h2 { margin: 0; font-size: 31px; line-height: 1; }
+  .river-question p { margin: 0; font-size: 17px; line-height: 1.45; }
+  .river-question .mobile-panel-close { display: block; margin-top: 6px; }
+  .pond-stage { height: 100%; min-height: 0; border-width: 2px; border-radius: 16px; }
+  .lily-lane { left: 2%; right: 2%; top: 22%; gap: 5px; }
+  .lily-pad { min-height: 105px; padding: 24px 6px 10px; border-width: 3px; }
+  .lily-pad small { top: -14px; width: 30px; height: 30px; border-width: 3px; font-size: 12px; }
+  .lily-pad span { font-size: 12px; line-height: 1.15; }
+  .frog-avatar { width: 69px; height: 55px; border-width: 3px; transform: translate(-50%, -50%) scale(.82); }
+  .river-tip { bottom: 8px; padding: 6px 8px; font-size: 8px; }
+
+  /* Game 2: all twelve cards stay on one board; selected text remains readable below it. */
+  .game-novels { overflow: hidden; }
+  .memory-game {
+    width: calc(100% - 12px);
+    height: calc(100svh - 72px);
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 6px;
+    padding: 7px 0 8px;
+    overflow: hidden;
+  }
+  .memory-title { min-height: 34px; }
+  .memory-title .eyebrow,
+  .memory-title img,
+  .memory-instructions { display: none; }
+  .memory-title h2 { margin: 0; font-size: 21px; line-height: 1.05; }
+  .memory-board {
+    height: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+    padding: 6px;
+    overflow: hidden;
+    border-width: 2px;
+    border-radius: 10px;
+    box-shadow: 4px 5px 0 var(--burgundy);
+  }
+  .memory-card { min-height: 0; height: 100%; aspect-ratio: auto; }
+  .memory-card-back,
+  .memory-card-front { border-width: 2px; box-shadow: 2px 3px 0 rgba(0,0,0,.28); }
+  .memory-card-back::after { width: 31px; height: 31px; border-width: 2px; font-size: 10px; }
+  .memory-card-back b { right: 5px; bottom: 5px; font-size: 8px; }
+  .memory-card-front small { left: 4px; top: 4px; padding: 3px 4px; font-size: 5px; }
+  .memory-card-front .portrait-hint,
+  .memory-card-front .name-card-prompt,
+  .memory-card-front em { display: none; }
+  .memory-card-front .name-card-title { align-self: center; margin: auto 5px; font-size: 12px; }
+  .memory-mobile-inspector {
+    min-height: 66px;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+    padding: 6px;
+    border: 2px solid #08202b;
+    border-radius: 8px;
+    color: #fff3ce;
+    background: #0b3042;
+  }
+  .memory-mobile-inspector > p { grid-column: 1 / -1; align-self: center; margin: 0; color: rgba(255,243,206,.7); font-size: 13px; text-align: center; }
+  .memory-mobile-inspector > div { min-width: 0; display: grid; align-content: center; gap: 3px; padding: 5px 7px; border-left: 3px solid #ffc83d; background: rgba(255,255,255,.06); }
+  .memory-mobile-inspector span { color: #4ee0d0; font-size: 9px; font-weight: 900; text-transform: uppercase; }
+  .memory-mobile-inspector strong { overflow-wrap: anywhere; font-size: 12px; line-height: 1.22; }
+
+  /* Prevent decorative passport shadows from creating a sideways page scroll. */
+  .game-scholar,
+  .scholar-game,
+  .scholar-route { max-width: 100%; overflow-x: hidden; }
+
+  /* Game 7: map, clues, and destination choices become separate touch surfaces. */
+  .game-global { overflow: hidden; }
+  .global-game { height: calc(100svh - 72px); min-height: 0; padding: 4px; overflow: hidden; }
+  .global-atlas-shell {
+    height: 100%;
+    grid-template-rows: 50px auto auto;
+    align-content: start;
+    gap: 5px;
+    padding: 4px;
+    overflow: hidden;
+  }
+  .global-atlas-shell > .mobile-game-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .global-atlas-surface { display: none; height: auto; min-height: 0; aspect-ratio: 16 / 10; }
+  .global-atlas-surface.is-mobile-active { display: block; }
+  .global-atlas-title,
+  .global-focus-lens,
+  .global-port-label { display: none; }
+  .global-permits { top: 5px; left: 5px; }
+  .global-compass-score { top: 5px; right: 5px; width: 52px; height: 52px; }
+  .global-port { width: 25px; height: 25px; box-shadow: 0 0 0 3px rgba(55,212,196,.2), 2px 2px 0 rgba(3,20,27,.68); }
+  .global-port-beacon { font-size: 12px; }
+  .global-port-anchor { width: 21px; height: 21px; font-size: 9px; }
+  .global-traveler { width: 35px; height: 35px; box-shadow: 0 0 0 3px rgba(229,185,79,.2), 2px 2px 0 rgba(3,20,27,.7); }
+  .global-traveler > span { font-size: 17px; }
+  .global-traveler small { top: calc(100% + 2px); font-size: 7px; }
+  .global-map-announcement { bottom: 4px; width: calc(100% - 10px); font-size: 8px; }
+  .global-mobile-destinations {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .global-mobile-destinations button {
+    min-width: 0;
+    min-height: 56px;
+    display: grid;
+    grid-template-columns: 25px minmax(0, 1fr);
+    align-items: center;
+    gap: 5px;
+    border: 2px solid #e8c16b;
+    border-radius: 6px;
+    padding: 5px;
+    color: #18373b;
+    background: #ead5a5;
+    text-align: left;
+  }
+  .global-mobile-destinations button > b { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; color: #fff1cd; background: #a74632; font-size: 11px; }
+  .global-mobile-destinations button span,
+  .global-mobile-destinations button strong,
+  .global-mobile-destinations button small { min-width: 0; display: block; }
+  .global-mobile-destinations button strong { overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+  .global-mobile-destinations button small { margin-top: 2px; color: #7b4936; font-size: 7px; text-transform: uppercase; }
+  .global-mobile-destinations button.is-blocked { opacity: .48; filter: grayscale(.7); }
+  .global-telegram {
+    position: fixed;
+    z-index: 55;
+    inset: 72px 0 0;
+    display: none;
+    grid-template-columns: 1fr;
+    align-content: start;
+    gap: 10px;
+    padding: 13px 14px max(18px, env(safe-area-inset-bottom));
+    overflow-y: auto;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .global-telegram.is-mobile-active { display: grid; }
+  .global-telegram .mobile-panel-close { display: block; }
+  .global-telegram-heading { grid-template-columns: 30px minmax(0,1fr) auto; }
+  .global-telegram-heading h3 { font-size: 23px; line-height: 1.05; }
+  .global-telegram ol { grid-template-columns: 1fr; gap: 8px; }
+  .global-telegram li { min-height: 64px; align-items: center; padding: 9px; }
+  .global-telegram li p { font-size: 15px; line-height: 1.35; }
+  .global-telegram-help { grid-template-columns: 1fr; }
+  .global-arrival-scene { bottom: 31px; max-height: calc(100% - 40px); }
+
+  /* Game 9: case, loose evidence, and causal chain are three focused panels. */
+  .game-revolution { overflow: hidden; }
+  .revolution-game {
+    height: calc(100svh - 72px);
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 5px;
+    padding: 5px;
+    overflow: hidden;
+  }
+  .revolution-masthead { min-height: 39px; align-items: center; flex-direction: row; gap: 5px; margin: 0; padding: 0 3px; }
+  .revolution-masthead p { display: none; }
+  .revolution-masthead h2 { font-size: 24px; }
+  .revolution-heat { width: auto; min-width: 124px; grid-template-columns: auto 1fr; gap: 3px 6px; padding: 5px 7px; }
+  .revolution-heat > span { font-size: 7px; }
+  .revolution-heat i { width: 16px; height: 6px; }
+  .revolution-heat small { display: none; }
+  .revolution-table {
+    height: 100%;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 44px minmax(0, 1fr);
+    border-width: 2px;
+  }
+  .revolution-file-rail { min-height: 0; padding: 4px 6px; overflow: hidden; }
+  .revolution-file-rail > span { display: none; }
+  .revolution-file-rail ol { height: 100%; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3px; }
+  .revolution-file-rail li { min-width: 0; padding: 3px; }
+  .revolution-file-rail li > b { width: 25px; height: 25px; font-size: 8px; }
+  .revolution-file-rail li div { display: none; }
+  .revolution-workspace {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 50px minmax(0, 1fr) auto auto;
+    grid-template-areas: "nav" "panel" "controls" "announce";
+    gap: 5px;
+    padding: 5px;
+    overflow: hidden;
+  }
+  .revolution-workspace > .mobile-game-nav { grid-area: nav; }
+  .revolution-workspace > section { grid-area: panel; display: none; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .revolution-workspace > section.is-mobile-active { display: block; }
+  .revolution-workspace > .revolution-controls { grid-area: controls; }
+  .revolution-workspace > .revolution-announcement { grid-area: announce; }
+  .revolution-briefing { width: 100%; height: 100%; padding: 15px; }
+  .revolution-briefing h3 { font-size: 32px; }
+  .revolution-briefing p { font-size: 16px; line-height: 1.45; }
+  .revolution-chain { padding: 5px 7px 12px; }
+  .revolution-chain-slots { grid-template-columns: 1fr; gap: 7px; }
+  .revolution-chain-slots button { min-height: 78px; padding: 9px 10px 9px 45px; }
+  .revolution-evidence { padding: 7px; }
+  .revolution-evidence-heading p { display: none; }
+  .revolution-evidence-tray { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .revolution-evidence-tray button { min-height: 76px; }
+  .revolution-evidence-tray button > strong { font-size: 12px; }
+  .revolution-controls { grid-template-columns: 1fr 1fr; gap: 5px; }
+  .revolution-controls button { min-height: 51px; padding: 6px 8px; }
+  .revolution-insight > span { font-size: 18px; }
+  .revolution-insight strong,
+  .revolution-commit { font-size: 10px; }
+  .revolution-insight small { font-size: 8px; }
+  .revolution-announcement { min-height: 25px; max-height: 35px; overflow: hidden; padding-top: 5px; font-size: 9px; }
+
+  /* Game 10: answer desk, puzzle, and clue index no longer form one tall page. */
+  .game-crossword { overflow: hidden; }
+  .crossword-game {
+    width: calc(100% - 8px);
+    height: calc(100svh - 72px);
+    min-height: 0;
+    display: grid;
+    grid-template-rows: 50px minmax(0, 1fr) auto;
+    gap: 5px;
+    padding: 4px 0 6px;
+    overflow: hidden;
+  }
+  .crossword-masthead { display: none; }
+  .crossword-pressroom { min-height: 0; height: 100%; display: block; overflow: hidden; }
+  .crossword-broadsheet,
+  .crossword-editor { display: none; height: 100%; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .crossword-broadsheet.is-mobile-active,
+  .crossword-editor.is-mobile-active,
+  .crossword-editor.is-mobile-clue-index { display: block; }
+  .crossword-broadsheet { padding: 8px 6px; box-shadow: none; }
+  .crossword-broadsheet > header { padding-bottom: 6px; border-bottom-width: 4px; }
+  .crossword-broadsheet > header span { font-size: 25px; }
+  .crossword-broadsheet > header strong { font-size: 8px; }
+  .crossword-grid-scroll { max-height: calc(100% - 78px); padding: 8px 2px; }
+  .crossword-broadsheet > footer { display: none; }
+  .crossword-editor { padding: 24px 12px 12px; box-shadow: none; }
+  .crossword-editor.is-mobile-active .crossword-clue-index { display: none; }
+  .crossword-editor.is-mobile-clue-index > :not(.crossword-clue-index) { display: none; }
+  .crossword-editor.is-mobile-clue-index .crossword-clue-index {
+    max-height: none;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+  }
+  .crossword-editor.is-mobile-clue-index .crossword-clue-index button { min-height: 52px; }
+  .crossword-announcement { max-height: 28px; margin: 0; overflow: hidden; padding: 5px 8px; font-size: 8px; }
+}
