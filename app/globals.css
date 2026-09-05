@@ -3275,8 +3275,10 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
     font-weight: 900;
   }
 
-  /* Game 1: read the situation once, then keep the route and all answers visible. */
-  .game-values { overflow: hidden; }
+  /* Game 1: read the situation once, then keep the route and all answers visible.
+     Scoped to .is-playing so the pre-game "How to Play" screen (which shares this
+     overlay element) keeps its normal scroll and the Start button stays reachable. */
+  .game-values.is-playing { overflow: hidden; }
   .river-game {
     height: calc(100svh - 72px);
     min-height: 0;
@@ -3332,7 +3334,7 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .river-tip { bottom: 8px; padding: 6px 8px; font-size: 8px; }
 
   /* Game 2: all twelve cards stay on one board; selected text remains readable below it. */
-  .game-novels { overflow: hidden; }
+  .game-novels.is-playing { overflow: hidden; }
   .memory-game {
     width: calc(100% - 12px);
     height: calc(100svh - 72px);
@@ -3391,7 +3393,7 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .scholar-route { max-width: 100%; overflow-x: hidden; }
 
   /* Game 7: map, clues, and destination choices become separate touch surfaces. */
-  .game-global { overflow: hidden; }
+  .game-global.is-playing { overflow: hidden; }
   .global-game { height: calc(100svh - 72px); min-height: 0; padding: 4px; overflow: hidden; }
   .global-atlas-shell {
     height: 100%;
@@ -3409,9 +3411,14 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .global-port-label { display: none; }
   .global-permits { top: 5px; left: 5px; }
   .global-compass-score { top: 5px; right: 5px; width: 52px; height: 52px; }
+  /* Precisely tapping small map pins (especially crowded clusters the desktop
+     lens used to magnify) is unreliable on a phone. The numbered pins stay as
+     a locational reference only; global-mobile-destinations below is the one
+     real tap target, and shares the same numbering. */
+  .global-port, .global-port-anchor { pointer-events: none; }
   .global-port { width: 25px; height: 25px; box-shadow: 0 0 0 3px rgba(55,212,196,.2), 2px 2px 0 rgba(3,20,27,.68); }
   .global-port-beacon { font-size: 12px; }
-  .global-port-anchor { width: 21px; height: 21px; font-size: 9px; }
+  .global-port-anchor { width: 18px; height: 18px; font-size: 8px; opacity: .78; }
   .global-traveler { width: 35px; height: 35px; box-shadow: 0 0 0 3px rgba(229,185,79,.2), 2px 2px 0 rgba(3,20,27,.7); }
   .global-traveler > span { font-size: 17px; }
   .global-traveler small { top: calc(100% + 2px); font-size: 7px; }
@@ -3467,7 +3474,7 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .global-arrival-scene { bottom: 31px; max-height: calc(100% - 40px); }
 
   /* Game 9: case, loose evidence, and causal chain are three focused panels. */
-  .game-revolution { overflow: hidden; }
+  .game-revolution.is-playing { overflow: hidden; }
   .revolution-game {
     height: calc(100svh - 72px);
     min-height: 0;
@@ -3533,7 +3540,7 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .revolution-announcement { min-height: 25px; max-height: 35px; overflow: hidden; padding-top: 5px; font-size: 9px; }
 
   /* Game 10: answer desk, puzzle, and clue index no longer form one tall page. */
-  .game-crossword { overflow: hidden; }
+  .game-crossword.is-playing { overflow: hidden; }
   .crossword-game {
     width: calc(100% - 8px);
     height: calc(100svh - 72px);
@@ -3572,4 +3579,100 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   }
   .crossword-editor.is-mobile-clue-index .crossword-clue-index button { min-height: 52px; }
   .crossword-announcement { max-height: 28px; margin: 0; overflow: hidden; padding: 5px 8px; font-size: 8px; }
+
+  /* Game 3: the cipher key/input and the clue telegram become two tabs instead of side-by-side columns. */
+  .decoder-game { height: calc(100svh - 72px); min-height: 0; padding: 6px 7px max(8px, env(safe-area-inset-bottom)); gap: 6px; }
+  .decoder-heading { min-height: 0; }
+  .decoder-heading .eyebrow { font-size: 9px; }
+  .decoder-heading h2 { font-size: 19px; line-height: 1.1; }
+  .decoder-heading > span { display: none; }
+  .manual-code-grid {
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 50px minmax(0, 1fr);
+    gap: 6px;
+  }
+  .cipher-workbench, .manual-code-grid .clue-telegram { display: none; min-height: 0; height: 100%; overflow-y: auto; overscroll-behavior: contain; }
+  .cipher-workbench.is-mobile-active { display: grid; }
+  .manual-code-grid .clue-telegram.is-mobile-active { display: block; }
+  .cipher-workbench { padding: 12px; gap: 8px; }
+  .cipher-workbench .cipher-readout { min-height: 62px; padding: 9px 12px; }
+  .cipher-key { padding: 9px 10px; }
+  .decode-answer input { height: 44px; font-size: 15px; }
+  .check-code-button { min-height: 46px; }
+  .manual-code-grid .clue-telegram { padding: 24px 15px 14px; }
+  .manual-code-grid .clue-telegram > span { margin-bottom: 10px; font-size: 22px; }
+
+  /* Filing phase is a single short step; keep it inside the locked viewport without tabs. */
+  .manual-file-stage { height: 100%; min-height: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); overflow-y: auto; }
+  .decoded-stamp, .solved-file-summary { padding: 16px; }
+  .manual-file-stage .filing-station { height: auto; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .manual-file-stage .archive-slip { height: auto; }
+
+  /* Game 4: Scholar's Journey keeps the brief and passport tray fixed; only the six-stop route scrolls. */
+  .scholar-game { height: calc(100svh - 72px); min-height: 0; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 6px; padding: 6px 7px max(8px, env(safe-area-inset-bottom)); overflow: hidden; }
+  .scholar-heading { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .scholar-heading > img { display: none; }
+  .scholar-heading h2 { font-size: 19px; line-height: 1.1; }
+  .scholar-heading .eyebrow { display: none; }
+  .scholar-brief { min-height: 0; grid-template-columns: 50px minmax(0, 1fr); gap: 8px; padding: 6px 9px; }
+  .scholar-brief > div { padding-right: 8px; }
+  .scholar-brief > div strong { font-size: 20px; }
+  .scholar-brief > p { font-size: 13px; }
+  .scholar-route { min-height: 0; height: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; padding: 8px; overflow-y: auto; overscroll-behavior: contain; }
+  .scholar-stop { padding: 6px; }
+  .scholar-stop-copy small { font-size: 8px; }
+  .scholar-stop-copy strong { font-size: 12px; }
+  .scholar-stop-copy em { font-size: 8px; }
+  .scholar-pinned-record, .scholar-placed-record, .scholar-empty-stop { font-size: 9px; }
+  .scholar-passport-tray { min-height: 0; grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 7px; }
+  .tray-label { padding-right: 0; border-right: 0; }
+  .scholar-tokens { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .scholar-route-note { display: none; }
+
+  /* Game 5 & 6: Hearts and Museum swap their three side-by-side panels for a switchable workspace,
+     keeping the evidence/artifact panel, the two choice panels, and the seal/install action reachable
+     without scrolling past each other. */
+  .hearts-game, .museum-game { height: calc(100svh - 72px); min-height: 0; display: flex; flex-direction: column; padding: 6px 7px max(8px, env(safe-area-inset-bottom)); overflow: hidden; }
+  .hearts-heading, .museum-heading { flex: 0 0 auto; min-height: 0; }
+  .hearts-heading h2, .museum-heading h2 { font-size: 19px; line-height: 1.1; }
+  .hearts-heading > p, .hearts-heading .eyebrow, .museum-heading .eyebrow { display: none; }
+  /* Round progress already shows in the GameHeader status pill; drop the duplicate strip to save height. */
+  .hearts-route, .museum-progress { display: none; }
+  .hearts-workspace, .museum-workspace {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
+    grid-template-rows: 50px minmax(0, 1fr) auto;
+    grid-template-areas: "nav" "panel" "actions";
+    gap: 6px;
+  }
+  .hearts-workspace > .mobile-game-nav, .museum-workspace > .mobile-game-nav { grid-area: nav; }
+  .hearts-workspace > .hearts-actions, .museum-workspace > .museum-actions { grid-area: actions; margin-top: 0; }
+  .hearts-desk, .museum-floor { display: contents; }
+  .hearts-choice-panel, .hearts-dossier, .museum-artifact, .museum-gallery-map, .museum-plaque-rack {
+    display: none;
+    grid-area: panel;
+    min-height: 0;
+    height: 100%;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .hearts-choice-panel.is-mobile-active, .hearts-dossier.is-mobile-active,
+  .museum-artifact.is-mobile-active, .museum-gallery-map.is-mobile-active, .museum-plaque-rack.is-mobile-active { display: block; }
+  .hearts-dossier { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; padding: 12px; }
+  .hearts-choice-panel { padding: 10px; }
+  .hearts-choice-panel button { min-height: 58px; }
+  .museum-artifact { grid-template-columns: 90px minmax(0, 1fr); grid-template-rows: auto 1fr; }
+  .museum-gallery-map, .museum-plaque-rack { padding: 10px; }
+  .museum-plaque-rack button { min-height: 66px; }
+  .hearts-actions, .museum-actions { min-height: 0; }
+  .hearts-actions p, .museum-actions p { font-size: 11px; }
+  /* Once a dossier/exhibit is judged, the result and its Next button take over the
+     panel area completely instead of competing with the (now-disabled) choice panels. */
+  .hearts-feedback, .museum-feedback { grid-area: panel; min-height: 0; height: 100%; overflow-y: auto; overscroll-behavior: contain; }
+  .hearts-workspace:has(.hearts-feedback) .hearts-desk,
+  .museum-workspace:has(.museum-feedback) .museum-floor { display: none; }
+  .hearts-accuracy-note, .museum-note { display: none; }
 }

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { defineChallengeBank, drawChallengeSet } from "../../challengeBank";
 import { codebreakerChallenges, type CodebreakerGroup } from "../../codebreakerChallenges";
-import { FeedbackPanel, GameHeader, Results, useArcadeSound, useHighScore, type Feedback } from "../shared/ArcadeGameKit";
+import { FeedbackPanel, GameHeader, MobilePanelNav, Results, useArcadeSound, useHighScore, type Feedback } from "../shared/ArcadeGameKit";
 
 const codeBank = defineChallengeBank({ id: "codebreaker", topicId: "family-childhood-genealogy-early-education", contentVersion: 2, items: codebreakerChallenges });
 
@@ -13,6 +13,8 @@ function atbashText(value: string) {
 function normalizeCodeAnswer(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
+
+type MobileCodebreakerPanel = "decode" | "clues";
 
 type ArchiveGroup = CodebreakerGroup;
 const archiveGroups: ArchiveGroup[] = ["Family & roots", "Childhood", "Early education"];
@@ -34,6 +36,7 @@ export function CodebreakerGame({ onClose }: { onClose: () => void }) {
   const [answerWrong, setAnswerWrong] = useState(false);
   const [announcement, setAnnouncement] = useState("Use the substitution key to decode the Rizal roots file manually.");
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  const [mobilePanel, setMobilePanel] = useState<MobileCodebreakerPanel>("decode");
   const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const decoderTopRef = useRef<HTMLDivElement>(null);
   const decodeInputRef = useRef<HTMLInputElement>(null);
@@ -113,6 +116,7 @@ export function CodebreakerGame({ onClose }: { onClose: () => void }) {
     setWrongDrawer(null);
     setPhase("decoding");
     setAnnouncement("Use the substitution key to decode the Rizal roots file manually.");
+    setMobilePanel("decode");
     setRound((value) => value + 1);
   }
   function replay() {
@@ -129,6 +133,7 @@ export function CodebreakerGame({ onClose }: { onClose: () => void }) {
     setPhase("decoding");
     setFeedback(null);
     setAnnouncement("Use the substitution key to decode the Rizal roots file manually.");
+    setMobilePanel("decode");
   }
 
   if (finished) return <><GameHeader title="Rizal Roots: Codebreaker" status={[{ label: "Files", value: "6 / 6" }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} /><Results game="codebreaker" title="Rizal Roots: Codebreaker" score={score} best={best} maxScore={1200} onReplay={replay} onClose={onClose} /></>;
@@ -139,7 +144,13 @@ export function CodebreakerGame({ onClose }: { onClose: () => void }) {
         <div className="decoder-heading"><div><p className="eyebrow">Archive cipher room · {current.year}</p><h2>Use the key. Decode it yourself.</h2></div><span>File {current.id}</span></div>
 
         {phase === "decoding" && <div className="manual-code-grid" ref={decoderTopRef}>
-          <form className={`cipher-workbench ${answerWrong ? "answer-wrong" : ""}`} onSubmit={submitDecode}>
+          <MobilePanelNav
+            label="Cipher room workspace"
+            active={mobilePanel}
+            items={[{ id: "decode", label: "Decode" }, { id: "clues", label: "Clues", badge: String(revealed) }]}
+            onSelect={(id) => setMobilePanel(id as MobileCodebreakerPanel)}
+          />
+          <form className={`cipher-workbench ${answerWrong ? "answer-wrong" : ""} ${mobilePanel === "decode" ? "is-mobile-active" : ""}`} onSubmit={submitDecode}>
             <div className="cipher-readout"><small>Encrypted transmission</small><strong>{encoded}</strong></div>
             <div className="cipher-key" aria-label="Atbash substitution key">
               <span>Substitution formula</span>
@@ -153,7 +164,7 @@ export function CodebreakerGame({ onClose }: { onClose: () => void }) {
             </label>
             <button className="check-code-button" type="submit">Check my decoding</button>
           </form>
-          <aside className="clue-telegram">
+          <aside className={`clue-telegram ${mobilePanel === "clues" ? "is-mobile-active" : ""}`}>
             <span>Clue telegram</span>
             {current.clues.slice(0, revealed).map((clue, index) => <p key={clue}><b>{index + 1}</b>{clue}</p>)}
             {revealed < current.clues.length && <button type="button" onClick={() => { setRevealed((value) => value + 1); play("flip"); }}>Open another clue (−15 pts)</button>}

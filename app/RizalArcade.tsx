@@ -142,7 +142,7 @@ function GameOverlay({ game, onClose }: { game: GameId; onClose: () => void }) {
     }
   }, [started]);
   return (
-    <div ref={overlayRef} tabIndex={-1} className={`game-overlay game-${game}`} role="dialog" aria-modal="true" aria-label={`${gameInstructions[game].title} game`}>
+    <div ref={overlayRef} tabIndex={-1} className={`game-overlay game-${game} ${started ? "is-playing" : ""}`} role="dialog" aria-modal="true" aria-label={`${gameInstructions[game].title} game`}>
       {!started
         ? <GameInstructions game={game} onClose={onClose} onStart={() => setStarted(true)} />
         : <ActiveGame onClose={onClose} />}
