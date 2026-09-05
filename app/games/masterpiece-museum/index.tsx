@@ -4,9 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { defineChallengeBank, drawChallengeSet, shuffleList } from "../../challengeBank";
 import { masterpieceChallenges, museumGalleries, museumGalleriesById, type MuseumGalleryId } from "../../masterpieceChallenges";
-import { FeedbackPanel, GameHeader, MobilePanelNav, Results, useArcadeSound, useHighScore, type Feedback } from "../shared/ArcadeGameKit";
-
-type MobileMuseumPanel = "artifact" | "gallery" | "plaque";
+import { FeedbackPanel, GameHeader, Results, useArcadeSound, useHighScore, type Feedback } from "../shared/ArcadeGameKit";
 
 const museumBank = defineChallengeBank({ id: "museum", topicId: "essays-letters-annotations-and-other-works", contentVersion: 1, items: masterpieceChallenges });
 
@@ -23,7 +21,6 @@ export function MasterpieceMuseumGame({ onClose }: { onClose: () => void }) {
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [announcement, setAnnouncement] = useState("Inspect the artifact, choose its gallery, then attach the plaque that explains why it matters.");
   const [wrongSelection, setWrongSelection] = useState<"gallery" | "plaque" | "both" | null>(null);
-  const [mobilePanel, setMobilePanel] = useState<MobileMuseumPanel>("artifact");
   const feedbackRef = useRef<HTMLDivElement>(null);
   const finishTimer = useRef<number | null>(null);
   const [best, saveBest] = useHighScore("museum");
@@ -34,6 +31,14 @@ export function MasterpieceMuseumGame({ onClose }: { onClose: () => void }) {
     () => shuffleList([current.correctPlaque, ...current.distractorPlaques]),
     [current.correctPlaque, current.distractorPlaques],
   );
+  // Same reasoning as Hearts & Horizons: the desk advances itself on phones
+  // instead of asking the player to manually flip between three tabs.
+  const mobileStep: "gallery" | "plaque" | "ready" =
+    wrongSelection === "gallery" || wrongSelection === "both" ? "gallery"
+    : wrongSelection === "plaque" ? "plaque"
+    : !selectedGallery ? "gallery"
+    : !selectedPlaque ? "plaque"
+    : "ready";
 
   useEffect(() => {
     if (phase === "feedback") feedbackRef.current?.focus({ preventScroll: true });
@@ -48,7 +53,6 @@ export function MasterpieceMuseumGame({ onClose }: { onClose: () => void }) {
     setSelectedGallery(galleryId);
     setWrongSelection(null);
     setAnnouncement(`${museumGalleriesById[galleryId].title} selected. Now choose the exhibit plaque.`);
-    setMobilePanel(selectedPlaque ? "artifact" : "plaque");
     play("pickup");
   }
 
@@ -57,7 +61,6 @@ export function MasterpieceMuseumGame({ onClose }: { onClose: () => void }) {
     setSelectedPlaque(plaque);
     setWrongSelection(null);
     setAnnouncement("Plaque prepared. Install the exhibit when both choices are ready.");
-    setMobilePanel(selectedGallery ? "artifact" : "gallery");
     play("page");
   }
 
@@ -114,7 +117,6 @@ export function MasterpieceMuseumGame({ onClose }: { onClose: () => void }) {
     setSelectedGallery(null);
     setSelectedPlaque(null);
     setWrongSelection(null);
-    setMobilePanel("artifact");
     if (round === deck.length - 1) {
       saveBest(score);
       setPhase("finished");
@@ -140,7 +142,6 @@ export function MasterpieceMuseumGame({ onClose }: { onClose: () => void }) {
     setWrongSelection(null);
     setPhase("curating");
     setAnnouncement("Inspect the artifact, choose its gallery, then attach the plaque that explains why it matters.");
-    setMobilePanel("artifact");
   }
 
   if (phase === "finished") return <><GameHeader title="Masterpiece Museum" status={[{ label: "Exhibits", value: `${lives > 0 ? round + 1 : round} / 6` }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} /><Results game="museum" title="Masterpiece Museum" score={score} best={best} maxScore={1110} onReplay={replay} onClose={onClose} /></>;
@@ -157,33 +158,38 @@ export function MasterpieceMuseumGame({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="museum-workspace">
-          <MobilePanelNav
-            label="Curation desk"
-            active={mobilePanel}
-            items={[{ id: "artifact", label: "Artifact" }, { id: "gallery", label: "Gallery", badge: selectedGallery ? "✓" : undefined }, { id: "plaque", label: "Plaque", badge: selectedPlaque ? "✓" : undefined }]}
-            onSelect={(id) => setMobilePanel(id as MobileMuseumPanel)}
-          />
+          <p className="museum-mobile-step" aria-live="polite">
+            {mobileStep === "gallery" ? "Step 1 of 2 · Gallery destination" : mobileStep === "plaque" ? "Step 2 of 2 · Curatorial plaque" : "Both choices ready"}
+          </p>
 
           <div className="museum-floor">
-            <article className={`museum-artifact ${mobilePanel === "artifact" ? "is-mobile-active" : ""}`}>
+            <article className="museum-artifact is-mobile-active">
               <div className="museum-art-window"><img src="/art/masterpiece-museum.png" alt="Original illustrated museum interior with books, letters, poetry, and sculpture" /><span>{currentGallery.symbol}</span></div>
               <div className="museum-object-tag"><small>{current.id} · incoming object</small><strong>{current.objectLabel}</strong><span>{current.dateLabel}</span></div>
               <div className="museum-clue-copy"><p className="eyebrow">{current.clueTitle}</p><h3>{current.workTitle}</h3><ol>{current.evidence.map((clue, index) => <li key={clue}><span>0{index + 1}</span>{clue}</li>)}</ol></div>
             </article>
 
-            <section className={`museum-gallery-map ${wrongSelection === "gallery" || wrongSelection === "both" ? "is-wrong" : ""} ${mobilePanel === "gallery" ? "is-mobile-active" : ""}`} aria-labelledby="gallery-choice-title">
+            <section className={`museum-gallery-map ${wrongSelection === "gallery" || wrongSelection === "both" ? "is-wrong" : ""} ${mobileStep === "gallery" ? "is-mobile-active" : ""}`} aria-labelledby="gallery-choice-title">
               <div className="museum-section-label"><span>01</span><div><small>Gallery destination</small><h3 id="gallery-choice-title">Where should it hang?</h3></div></div>
               <div className="museum-doors" role="group" aria-label="Choose a museum gallery">
                 {museumGalleries.map((gallery) => <button key={gallery.id} type="button" className={selectedGallery === gallery.id ? "is-selected" : ""} aria-pressed={selectedGallery === gallery.id} disabled={phase !== "curating"} onClick={() => chooseGallery(gallery.id)}><i>{gallery.symbol}</i><span><strong>{gallery.shortTitle}</strong><small>{gallery.description}</small></span></button>)}
               </div>
             </section>
 
-            <section className={`museum-plaque-rack ${wrongSelection === "plaque" || wrongSelection === "both" ? "is-wrong" : ""} ${mobilePanel === "plaque" ? "is-mobile-active" : ""}`} aria-labelledby="plaque-choice-title">
+            <section className={`museum-plaque-rack ${wrongSelection === "plaque" || wrongSelection === "both" ? "is-wrong" : ""} ${mobileStep === "plaque" ? "is-mobile-active" : ""}`} aria-labelledby="plaque-choice-title">
               <div className="museum-section-label"><span>02</span><div><small>Curatorial meaning</small><h3 id="plaque-choice-title">Which label belongs?</h3></div></div>
               <div role="group" aria-label="Choose the exhibit’s curatorial label">
                 {plaqueOptions.map((plaque, index) => <button key={plaque} type="button" className={selectedPlaque === plaque ? "is-selected" : ""} aria-pressed={selectedPlaque === plaque} disabled={phase !== "curating"} onClick={() => choosePlaque(plaque)}><i>{String.fromCharCode(65 + index)}</i><span>{plaque}</span></button>)}
               </div>
             </section>
+
+            {mobileStep === "ready" && selectedGallery && selectedPlaque && (
+              <div className="museum-ready-recap is-mobile-active">
+                <p>Both choices are ready. Change one, or install the exhibit below.</p>
+                <button type="button" onClick={() => setSelectedGallery(null)}><small>Gallery</small><strong>{museumGalleriesById[selectedGallery].shortTitle}</strong><i>Change</i></button>
+                <button type="button" onClick={() => setSelectedPlaque(null)}><small>Plaque</small><strong>{selectedPlaque}</strong><i>Change</i></button>
+              </div>
+            )}
           </div>
 
           <div className="museum-actions"><p aria-live="polite">{announcement}</p><button className="button museum-install-button" type="button" disabled={phase !== "curating"} onClick={installExhibit}><span aria-hidden="true">◆</span> Install exhibit</button></div>

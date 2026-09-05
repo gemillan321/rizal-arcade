@@ -4,9 +4,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { defineChallengeBank, drawChallengeSet, shuffleList } from "../../challengeBank";
 import { heartsChallenges, heartsProfiles, heartsProfilesById, type HeartsWomanId } from "../../heartsChallenges";
-import { FeedbackPanel, GameHeader, MobilePanelNav, Results, useArcadeSound, useHighScore, type Feedback } from "../shared/ArcadeGameKit";
-
-type MobileHeartsPanel = "evidence" | "identity" | "horizon";
+import { FeedbackPanel, GameHeader, Results, useArcadeSound, useHighScore, type Feedback } from "../shared/ArcadeGameKit";
 
 const heartsBank = defineChallengeBank({ id: "hearts", topicId: "love-interests-and-women-rizal-met", contentVersion: 1, items: heartsChallenges });
 
@@ -38,7 +36,6 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [announcement, setAnnouncement] = useState("Read the dossier, choose an identity seal and a journey postmark, then seal the letter.");
   const [wrongSelection, setWrongSelection] = useState<"identity" | "place" | "both" | null>(null);
-  const [mobilePanel, setMobilePanel] = useState<MobileHeartsPanel>("evidence");
   const feedbackRef = useRef<HTMLDivElement>(null);
   const wrongTimer = useRef<number | null>(null);
   const [best, saveBest] = useHighScore("hearts");
@@ -52,6 +49,15 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
       places: shuffleList([currentProfile, ...others.slice(2, 4)]),
     };
   }, [current.womanId, currentProfile]);
+  // On phones the desk becomes a one-thing-at-a-time flow instead of three
+  // panels behind manual tabs: it advances on its own as picks are made, and
+  // a wrong seal briefly surfaces whichever choice needs a second look.
+  const mobileStep: "identity" | "horizon" | "ready" =
+    wrongSelection === "identity" || wrongSelection === "both" ? "identity"
+    : wrongSelection === "place" ? "horizon"
+    : !selectedWoman ? "identity"
+    : !selectedPlace ? "horizon"
+    : "ready";
 
   useEffect(() => {
     if (phase === "feedback") feedbackRef.current?.focus({ preventScroll: true });
@@ -66,7 +72,6 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
     setSelectedWoman(womanId);
     setWrongSelection(null);
     setAnnouncement(`${heartsProfilesById[womanId].name} selected. Now confirm the journey postmark.`);
-    setMobilePanel(selectedPlace ? "evidence" : "horizon");
     play("pickup");
   }
 
@@ -75,7 +80,6 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
     setSelectedPlace(womanId);
     setWrongSelection(null);
     setAnnouncement(`${heartsProfilesById[womanId].place} selected. Seal the letter when both choices are ready.`);
-    setMobilePanel(selectedWoman ? "evidence" : "identity");
     play("page");
   }
 
@@ -133,7 +137,6 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
     setSelectedWoman(null);
     setSelectedPlace(null);
     setWrongSelection(null);
-    setMobilePanel("evidence");
     if (round === deck.length - 1) {
       saveBest(score);
       setPhase("finished");
@@ -159,7 +162,6 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
     setWrongSelection(null);
     setPhase("selecting");
     setAnnouncement("Read the dossier, choose an identity seal and a journey postmark, then seal the letter.");
-    setMobilePanel("evidence");
   }
 
   if (phase === "finished") return <><GameHeader title="Hearts & Horizons" status={[{ label: "Letters", value: `${lives > 0 ? round + 1 : round} / 6` }, { label: "Score", value: String(score) }]} onClose={onClose} soundEnabled={soundEnabled} onToggleSound={toggleSound} /><Results game="hearts" title="Hearts & Horizons" score={score} best={best} maxScore={1110} onReplay={replay} onClose={onClose} /></>;
@@ -178,23 +180,12 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="hearts-workspace">
-          <MobilePanelNav
-            label="Correspondence desk"
-            active={mobilePanel}
-            items={[{ id: "evidence", label: "Evidence" }, { id: "identity", label: "Identity", badge: selectedWoman ? "✓" : undefined }, { id: "horizon", label: "Horizon", badge: selectedPlace ? "✓" : undefined }]}
-            onSelect={(id) => setMobilePanel(id as MobileHeartsPanel)}
-          />
+          <p className="hearts-mobile-step" aria-live="polite">
+            {mobileStep === "identity" ? "Step 1 of 2 · Identity seal" : mobileStep === "horizon" ? "Step 2 of 2 · Journey postmark" : "Both seals ready"}
+          </p>
 
           <div className="hearts-desk">
-            <aside className={`hearts-choice-panel identity-panel ${wrongSelection === "identity" || wrongSelection === "both" ? "is-wrong" : ""} ${mobilePanel === "identity" ? "is-mobile-active" : ""}`}>
-              <span className="hearts-panel-label">01 · Identity seal</span>
-              <h3>Who belongs to this dossier?</h3>
-              <div role="group" aria-label="Choose the woman described by the dossier">
-                {options.identities.map((profile) => <button key={profile.id} type="button" className={selectedWoman === profile.id ? "is-selected" : ""} aria-pressed={selectedWoman === profile.id} disabled={phase !== "selecting"} onClick={() => selectIdentity(profile.id)}><span className="mini-profile"><HeartsPortrait womanId={profile.id} decorative /></span><strong>{profile.name}</strong><small>Press into wax</small></button>)}
-              </div>
-            </aside>
-
-            <article className={`hearts-dossier ${mobilePanel === "evidence" ? "is-mobile-active" : ""}`}>
+            <article className="hearts-dossier is-mobile-active">
               <div className="dossier-topline"><span>{current.id} · confidential correspondence</span><b>Archive copy · identity sealed</b></div>
               <AnonymousDossierArt />
               <div className="dossier-copy"><p className="eyebrow">Evidence file</p><h3>{current.evidenceTitle}</h3><ol>{current.evidence.map((clue, index) => <li key={clue}><span>0{index + 1}</span>{clue}</li>)}</ol></div>
@@ -202,13 +193,29 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
               <span className="dossier-stamp" aria-hidden="true">RA<br />ARCHIVE</span>
             </article>
 
-            <aside className={`hearts-choice-panel horizon-panel ${wrongSelection === "place" || wrongSelection === "both" ? "is-wrong" : ""} ${mobilePanel === "horizon" ? "is-mobile-active" : ""}`}>
+            <aside className={`hearts-choice-panel identity-panel ${wrongSelection === "identity" || wrongSelection === "both" ? "is-wrong" : ""} ${mobileStep === "identity" ? "is-mobile-active" : ""}`}>
+              <span className="hearts-panel-label">01 · Identity seal</span>
+              <h3>Who belongs to this dossier?</h3>
+              <div role="group" aria-label="Choose the woman described by the dossier">
+                {options.identities.map((profile) => <button key={profile.id} type="button" className={selectedWoman === profile.id ? "is-selected" : ""} aria-pressed={selectedWoman === profile.id} disabled={phase !== "selecting"} onClick={() => selectIdentity(profile.id)}><span className="mini-profile"><HeartsPortrait womanId={profile.id} decorative /></span><strong>{profile.name}</strong><small>Press into wax</small></button>)}
+              </div>
+            </aside>
+
+            <aside className={`hearts-choice-panel horizon-panel ${wrongSelection === "place" || wrongSelection === "both" ? "is-wrong" : ""} ${mobileStep === "horizon" ? "is-mobile-active" : ""}`}>
               <span className="hearts-panel-label">02 · Journey postmark</span>
               <h3>Where does this chapter belong?</h3>
               <div role="group" aria-label="Choose the place associated with the dossier">
                 {options.places.map((profile) => <button key={profile.id} type="button" className={selectedPlace === profile.id ? "is-selected" : ""} aria-pressed={selectedPlace === profile.id} disabled={phase !== "selecting"} onClick={() => selectHorizon(profile.id)}><i>{profile.routeCode}</i><span><strong>{profile.place}</strong><small>Journey postmark</small></span></button>)}
               </div>
             </aside>
+
+            {mobileStep === "ready" && selectedWoman && selectedPlace && (
+              <div className="hearts-ready-recap is-mobile-active">
+                <p>Both seals are ready. Change one, or seal the letter below.</p>
+                <button type="button" onClick={() => setSelectedWoman(null)}><small>Identity</small><strong>{heartsProfilesById[selectedWoman].name}</strong><i>Change</i></button>
+                <button type="button" onClick={() => setSelectedPlace(null)}><small>Horizon</small><strong>{heartsProfilesById[selectedPlace].place}</strong><i>Change</i></button>
+              </div>
+            )}
           </div>
 
           <div className="hearts-actions"><p aria-live="polite">{announcement}</p><button className="button hearts-seal-button" type="button" disabled={phase !== "selecting"} onClick={sealLetter}><span aria-hidden="true">✦</span> Seal & send</button></div>

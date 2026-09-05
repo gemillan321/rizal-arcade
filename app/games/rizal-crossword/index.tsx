@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { FeedbackPanel, GameHeader, MobilePanelNav, Results, useArcadeSound, useHighScore, type Feedback } from "../shared/ArcadeGameKit";
+import { FeedbackPanel, GameHeader, Results, useArcadeSound, useHighScore, type Feedback } from "../shared/ArcadeGameKit";
 import type { GameProps } from "../types";
 import { createCrosswordPuzzle, entryCellKey, type CrosswordCell, type CrosswordEntry } from "./puzzle";
 import type { CrosswordTopic } from "./content";
 
 const entryCount = 8;
 const maxScore = 1080;
-type MobileCrosswordPanel = "answer" | "puzzle" | "clues";
 
 function letterCount(solution: string) {
   return solution.replaceAll(" ", "").length;
@@ -51,7 +50,7 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [wrongAttempt, setWrongAttempt] = useState(false);
   const [announcement, setAnnouncement] = useState("The press is ready. Choose a clue and typeset its answer into the crossword.");
-  const [mobilePanel, setMobilePanel] = useState<MobileCrosswordPanel>("answer");
+  const [clueListOpen, setClueListOpen] = useState(false);
   const answerRef = useRef<HTMLInputElement>(null);
   const feedbackRef = useRef<HTMLDivElement>(null);
   const [best, saveBest] = useHighScore("crossword");
@@ -80,7 +79,7 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
     setWrongAttempt(false);
     const entry = entriesById.get(entryId);
     if (entry) setAnnouncement(`${entry.number} ${entry.direction}. ${archiveLabel(entry.topic)}. ${wordCount(entry.solution)} ${wordCount(entry.solution) === 1 ? "word" : "words"}, ${letterCount(entry.solution)} letters.`);
-    setMobilePanel("answer");
+    setClueListOpen(false);
     play("flip");
   }
 
@@ -158,7 +157,7 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
     setFeedback(null);
     setWrongAttempt(false);
     setAnnouncement("A new edition is on the press. Choose a clue and begin typesetting.");
-    setMobilePanel("answer");
+    setClueListOpen(false);
   }
 
   function cellLetter(cell: CrosswordCell): string {
@@ -199,18 +198,14 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
           <p>Complete the printing form before the press runs out of ink.</p>
         </div>
 
-        <MobilePanelNav
-          label="Crossword workspace"
-          active={mobilePanel}
-          items={[
-            { id: "answer", label: "Answer", badge: String(selected.number) },
-            { id: "puzzle", label: "Puzzle" },
-            { id: "clues", label: "Clue list", badge: `${solvedIds.length}/${entryCount}` },
-          ]}
-          onSelect={(id) => setMobilePanel(id as MobileCrosswordPanel)}
-        />
+        <button className="crossword-clue-toggle" type="button" onClick={() => setClueListOpen((open) => !open)} aria-expanded={clueListOpen}>
+          {clueListOpen ? "Hide clue list" : "Browse all clues"} <small>{solvedIds.length}/{entryCount} solved</small>
+        </button>
+        <div className={`crossword-clue-index ${clueListOpen ? "is-mobile-open" : ""}`}>
+          {[{ label: "Across", entries: across }, { label: "Down", entries: down }].map((group) => <section key={group.label}><h3>{group.label}</h3><ol>{group.entries.map((entry) => <li key={entry.id}><button type="button" className={entry.id === selected.id ? "is-current" : ""} onClick={() => chooseEntry(entry.id)}><b>{entry.number}</b><span>{entry.clue}</span>{solvedSet.has(entry.id) && <i aria-label="Solved">✓</i>}</button></li>)}</ol></section>)}
+        </div>
         <div className="crossword-pressroom">
-          <section className={`crossword-broadsheet ${mobilePanel === "puzzle" ? "is-mobile-active" : ""}`} aria-label="Interactive crossword printing form">
+          <section className="crossword-broadsheet" aria-label="Interactive crossword printing form">
             <header><span>The Crossword Chronicle</span><strong>National consciousness edition</strong><i>Eight entries · new layout every round</i></header>
             <div className="crossword-grid-scroll">
               <div className="crossword-grid" style={gridStyle}>
@@ -230,7 +225,7 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
             <footer><span>THE LIFE AND WORKS OF JOSÉ RIZAL</span><b>{puzzle.entries.map((entry) => archiveLabel(entry.topic)).filter((topic, index, topics) => topics.indexOf(topic) === index).join(" · ")}</b></footer>
           </section>
 
-          <aside className={`crossword-editor ${wrongAttempt ? "is-wrong" : ""} ${mobilePanel === "answer" ? "is-mobile-active" : ""} ${mobilePanel === "clues" ? "is-mobile-clue-index" : ""}`}>
+          <aside className={`crossword-editor ${wrongAttempt ? "is-wrong" : ""}`}>
             <div className="editor-clip" aria-hidden="true" />
             <p className="eyebrow">Compositor’s desk</p>
             <div className="active-clue-heading"><span>{selected.number}</span><div><small>{selected.direction} · {wordCount(selected.solution)} {wordCount(selected.solution) === 1 ? "word" : "words"} · {letterCount(selected.solution)} letters</small><strong>{archiveLabel(selected.topic)}</strong></div></div>
@@ -240,10 +235,6 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
             <div className="crossword-actions"><button type="button" onClick={revealLetter} disabled={hints === 0 || solvedSet.has(selected.id)}>Reveal one letter <span>{hints} left</span></button><button type="button" onClick={checkWord} disabled={solvedSet.has(selected.id)}>Lock word</button></div>
             {wrongAttempt && <p className="typeset-warning" role="alert"><strong>Typeset rejected.</strong> The word does not fit this clue. Correct it before another ink ribbon is used.</p>}
             <button className="next-crossword-clue" type="button" onClick={nextClue}>Skip to another clue →</button>
-
-            <div className="crossword-clue-index">
-              {[{ label: "Across", entries: across }, { label: "Down", entries: down }].map((group) => <section key={group.label}><h3>{group.label}</h3><ol>{group.entries.map((entry) => <li key={entry.id}><button type="button" className={entry.id === selected.id ? "is-current" : ""} onClick={() => chooseEntry(entry.id)}><b>{entry.number}</b><span>{entry.clue}</span>{solvedSet.has(entry.id) && <i aria-label="Solved">✓</i>}</button></li>)}</ol></section>)}
-            </div>
           </aside>
         </div>
         <p className="crossword-announcement" aria-live="polite">{announcement}</p>

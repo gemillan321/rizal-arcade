@@ -18,11 +18,14 @@ test("shared phone navigation exposes touch-friendly switchable panels", () => {
   assert.match(css, /\.mobile-game-nav button\s*\{[^}]*min-height:\s*42px/s);
 });
 
-test("Global Sojourn separates telegram, map, and destination controls on phones", () => {
-  assert.match(globalGame, /type MobileGlobalPanel = "map" \| "telegram"/);
+test("Global Sojourn shows the map, destinations, and telegram together instead of behind a tab", () => {
+  // Regression: the map/telegram tab toggle was removed after feedback that the
+  // telegram fit in the available space without needing to switch away from the map.
+  assert.doesNotMatch(globalGame, /MobilePanelNav/);
   assert.match(globalGame, /global-mobile-destinations/);
   assert.match(css, /\.global-focus-lens,[\s\S]*?\.global-port-label\s*\{\s*display:\s*none/s);
-  assert.match(css, /\.global-telegram\s*\{[^}]*position:\s*fixed/s);
+  assert.doesNotMatch(css, /\.global-telegram\s*\{[^}]*position:\s*fixed/s);
+  assert.match(css, /\.global-atlas-shell\s*\{[^}]*display:\s*flex/s);
 });
 
 test("Dapitan keeps the train viewport visible above an independently scrolling console", () => {
@@ -30,11 +33,25 @@ test("Dapitan keeps the train viewport visible above an independently scrolling 
   assert.match(dapitanCss, /\.chronicle-console\s*\{[^}]*overflow-y:\s*auto/s);
 });
 
-test("El Fili and Crossword use focused mobile work panels", () => {
-  assert.match(revolutionGame, /type MobileRevolutionPanel = "case" \| "chain" \| "evidence"/);
-  assert.match(crosswordGame, /type MobileCrosswordPanel = "answer" \| "puzzle" \| "clues"/);
-  assert.match(css, /\.revolution-workspace > section\.is-mobile-active\s*\{\s*display:\s*block/s);
-  assert.match(css, /\.crossword-editor\.is-mobile-clue-index/);
+test("El Fili keeps the chain and evidence tray both on screen, with the case file as a collapsible toggle", () => {
+  // Regression: the case/chain/evidence 3-tab nav was replaced because the chain
+  // and evidence tray are the actual gameplay and shouldn't require switching
+  // away from each other; only the read-once case briefing collapses now.
+  assert.doesNotMatch(revolutionGame, /MobilePanelNav/);
+  assert.match(revolutionGame, /briefingOpen/);
+  assert.match(css, /\.revolution-chain\s*\{[^}]*flex:\s*0 0 auto/s);
+  assert.match(css, /\.revolution-evidence\s*\{[^}]*flex:\s*1 1 auto/s);
+  assert.match(css, /\.revolution-briefing\.is-mobile-open/);
+});
+
+test("Crossword keeps the puzzle grid and answer desk both on screen, with the clue list as a collapsible toggle", () => {
+  // Regression: tapping any grid cell already selects its clue, so the clue list
+  // is a supplementary browse view, not a required tab alongside puzzle/answer.
+  assert.doesNotMatch(crosswordGame, /MobilePanelNav/);
+  assert.match(crosswordGame, /clueListOpen/);
+  assert.match(css, /\.crossword-clue-index\.is-mobile-open/);
+  assert.match(css, /\.crossword-broadsheet\s*\{[^}]*flex:\s*0 0 auto/s);
+  assert.match(css, /\.crossword-editor\s*\{[^}]*flex:\s*1 1 auto/s);
 });
 
 test("the pre-game How to Play screen keeps its own scroll even on games that lock the gameplay viewport", () => {
@@ -66,10 +83,16 @@ test("Scholar's Journey keeps the brief and passport tray fixed while only the r
   assert.match(css, /\.scholar-route \{[^}]*overflow-y:\s*auto/s);
 });
 
-test("Hearts & Horizons and Masterpiece Museum become switchable evidence/choice panels on phones", () => {
-  assert.match(heartsGame, /type MobileHeartsPanel = "evidence" \| "identity" \| "horizon"/);
-  assert.match(museumGame, /type MobileMuseumPanel = "artifact" \| "gallery" \| "plaque"/);
+test("Hearts & Horizons and Masterpiece Museum advance through their two choices automatically instead of via manual tabs", () => {
+  // Regression: the evidence/identity/horizon (and artifact/gallery/plaque) tab
+  // nav was replaced by a derived step that advances on its own as picks are
+  // made, so a first-time player never has to decide which tab to open next.
+  assert.doesNotMatch(heartsGame, /MobilePanelNav/);
+  assert.match(heartsGame, /const mobileStep: "identity" \| "horizon" \| "ready"/);
+  assert.doesNotMatch(museumGame, /MobilePanelNav/);
+  assert.match(museumGame, /const mobileStep: "gallery" \| "plaque" \| "ready"/);
   assert.match(css, /\.hearts-workspace, \.museum-workspace \{/);
+  assert.match(css, /grid-template-areas:\s*"nav" "evidence" "panel" "actions"/);
   // The result panel must take over the workspace instead of competing with the (disabled) choice panels.
   assert.match(css, /\.hearts-workspace:has\(\.hearts-feedback\) \.hearts-desk,\s*\n\s*\.museum-workspace:has\(\.museum-feedback\) \.museum-floor \{ display: none; \}/);
 });

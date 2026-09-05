@@ -3214,7 +3214,13 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
 .mobile-panel-close,
 .river-mobile-situation,
 .memory-mobile-inspector,
-.global-mobile-destinations {
+.global-mobile-destinations,
+.revolution-mission-toggle,
+.crossword-clue-toggle,
+.hearts-mobile-step,
+.museum-mobile-step,
+.hearts-ready-recap,
+.museum-ready-recap {
   display: none;
 }
 
@@ -3392,20 +3398,21 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .scholar-game,
   .scholar-route { max-width: 100%; overflow-x: hidden; }
 
-  /* Game 7: map, clues, and destination choices become separate touch surfaces. */
+  /* Game 7: the map shrinks to a compact locational strip; the destination
+     buttons and the telegram both fit underneath it in normal flow, so the
+     player never has to switch away from either to read or answer. */
   .game-global.is-playing { overflow: hidden; }
   .global-game { height: calc(100svh - 72px); min-height: 0; padding: 4px; overflow: hidden; }
   .global-atlas-shell {
     height: 100%;
-    grid-template-rows: 50px auto auto;
-    align-content: start;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
     gap: 5px;
     padding: 4px;
     overflow: hidden;
   }
-  .global-atlas-shell > .mobile-game-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .global-atlas-surface { display: none; height: auto; min-height: 0; aspect-ratio: 16 / 10; }
-  .global-atlas-surface.is-mobile-active { display: block; }
+  .global-atlas-surface { flex: 0 0 auto; height: auto; min-height: 0; aspect-ratio: 16 / 7; }
   .global-atlas-title,
   .global-focus-lens,
   .global-port-label { display: none; }
@@ -3424,6 +3431,7 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .global-traveler small { top: calc(100% + 2px); font-size: 7px; }
   .global-map-announcement { bottom: 4px; width: calc(100% - 10px); font-size: 8px; }
   .global-mobile-destinations {
+    flex: 0 0 auto;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 4px;
@@ -3450,27 +3458,25 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .global-mobile-destinations button small { margin-top: 2px; color: #7b4936; font-size: 7px; text-transform: uppercase; }
   .global-mobile-destinations button.is-blocked { opacity: .48; filter: grayscale(.7); }
   .global-telegram {
-    position: fixed;
-    z-index: 55;
-    inset: 72px 0 0;
-    display: none;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: grid;
     grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
     align-content: start;
-    gap: 10px;
-    padding: 13px 14px max(18px, env(safe-area-inset-bottom));
+    gap: 6px;
+    padding: 8px 10px;
     overflow-y: auto;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
+    overscroll-behavior: contain;
   }
-  .global-telegram.is-mobile-active { display: grid; }
-  .global-telegram .mobile-panel-close { display: block; }
-  .global-telegram-heading { grid-template-columns: 30px minmax(0,1fr) auto; }
-  .global-telegram-heading h3 { font-size: 23px; line-height: 1.05; }
-  .global-telegram ol { grid-template-columns: 1fr; gap: 8px; }
-  .global-telegram li { min-height: 64px; align-items: center; padding: 9px; }
-  .global-telegram li p { font-size: 15px; line-height: 1.35; }
-  .global-telegram-help { grid-template-columns: 1fr; }
+  .global-telegram-heading { grid-template-columns: minmax(0,1fr); gap: 2px; }
+  .global-telegram-heading > span, .global-telegram-heading > b { display: none; }
+  .global-telegram-heading p { font-size: 8px; }
+  .global-telegram-heading h3 { font-size: 16px; line-height: 1.1; }
+  .global-telegram ol { min-height: 0; grid-template-columns: 1fr; gap: 5px; overflow-y: auto; }
+  .global-telegram li { min-height: 0; align-items: center; padding: 6px 8px; }
+  .global-telegram li p { font-size: 12px; line-height: 1.3; }
+  .global-telegram-help { display: none; }
   .global-arrival-scene { bottom: 31px; max-height: calc(100% - 40px); }
 
   /* Game 9: case, loose evidence, and causal chain are three focused panels. */
@@ -3505,79 +3511,102 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .revolution-file-rail li { min-width: 0; padding: 3px; }
   .revolution-file-rail li > b { width: 25px; height: 25px; font-size: 8px; }
   .revolution-file-rail li div { display: none; }
+  /* The chain (where evidence is pinned) and the evidence tray (where it's picked
+     up) are the actual gameplay, so both stay on screen together at all times;
+     only the case briefing — read once, rarely revisited — is a collapsible
+     toggle, the same pattern Dapitan and River Quest already use. */
   .revolution-workspace {
     min-height: 0;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: 50px minmax(0, 1fr) auto auto;
-    grid-template-areas: "nav" "panel" "controls" "announce";
+    display: flex;
+    flex-direction: column;
     gap: 5px;
     padding: 5px;
     overflow: hidden;
   }
-  .revolution-workspace > .mobile-game-nav { grid-area: nav; }
-  .revolution-workspace > section { grid-area: panel; display: none; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
-  .revolution-workspace > section.is-mobile-active { display: block; }
-  .revolution-workspace > .revolution-controls { grid-area: controls; }
-  .revolution-workspace > .revolution-announcement { grid-area: announce; }
-  .revolution-briefing { width: 100%; height: 100%; padding: 15px; }
-  .revolution-briefing h3 { font-size: 32px; }
-  .revolution-briefing p { font-size: 16px; line-height: 1.45; }
-  .revolution-chain { padding: 5px 7px 12px; }
-  .revolution-chain-slots { grid-template-columns: 1fr; gap: 7px; }
-  .revolution-chain-slots button { min-height: 78px; padding: 9px 10px 9px 45px; }
-  .revolution-evidence { padding: 7px; }
+  .revolution-mission-toggle {
+    display: block;
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: 40px;
+    border: 2px solid #e6b85e;
+    border-radius: 6px;
+    color: #050b12;
+    background: #e6b85e;
+    font-size: .76rem;
+    font-weight: 900;
+  }
+  .revolution-briefing { flex: 0 0 auto; display: none; width: 100%; padding: 10px 12px; }
+  .revolution-briefing.is-mobile-open { display: block; }
+  .revolution-briefing h3 { font-size: 20px; }
+  .revolution-briefing p { margin-bottom: 8px; font-size: 13px; line-height: 1.35; }
+  .revolution-chain { flex: 0 0 auto; max-height: 36svh; overflow-y: auto; overscroll-behavior: contain; padding: 5px 7px 8px; }
+  .revolution-chain-slots { grid-template-columns: 1fr; gap: 6px; }
+  .revolution-chain-slots button { min-height: 62px; padding: 8px 10px 8px 40px; }
+  .revolution-evidence { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 7px; }
   .revolution-evidence-heading p { display: none; }
   .revolution-evidence-tray { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
-  .revolution-evidence-tray button { min-height: 76px; }
+  .revolution-evidence-tray button { min-height: 70px; }
   .revolution-evidence-tray button > strong { font-size: 12px; }
-  .revolution-controls { grid-template-columns: 1fr 1fr; gap: 5px; }
+  .revolution-controls { flex: 0 0 auto; grid-template-columns: 1fr 1fr; gap: 5px; }
   .revolution-controls button { min-height: 51px; padding: 6px 8px; }
   .revolution-insight > span { font-size: 18px; }
   .revolution-insight strong,
   .revolution-commit { font-size: 10px; }
   .revolution-insight small { font-size: 8px; }
-  .revolution-announcement { min-height: 25px; max-height: 35px; overflow: hidden; padding-top: 5px; font-size: 9px; }
+  .revolution-announcement { flex: 0 0 auto; min-height: 25px; max-height: 35px; overflow: hidden; padding-top: 5px; font-size: 9px; }
 
-  /* Game 10: answer desk, puzzle, and clue index no longer form one tall page. */
+  /* Game 10: the puzzle grid already lets you tap any cell to pick its clue, so
+     it and the answer desk — the actual gameplay — stay on screen together.
+     The clue list is a supplementary way to browse, so it collapses behind a
+     toggle instead of taking a full tab of its own. */
   .game-crossword.is-playing { overflow: hidden; }
   .crossword-game {
     width: calc(100% - 8px);
     height: calc(100svh - 72px);
     min-height: 0;
-    display: grid;
-    grid-template-rows: 50px minmax(0, 1fr) auto;
+    display: flex;
+    flex-direction: column;
     gap: 5px;
     padding: 4px 0 6px;
     overflow: hidden;
   }
   .crossword-masthead { display: none; }
-  .crossword-pressroom { min-height: 0; height: 100%; display: block; overflow: hidden; }
-  .crossword-broadsheet,
-  .crossword-editor { display: none; height: 100%; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
-  .crossword-broadsheet.is-mobile-active,
-  .crossword-editor.is-mobile-active,
-  .crossword-editor.is-mobile-clue-index { display: block; }
-  .crossword-broadsheet { padding: 8px 6px; box-shadow: none; }
+  .crossword-clue-toggle {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    min-height: 38px;
+    border: 2px solid var(--press-gold, #dda940);
+    border-radius: 6px;
+    color: #fff0cc;
+    background: rgba(20,21,19,.9);
+    font-size: .74rem;
+    font-weight: 900;
+  }
+  .crossword-clue-toggle small { font-weight: 700; opacity: .78; }
+  .crossword-clue-index {
+    flex: 0 0 auto;
+    display: none;
+    max-height: 34svh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: 0;
+    padding: 8px;
+    border: 2px solid var(--press-gold, #dda940);
+    border-radius: 8px;
+    background: var(--press-paper-light, #fff2cf);
+  }
+  .crossword-clue-index.is-mobile-open { display: grid; grid-template-columns: 1fr; }
+  .crossword-pressroom { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 5px; overflow: hidden; }
+  .crossword-broadsheet { flex: 0 0 auto; max-height: 46svh; overflow-y: auto; overscroll-behavior: contain; padding: 8px 6px; box-shadow: none; }
   .crossword-broadsheet > header { padding-bottom: 6px; border-bottom-width: 4px; }
   .crossword-broadsheet > header span { font-size: 25px; }
   .crossword-broadsheet > header strong { font-size: 8px; }
-  .crossword-grid-scroll { max-height: calc(100% - 78px); padding: 8px 2px; }
+  .crossword-grid-scroll { max-height: none; padding: 8px 2px; }
   .crossword-broadsheet > footer { display: none; }
-  .crossword-editor { padding: 24px 12px 12px; box-shadow: none; }
-  .crossword-editor.is-mobile-active .crossword-clue-index { display: none; }
-  .crossword-editor.is-mobile-clue-index > :not(.crossword-clue-index) { display: none; }
-  .crossword-editor.is-mobile-clue-index .crossword-clue-index {
-    max-height: none;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
-    margin: 0;
-    padding: 0;
-    overflow: visible;
-    border: 0;
-  }
-  .crossword-editor.is-mobile-clue-index .crossword-clue-index button { min-height: 52px; }
+  .crossword-editor { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 16px 12px 12px; box-shadow: none; }
   .crossword-announcement { max-height: 28px; margin: 0; overflow: hidden; padding: 5px 8px; font-size: 8px; }
 
   /* Game 3: the cipher key/input and the clue telegram become two tabs instead of side-by-side columns. */
@@ -3640,18 +3669,30 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .hearts-heading > p, .hearts-heading .eyebrow, .museum-heading .eyebrow { display: none; }
   /* Round progress already shows in the GameHeader status pill; drop the duplicate strip to save height. */
   .hearts-route, .museum-progress { display: none; }
+  /* The evidence/artifact panel gets its own fixed row (always visible, since
+     both choice steps rely on re-reading it); the two choice panels and the
+     ready-recap share a "panel" row that advances on its own as picks are
+     made — the player is never asked to manually switch between them. */
   .hearts-workspace, .museum-workspace {
     flex: 1 1 auto;
     min-height: 0;
     display: grid;
-    grid-template-rows: 50px minmax(0, 1fr) auto;
-    grid-template-areas: "nav" "panel" "actions";
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    grid-template-areas: "nav" "evidence" "panel" "actions";
     gap: 6px;
   }
-  .hearts-workspace > .mobile-game-nav, .museum-workspace > .mobile-game-nav { grid-area: nav; }
+  .hearts-mobile-step, .museum-mobile-step { display: block; grid-area: nav; margin: 0; padding: 6px 9px; border: 1px solid rgba(23,38,37,.28); border-radius: 7px; font-size: 11px; font-weight: 850; text-align: center; text-transform: uppercase; letter-spacing: .04em; }
   .hearts-workspace > .hearts-actions, .museum-workspace > .museum-actions { grid-area: actions; margin-top: 0; }
   .hearts-desk, .museum-floor { display: contents; }
-  .hearts-choice-panel, .hearts-dossier, .museum-artifact, .museum-gallery-map, .museum-plaque-rack {
+  .hearts-dossier, .museum-artifact {
+    grid-area: evidence;
+    display: block;
+    min-height: 0;
+    max-height: 34svh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .hearts-choice-panel, .museum-gallery-map, .museum-plaque-rack, .hearts-ready-recap, .museum-ready-recap {
     display: none;
     grid-area: panel;
     min-height: 0;
@@ -3659,9 +3700,9 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
     overflow-y: auto;
     overscroll-behavior: contain;
   }
-  .hearts-choice-panel.is-mobile-active, .hearts-dossier.is-mobile-active,
-  .museum-artifact.is-mobile-active, .museum-gallery-map.is-mobile-active, .museum-plaque-rack.is-mobile-active { display: block; }
-  .hearts-dossier { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; padding: 12px; }
+  .hearts-choice-panel.is-mobile-active, .museum-gallery-map.is-mobile-active, .museum-plaque-rack.is-mobile-active { display: block; }
+  .hearts-ready-recap.is-mobile-active, .museum-ready-recap.is-mobile-active { display: grid; }
+  .hearts-dossier { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; padding: 10px; }
   .hearts-choice-panel { padding: 10px; }
   .hearts-choice-panel button { min-height: 58px; }
   .museum-artifact { grid-template-columns: 90px minmax(0, 1fr); grid-template-rows: auto 1fr; }
@@ -3669,6 +3710,23 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .museum-plaque-rack button { min-height: 66px; }
   .hearts-actions, .museum-actions { min-height: 0; }
   .hearts-actions p, .museum-actions p { font-size: 11px; }
+  .hearts-ready-recap, .museum-ready-recap { align-content: start; gap: 8px; padding: 12px; }
+  .hearts-ready-recap p, .museum-ready-recap p { margin: 0; font-size: 12px; color: var(--muted); }
+  .hearts-ready-recap button, .museum-ready-recap button {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 4px 10px;
+    min-height: 52px;
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    padding: 8px 12px;
+    text-align: left;
+    background: rgba(0,0,0,.03);
+  }
+  .hearts-ready-recap button small, .museum-ready-recap button small { grid-column: 1; color: var(--muted); font-size: 9px; text-transform: uppercase; letter-spacing: .06em; }
+  .hearts-ready-recap button strong, .museum-ready-recap button strong { grid-column: 1; overflow-wrap: anywhere; font-size: 13px; }
+  .hearts-ready-recap button i, .museum-ready-recap button i { grid-column: 2; grid-row: 1 / 3; align-self: center; font-style: normal; font-size: 11px; font-weight: 850; text-decoration: underline; }
   /* Once a dossier/exhibit is judged, the result and its Next button take over the
      panel area completely instead of competing with the (now-disabled) choice panels. */
   .hearts-feedback, .museum-feedback { grid-area: panel; min-height: 0; height: 100%; overflow-y: auto; overscroll-behavior: contain; }

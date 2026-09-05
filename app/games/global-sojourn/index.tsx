@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import { defineChallengeBank, drawChallengeSet, shuffleList } from "../../challengeBank";
-import { GameHeader, MobilePanelNav, Results, useArcadeSound, useHighScore, type Feedback } from "../shared/ArcadeGameKit";
+import { GameHeader, Results, useArcadeSound, useHighScore, type Feedback } from "../shared/ArcadeGameKit";
 import type { GameProps } from "../types";
 import {
   globalDestinations,
@@ -20,7 +20,6 @@ type MapPoint = { x: number; y: number };
 type RouteSegment = { from: MapPoint; to: MapPoint; destinationId: GlobalDestinationId };
 type FocusLens = { destinations: GlobalDestination[]; left: number; top: number; width: number; height: number };
 type GamePhase = "routing" | "traveling" | "arrival" | "finished";
-type MobileGlobalPanel = "map" | "telegram";
 
 const globalBank = defineChallengeBank({
   id: "global-sojourn",
@@ -58,7 +57,6 @@ export function GlobalSojournGame({ onClose }: GameProps) {
   const [travelingDestination, setTravelingDestination] = useState<GlobalDestinationId | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [announcement, setAnnouncement] = useState("A telegram has arrived. Read its clues, then chart a route from Rizal to the correct port.");
-  const [mobilePanel, setMobilePanel] = useState<MobileGlobalPanel>("telegram");
   const boardRef = useRef<HTMLDivElement>(null);
   const arrivalRef = useRef<HTMLElement>(null);
   const travelTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -109,7 +107,6 @@ export function GlobalSojournGame({ onClose }: GameProps) {
 
   const chooseDestination = useCallback((destinationId: GlobalDestinationId) => {
     if (phase !== "routing" || blocked.includes(destinationId)) return;
-    setMobilePanel("map");
     const destination = globalDestinationsById[destinationId];
     const targetPoint = destination.map;
     if (destinationId === current.destinationId) {
@@ -230,7 +227,6 @@ export function GlobalSojournGame({ onClose }: GameProps) {
     setFeedback(null);
     setAnnouncement("New telegram received. Compare all three clues before charting the next leg.");
     setPhase("routing");
-    setMobilePanel("telegram");
     play("decode");
   }
 
@@ -252,7 +248,6 @@ export function GlobalSojournGame({ onClose }: GameProps) {
     setTravelingDestination(null);
     setFeedback(null);
     setAnnouncement("A fresh chart is open. Read the first telegram and draw Rizal’s route.");
-    setMobilePanel("telegram");
     play("page");
   }
 
@@ -273,14 +268,8 @@ export function GlobalSojournGame({ onClose }: GameProps) {
       <main className="global-game" aria-labelledby="global-game-title">
         <h2 id="global-game-title" className="sr-only">Chart José Rizal’s global journey</h2>
         <section className="global-atlas-shell">
-          <MobilePanelNav
-            label="Journey view"
-            active={mobilePanel}
-            items={[{ id: "map", label: "World map" }, { id: "telegram", label: "Telegram", badge: `${round + 1}/${roundSize}` }]}
-            onSelect={(id) => setMobilePanel(id as MobileGlobalPanel)}
-          />
           <div
-            className={`global-atlas-surface ${isDrawing ? "is-charting" : ""} ${mobilePanel === "map" ? "is-mobile-active" : ""}`}
+            className={`global-atlas-surface ${isDrawing ? "is-charting" : ""}`}
             ref={boardRef}
             onPointerMove={moveRoute}
             onPointerUp={finishRoute}
@@ -414,8 +403,7 @@ export function GlobalSojournGame({ onClose }: GameProps) {
             })}
           </div>
 
-          <section className={`global-telegram ${mobilePanel === "telegram" ? "is-mobile-active" : ""}`} aria-labelledby="global-telegram-title">
-            <button className="mobile-panel-close" type="button" onClick={() => setMobilePanel("map")}>Back to world map</button>
+          <section className="global-telegram" aria-labelledby="global-telegram-title">
             <div className="global-telegram-heading">
               <span aria-hidden="true">··· — ···</span>
               <div><p>Incoming telegram · {current.period}</p><h3 id="global-telegram-title">{current.mission}</h3></div>

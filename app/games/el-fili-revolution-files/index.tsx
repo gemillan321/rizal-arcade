@@ -5,7 +5,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent } from "react";
 import { defineChallengeBank, drawChallengeSet, shuffleList } from "../../challengeBank";
-import { GameHeader, MobilePanelNav, Results, useHighScore } from "../shared/ArcadeGameKit";
+import { GameHeader, Results, useHighScore } from "../shared/ArcadeGameKit";
 import type { GameProps } from "../types";
 import { revolutionCases, revolutionRoleLabels } from "./content";
 
@@ -21,7 +21,6 @@ const revolutionBank = defineChallengeBank({
 });
 
 type Phase = "building" | "debrief" | "finished";
-type MobileRevolutionPanel = "case" | "chain" | "evidence";
 type RevolutionCue = "pick" | "thread" | "reveal" | "resolve" | "alarm" | "finish";
 
 type AudioRig = {
@@ -203,7 +202,7 @@ export function ElFiliRevolutionGame({ onClose }: GameProps) {
   const [solved, setSolved] = useState(0);
   const [attempts, setAttempts] = useState(0);
   const [announcement, setAnnouncement] = useState("Open an evidence card, then pin it into the causal chain.");
-  const [mobilePanel, setMobilePanel] = useState<MobileRevolutionPanel>("case");
+  const [briefingOpen, setBriefingOpen] = useState(true);
   const [best, saveBest] = useHighScore("revolution");
   const { enabled: soundEnabled, play, toggle: toggleSound } = useRevolutionAudio(exposure);
   const debriefRef = useRef<HTMLElement>(null);
@@ -224,7 +223,6 @@ export function ElFiliRevolutionGame({ onClose }: GameProps) {
     setSelectedEvidenceId((selected) => selected === evidenceId ? null : evidenceId);
     const item = evidenceById.get(evidenceId);
     setAnnouncement(item ? `Evidence selected: ${item.text} Choose an open position on the thread.` : "Evidence selected.");
-    setMobilePanel("chain");
     play("pick");
   }
 
@@ -237,7 +235,6 @@ export function ElFiliRevolutionGame({ onClose }: GameProps) {
     });
     setSelectedEvidenceId(null);
     setAnnouncement(`Thread pinned at position ${slotIndex + 1}. Build the remaining links, then test the chain.`);
-    setMobilePanel("evidence");
     play("thread");
   }
 
@@ -247,7 +244,6 @@ export function ElFiliRevolutionGame({ onClose }: GameProps) {
     setSlots((previous) => previous.map((id, index) => index === slotIndex ? null : id));
     setSelectedEvidenceId(evidenceId);
     setAnnouncement("That evidence is back in your hand. Pin it into another position.");
-    setMobilePanel("evidence");
     play("pick");
   }
 
@@ -326,7 +322,7 @@ export function ElFiliRevolutionGame({ onClose }: GameProps) {
     setAttempts(0);
     setPhase("building");
     setAnnouncement("A new sealed file is open. Inspect the evidence and reconstruct its causal chain.");
-    setMobilePanel("case");
+    setBriefingOpen(true);
     play("reveal");
   }
 
@@ -344,7 +340,7 @@ export function ElFiliRevolutionGame({ onClose }: GameProps) {
     setSolved(0);
     setAttempts(0);
     setAnnouncement("A fresh set of files is on the table. Build the first causal chain.");
-    setMobilePanel("case");
+    setBriefingOpen(true);
     play("reveal");
   }
 
@@ -374,23 +370,15 @@ export function ElFiliRevolutionGame({ onClose }: GameProps) {
           </aside>
 
           <div className="revolution-workspace">
-            <MobilePanelNav
-              label="Operation workspace"
-              active={mobilePanel}
-              items={[
-                { id: "case", label: "Case" },
-                { id: "evidence", label: "Evidence", badge: String(evidence.length - slottedIds.size) },
-                { id: "chain", label: "Chain", badge: `${slots.filter(Boolean).length}/4` },
-              ]}
-              onSelect={(id) => setMobilePanel(id as MobileRevolutionPanel)}
-            />
-            <section className={`revolution-briefing ${mobilePanel === "case" ? "is-mobile-active" : ""}`}>
+            <button className="revolution-mission-toggle" type="button" onClick={() => setBriefingOpen((open) => !open)} aria-expanded={briefingOpen}>{briefingOpen ? "Hide case file" : "Read case file"}</button>
+            <section className={`revolution-briefing ${briefingOpen ? "is-mobile-open" : ""}`}>
               <div><span>Case file {current.fileNumber}</span><small>{current.chapter}</small></div>
               <h3>{current.title}</h3>
               <p>{current.briefing}</p>
+              <button className="mobile-panel-close" type="button" onClick={() => setBriefingOpen(false)}>Work the chain</button>
             </section>
 
-            <section className={`revolution-chain ${mobilePanel === "chain" ? "is-mobile-active" : ""}`} aria-label="Causal chain workspace">
+            <section className="revolution-chain" aria-label="Causal chain workspace">
               <div className="revolution-chain-line" aria-hidden="true" />
               <div className="revolution-chain-slots">
                 {revolutionRoleLabels.map((role, index) => {
@@ -416,7 +404,7 @@ export function ElFiliRevolutionGame({ onClose }: GameProps) {
               </div>
             </section>
 
-            <section className={`revolution-evidence ${mobilePanel === "evidence" ? "is-mobile-active" : ""}`} aria-label="Evidence tray">
+            <section className="revolution-evidence" aria-label="Evidence tray">
               <div className="revolution-evidence-heading"><div><span>Loose evidence</span><strong>{evidence.length - slottedIds.size} fragments remain</strong></div><p>Select a fragment, then a position. Dragging also works.</p></div>
               <div className="revolution-evidence-tray">
                 {evidence.filter((item) => !slottedIds.has(item.id)).map((item, index) => (
