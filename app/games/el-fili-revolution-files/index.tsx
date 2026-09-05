@@ -202,7 +202,9 @@ export function ElFiliRevolutionGame({ onClose }: GameProps) {
   const [solved, setSolved] = useState(0);
   const [attempts, setAttempts] = useState(0);
   const [announcement, setAnnouncement] = useState("Open an evidence card, then pin it into the causal chain.");
-  const [briefingOpen, setBriefingOpen] = useState(true);
+  // Closed by default: the chain and evidence tray are what a first-time
+  // player needs to see immediately. The case briefing is a click away.
+  const [briefingOpen, setBriefingOpen] = useState(false);
   const [best, saveBest] = useHighScore("revolution");
   const { enabled: soundEnabled, play, toggle: toggleSound } = useRevolutionAudio(exposure);
   const debriefRef = useRef<HTMLElement>(null);
@@ -322,7 +324,7 @@ export function ElFiliRevolutionGame({ onClose }: GameProps) {
     setAttempts(0);
     setPhase("building");
     setAnnouncement("A new sealed file is open. Inspect the evidence and reconstruct its causal chain.");
-    setBriefingOpen(true);
+    setBriefingOpen(false);
     play("reveal");
   }
 
@@ -340,7 +342,7 @@ export function ElFiliRevolutionGame({ onClose }: GameProps) {
     setSolved(0);
     setAttempts(0);
     setAnnouncement("A fresh set of files is on the table. Build the first causal chain.");
-    setBriefingOpen(true);
+    setBriefingOpen(false);
     play("reveal");
   }
 
@@ -370,7 +372,7 @@ export function ElFiliRevolutionGame({ onClose }: GameProps) {
           </aside>
 
           <div className="revolution-workspace">
-            <button className="revolution-mission-toggle" type="button" onClick={() => setBriefingOpen((open) => !open)} aria-expanded={briefingOpen}>{briefingOpen ? "Hide case file" : "Read case file"}</button>
+            <button className="revolution-mission-toggle" type="button" onClick={() => setBriefingOpen((open) => !open)} aria-expanded={briefingOpen}><span aria-hidden="true">{briefingOpen ? "▲" : "📖"}</span>{briefingOpen ? "Hide case file" : "Read the case file"}</button>
             <section className={`revolution-briefing ${briefingOpen ? "is-mobile-open" : ""}`}>
               <div><span>Case file {current.fileNumber}</span><small>{current.chapter}</small></div>
               <h3>{current.title}</h3>
@@ -426,11 +428,11 @@ export function ElFiliRevolutionGame({ onClose }: GameProps) {
               </div>
             </section>
 
+            <p className="revolution-announcement" aria-live="polite">{announcement}</p>
             <div className="revolution-controls">
               <button type="button" className="revolution-insight" onClick={illuminateThread} disabled={phase !== "building" || insights <= 0}><span aria-hidden="true">◈</span><strong>Illuminate a thread</strong><small>{insights} lamplight clues · −20 points</small></button>
               <button type="button" className="revolution-commit" onClick={testChain} disabled={phase !== "building" || slots.some((slot) => !slot)}><span>Test the chain</span><b aria-hidden="true">→</b></button>
             </div>
-            <p className="revolution-announcement" aria-live="polite">{announcement}</p>
           </div>
 
           {phase === "debrief" && (

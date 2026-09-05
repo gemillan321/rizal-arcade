@@ -3514,40 +3514,53 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   /* The chain (where evidence is pinned) and the evidence tray (where it's picked
      up) are the actual gameplay, so both stay on screen together at all times;
      only the case briefing — read once, rarely revisited — is a collapsible
-     toggle, the same pattern Dapitan and River Quest already use. */
+     toggle, the same pattern Dapitan and River Quest already use.
+     Everything sizes to its natural, uncompressed height and the workspace
+     itself is the one scroll container: no section is ever squeezed down to
+     a sliver you can't see, and there's only one obvious place to scroll. */
   .revolution-workspace {
     min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    padding: 5px;
-    overflow: hidden;
+    gap: 8px;
+    padding: 6px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
   .revolution-mission-toggle {
-    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     flex: 0 0 auto;
     width: 100%;
-    min-height: 40px;
+    min-height: 46px;
     border: 2px solid #e6b85e;
-    border-radius: 6px;
+    border-radius: 8px;
     color: #050b12;
     background: #e6b85e;
-    font-size: .76rem;
+    box-shadow: 0 3px 0 #8a5a1c;
+    font-size: .82rem;
     font-weight: 900;
   }
   .revolution-briefing { flex: 0 0 auto; display: none; width: 100%; padding: 10px 12px; }
   .revolution-briefing.is-mobile-open { display: block; }
   .revolution-briefing h3 { font-size: 20px; }
   .revolution-briefing p { margin-bottom: 8px; font-size: 13px; line-height: 1.35; }
-  .revolution-chain { flex: 0 0 auto; max-height: 36svh; overflow-y: auto; overscroll-behavior: contain; padding: 5px 7px 8px; }
+  .revolution-chain { flex: 0 0 auto; padding: 5px 7px 8px; }
   .revolution-chain-slots { grid-template-columns: 1fr; gap: 6px; }
   .revolution-chain-slots button { min-height: 62px; padding: 8px 10px 8px 40px; }
-  .revolution-evidence { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 7px; }
+  .revolution-evidence { flex: 0 0 auto; padding: 7px; }
   .revolution-evidence-heading p { display: none; }
   .revolution-evidence-tray { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
   .revolution-evidence-tray button { min-height: 70px; }
   .revolution-evidence-tray button > strong { font-size: 12px; }
-  .revolution-controls { flex: 0 0 auto; grid-template-columns: 1fr 1fr; gap: 5px; }
+  /* Sticky so the primary action stays reachable without hunting for it,
+     even while the chain/evidence content above is long enough to scroll. */
+  .revolution-controls { position: sticky; bottom: 0; z-index: 4; flex: 0 0 auto; grid-template-columns: 1fr 1fr; gap: 5px; margin: 0 -6px -6px; padding: 6px; background: #050b12; box-shadow: 0 -6px 10px -4px rgba(0,0,0,.5); }
   .revolution-controls button { min-height: 51px; padding: 6px 8px; }
   .revolution-insight > span { font-size: 18px; }
   .revolution-insight strong,
@@ -3705,7 +3718,17 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .hearts-dossier { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; padding: 10px; }
   .hearts-choice-panel { padding: 10px; }
   .hearts-choice-panel button { min-height: 58px; }
-  .museum-artifact { grid-template-columns: 90px minmax(0, 1fr); grid-template-rows: auto 1fr; }
+  /* The decorative interior illustration is flavor, not evidence — dropping
+     it (and the gallery-symbol badge riding on it) removes the single
+     biggest source of clutter on a first look, without losing anything the
+     player actually needs to make a choice. */
+  .museum-art-window { display: none; }
+  .museum-artifact { display: block; grid-template-columns: none; grid-template-rows: none; padding: 12px; }
+  .museum-object-tag { flex-direction: row; align-items: baseline; gap: 8px; border-right: 0; border-bottom: 1px dashed rgba(16,45,43,.3); padding: 0 0 9px; margin-bottom: 9px; }
+  .museum-object-tag span { margin-top: 0; }
+  .museum-clue-copy { padding: 0; }
+  /* A calmer, friendlier step indicator than an all-caps status pill. */
+  .museum-mobile-step { border-color: rgba(217,169,95,.55); color: var(--museum-wine, #7a2635); background: rgba(217,169,95,.14); font-weight: 750; text-transform: none; letter-spacing: normal; }
   .museum-gallery-map, .museum-plaque-rack { padding: 10px; }
   .museum-plaque-rack button { min-height: 66px; }
   .hearts-actions, .museum-actions { min-height: 0; }

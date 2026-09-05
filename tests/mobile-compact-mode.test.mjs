@@ -37,11 +37,24 @@ test("El Fili keeps the chain and evidence tray both on screen, with the case fi
   // Regression: the case/chain/evidence 3-tab nav was replaced because the chain
   // and evidence tray are the actual gameplay and shouldn't require switching
   // away from each other; only the read-once case briefing collapses now.
+  // It starts closed so a first-time player sees the actual game immediately.
   assert.doesNotMatch(revolutionGame, /MobilePanelNav/);
-  assert.match(revolutionGame, /briefingOpen/);
+  assert.match(revolutionGame, /const \[briefingOpen, setBriefingOpen\] = useState\(false\)/);
   assert.match(css, /\.revolution-chain\s*\{[^}]*flex:\s*0 0 auto/s);
-  assert.match(css, /\.revolution-evidence\s*\{[^}]*flex:\s*1 1 auto/s);
   assert.match(css, /\.revolution-briefing\.is-mobile-open/);
+});
+
+test("El Fili's workspace scrolls as one piece instead of squeezing the evidence tray to invisible", () => {
+  // Regression: chain had a fixed max-height and didn't shrink (flex: 0 0 auto)
+  // while evidence absorbed "whatever's left" (flex: 1 1 auto; min-height: 0),
+  // which could compress the evidence tray to a sliver with no visible scroll
+  // affordance — reported as "wasn't able to see fragments". The fix makes the
+  // whole workspace the one scroll container and lets every section size to
+  // its natural height, so nothing is ever silently squeezed away.
+  assert.match(css, /\.revolution-workspace\s*\{[^}]*overflow-y:\s*auto/s);
+  assert.doesNotMatch(css, /\.revolution-chain\s*\{[^}]*max-height/s);
+  assert.doesNotMatch(css, /\.revolution-evidence\s*\{[^}]*flex:\s*1 1 auto/s);
+  assert.match(css, /\.revolution-controls\s*\{[^}]*position:\s*sticky/s);
 });
 
 test("Crossword keeps the puzzle grid and answer desk both on screen, with the clue list as a collapsible toggle", () => {
@@ -95,5 +108,24 @@ test("Hearts & Horizons and Masterpiece Museum advance through their two choices
   assert.match(css, /grid-template-areas:\s*"nav" "evidence" "panel" "actions"/);
   // The result panel must take over the workspace instead of competing with the (disabled) choice panels.
   assert.match(css, /\.hearts-workspace:has\(\.hearts-feedback\) \.hearts-desk,\s*\n\s*\.museum-workspace:has\(\.museum-feedback\) \.museum-floor \{ display: none; \}/);
+});
+
+test("Hearts & Horizons keeps identity-panel, dossier, horizon-panel in that DOM order for the desktop 3-column layout", () => {
+  // Regression: .hearts-desk on desktop is `grid-template-columns: 218px 1fr 218px`
+  // with no grid-area assignment, so column placement is purely by source order.
+  // An earlier revision reordered the dossier to be first (for an approach the
+  // mobile-area CSS didn't actually need), which squeezed the wide dossier into
+  // the narrow first column and stretched the identity panel into the middle —
+  // reported as "broken" on desktop.
+  const identityIndex = heartsGame.indexOf("identity-panel");
+  const dossierIndex = heartsGame.indexOf("hearts-dossier");
+  const horizonIndex = heartsGame.indexOf("horizon-panel");
+  assert.ok(identityIndex < dossierIndex, "identity-panel must come before hearts-dossier in the JSX");
+  assert.ok(dossierIndex < horizonIndex, "hearts-dossier must come before horizon-panel in the JSX");
+});
+
+test("Masterpiece Museum drops the decorative interior illustration on phones to declutter the first glance", () => {
+  assert.match(css, /\.museum-art-window\s*\{\s*display:\s*none;\s*\}/);
+  assert.match(css, /\.museum-mobile-step\s*\{[^}]*text-transform:\s*none/s);
 });
 

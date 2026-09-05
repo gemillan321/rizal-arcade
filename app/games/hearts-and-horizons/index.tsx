@@ -185,14 +185,6 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
           </p>
 
           <div className="hearts-desk">
-            <article className="hearts-dossier is-mobile-active">
-              <div className="dossier-topline"><span>{current.id} · confidential correspondence</span><b>Archive copy · identity sealed</b></div>
-              <AnonymousDossierArt />
-              <div className="dossier-copy"><p className="eyebrow">Evidence file</p><h3>{current.evidenceTitle}</h3><ol>{current.evidence.map((clue, index) => <li key={clue}><span>0{index + 1}</span>{clue}</li>)}</ol></div>
-              <span className="dossier-thread" aria-hidden="true" />
-              <span className="dossier-stamp" aria-hidden="true">RA<br />ARCHIVE</span>
-            </article>
-
             <aside className={`hearts-choice-panel identity-panel ${wrongSelection === "identity" || wrongSelection === "both" ? "is-wrong" : ""} ${mobileStep === "identity" ? "is-mobile-active" : ""}`}>
               <span className="hearts-panel-label">01 · Identity seal</span>
               <h3>Who belongs to this dossier?</h3>
@@ -200,6 +192,14 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
                 {options.identities.map((profile) => <button key={profile.id} type="button" className={selectedWoman === profile.id ? "is-selected" : ""} aria-pressed={selectedWoman === profile.id} disabled={phase !== "selecting"} onClick={() => selectIdentity(profile.id)}><span className="mini-profile"><HeartsPortrait womanId={profile.id} decorative /></span><strong>{profile.name}</strong><small>Press into wax</small></button>)}
               </div>
             </aside>
+
+            <article className="hearts-dossier is-mobile-active">
+              <div className="dossier-topline"><span>{current.id} · confidential correspondence</span><b>Archive copy · identity sealed</b></div>
+              <AnonymousDossierArt />
+              <div className="dossier-copy"><p className="eyebrow">Evidence file</p><h3>{current.evidenceTitle}</h3><ol>{current.evidence.map((clue, index) => <li key={clue}><span>0{index + 1}</span>{clue}</li>)}</ol></div>
+              <span className="dossier-thread" aria-hidden="true" />
+              <span className="dossier-stamp" aria-hidden="true">RA<br />ARCHIVE</span>
+            </article>
 
             <aside className={`hearts-choice-panel horizon-panel ${wrongSelection === "place" || wrongSelection === "both" ? "is-wrong" : ""} ${mobileStep === "horizon" ? "is-mobile-active" : ""}`}>
               <span className="hearts-panel-label">02 · Journey postmark</span>
