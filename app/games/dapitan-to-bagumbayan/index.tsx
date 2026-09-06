@@ -109,14 +109,14 @@ function getTaskCode(challenge: DapitanChallenge) {
 
 function getTaskInstruction(challenge: DapitanChallenge) {
   if (challenge.task === "timeline") {
-    return "Pull the brass switch lever to the historical stage where this record belongs, then release it to route the Chronicle Express.";
+    return "Choose the historical stage for this record, then confirm your answer. You can change your selection first.";
   }
 
   if (challenge.task === "evidence") {
-    return "Move the semaphore control to Supported, Debated, or Contradicted, then release it to clear the signal.";
+    return "Decide whether the record is supported, debated, or contradicted, then confirm your answer.";
   }
 
-  return "Pick up the correct theme crate, then load it into the Chronicle carriage. Dragging works on desktop; tap-select and tap-load works everywhere.";
+  return "Choose the theme that best fits this record, then confirm your answer.";
 }
 
 function getScene(progress: number): SceneName {
@@ -171,7 +171,7 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
   const [resolvedResults, setResolvedResults] = useState<boolean[]>([]);
   const [resolving, setResolving] = useState(false);
   const [trainMoving, setTrainMoving] = useState(false);
-  const [mobileMissionOpen, setMobileMissionOpen] = useState(true);
+  const [pendingChoice, setPendingChoice] = useState<string | null>(null);
 
   const [timelineLeverIndex, setTimelineLeverIndex] = useState(1);
   const [signalIndex, setSignalIndex] = useState(1);
@@ -210,8 +210,10 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
   );
 
   const resetControls = useCallback(() => {
+    resolutionTimerRef.current = null;
     setTimelineLeverIndex(1);
     setSignalIndex(1);
+    setPendingChoice(null);
     setSelectedCargo(null);
     setCargoLoaded(false);
     setFeedback(null);
@@ -230,7 +232,6 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
       setResolvedResults([]);
       setThemeOrder(shuffle(THEME_OPTIONS));
       setTrainMoving(false);
-      setMobileMissionOpen(true);
       resetControls();
       setPhase("playing");
 
@@ -265,7 +266,7 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
 
   const resolveChoice = useCallback(
     (selected: string) => {
-      if (!currentChallenge || feedback || resolving) {
+      if (!currentChallenge || feedback || resolving || resolutionTimerRef.current !== null) {
         return;
       }
 
@@ -345,7 +346,6 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
       setThemeOrder(shuffle(THEME_OPTIONS));
       resetControls();
       setTrainMoving(false);
-      setMobileMissionOpen(true);
     }, 720);
   }, [
     currentChallenge,
@@ -384,6 +384,7 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
       TIMELINE_OPTIONS.length,
     );
     setTimelineLeverIndex(nextIndex);
+    setPendingChoice(TIMELINE_OPTIONS[nextIndex]);
     playSound("pickup");
   }
 
@@ -396,9 +397,9 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
       return;
     }
 
-    setTimelineLeverIndex(
-      resolvePointerIndex(event, "horizontal", TIMELINE_OPTIONS.length),
-    );
+    const index = resolvePointerIndex(event, "horizontal", TIMELINE_OPTIONS.length);
+    setTimelineLeverIndex(index);
+    setPendingChoice(TIMELINE_OPTIONS[index]);
   }
 
   function handleTimelinePointerUp(event: ReactPointerEvent<HTMLDivElement>) {
@@ -412,8 +413,8 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
       TIMELINE_OPTIONS.length,
     );
     setTimelineLeverIndex(nextIndex);
-    event.currentTarget.releasePointerCapture(event.pointerId);
-    resolveChoice(TIMELINE_OPTIONS[nextIndex]);
+    setPendingChoice(TIMELINE_OPTIONS[nextIndex]);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   }
 
   function handleSignalPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
@@ -428,6 +429,7 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
       EVIDENCE_OPTIONS.length,
     );
     setSignalIndex(nextIndex);
+    setPendingChoice(EVIDENCE_OPTIONS[nextIndex]);
     playSound("pickup");
   }
 
@@ -440,9 +442,9 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
       return;
     }
 
-    setSignalIndex(
-      resolvePointerIndex(event, "vertical", EVIDENCE_OPTIONS.length),
-    );
+    const index = resolvePointerIndex(event, "vertical", EVIDENCE_OPTIONS.length);
+    setSignalIndex(index);
+    setPendingChoice(EVIDENCE_OPTIONS[index]);
   }
 
   function handleSignalPointerUp(event: ReactPointerEvent<HTMLDivElement>) {
@@ -456,8 +458,8 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
       EVIDENCE_OPTIONS.length,
     );
     setSignalIndex(nextIndex);
-    event.currentTarget.releasePointerCapture(event.pointerId);
-    resolveChoice(EVIDENCE_OPTIONS[nextIndex]);
+    setPendingChoice(EVIDENCE_OPTIONS[nextIndex]);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   }
 
   const selectCargo = useCallback(
@@ -467,6 +469,7 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
       }
 
       setSelectedCargo(option);
+      setPendingChoice(option);
       playSound("pickup");
     },
     [feedback, playSound, resolving],
@@ -484,6 +487,7 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
     event.dataTransfer.effectAllowed = "move";
     event.dataTransfer.setData("text/plain", option);
     setSelectedCargo(option);
+    setPendingChoice(option);
     playSound("pickup");
   }
 
@@ -498,7 +502,8 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
 
     if (option && THEME_OPTIONS.includes(option as (typeof THEME_OPTIONS)[number])) {
       setSelectedCargo(option);
-      resolveChoice(option);
+      setPendingChoice(option);
+      playSound("pickup");
     }
   }
 
@@ -510,86 +515,31 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
     resolveChoice(selectedCargo);
   }, [feedback, resolveChoice, resolving, selectedCargo]);
   useEffect(() => {
-    if (phase !== "playing") {
-      return;
-    }
-
+    if (phase !== "playing") return;
     function handleKeyDown(event: KeyboardEvent) {
+      if (event.defaultPrevented || event.repeat || (event.target instanceof HTMLElement && event.target.closest('button, input, textarea, select, [role="slider"], [role="button"], a'))) return;
       if (feedback) {
-        if (event.key === "Enter") {
-          event.preventDefault();
-          goToNext();
-        }
+        if (event.key === "Enter") { event.preventDefault(); goToNext(); }
         return;
       }
-
-      if (!currentChallenge || resolving) {
-        return;
-      }
-
-      const numericChoice = Number(event.key);
-
-      if (currentChallenge.task === "timeline") {
-        if (
-          Number.isInteger(numericChoice) &&
-          numericChoice >= 1 &&
-          numericChoice <= TIMELINE_OPTIONS.length
-        ) {
-          event.preventDefault();
-          const index = numericChoice - 1;
-          setTimelineLeverIndex(index);
-          resolveChoice(TIMELINE_OPTIONS[index]);
-        }
-        return;
-      }
-
-      if (currentChallenge.task === "evidence") {
-        if (
-          Number.isInteger(numericChoice) &&
-          numericChoice >= 1 &&
-          numericChoice <= EVIDENCE_OPTIONS.length
-        ) {
-          event.preventDefault();
-          const index = numericChoice - 1;
-          setSignalIndex(index);
-          resolveChoice(EVIDENCE_OPTIONS[index]);
-        }
-        return;
-      }
-
-      if (
-        Number.isInteger(numericChoice) &&
-        numericChoice >= 1 &&
-        numericChoice <= themeOrder.length
-      ) {
+      if (!currentChallenge || resolving) return;
+      if (event.key === "Enter" && pendingChoice) {
         event.preventDefault();
-        selectCargo(themeOrder[numericChoice - 1]);
+        resolveChoice(pendingChoice);
         return;
       }
-
-      if (event.key === "Enter" && selectedCargo) {
-        event.preventDefault();
-        loadSelectedCargo();
-      }
+      const options = currentChallenge.task === "timeline" ? TIMELINE_OPTIONS : currentChallenge.task === "evidence" ? EVIDENCE_OPTIONS : themeOrder;
+      const index = Number(event.key) - 1;
+      if (!Number.isInteger(index) || index < 0 || index >= options.length) return;
+      event.preventDefault();
+      setPendingChoice(options[index]);
+      if (currentChallenge.task === "timeline") setTimelineLeverIndex(index);
+      else if (currentChallenge.task === "evidence") setSignalIndex(index);
+      else selectCargo(options[index]);
     }
-
     window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [
-    currentChallenge,
-    feedback,
-    goToNext,
-    loadSelectedCargo,
-    phase,
-    resolveChoice,
-    resolving,
-    selectCargo,
-    selectedCargo,
-    themeOrder,
-  ]);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentChallenge, feedback, goToNext, pendingChoice, phase, resolveChoice, resolving, selectCargo, themeOrder]);
 
   if (phase === "loading") {
     return (
@@ -770,8 +720,7 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
         </section>
 
         <section className="chronicle-console" aria-labelledby="chronicle-file-title">
-          <button className="chronicle-mobile-mission-toggle" type="button" onClick={() => setMobileMissionOpen((open) => !open)} aria-expanded={mobileMissionOpen}>{mobileMissionOpen ? "Hide mission" : "Read mission"}</button>
-          <header className={`chronicle-dispatch ${mobileMissionOpen ? "is-mobile-open" : ""}`}>
+          <header className="chronicle-dispatch">
             <div className="dispatch-id">
               <span>INCOMING FILE</span>
               <strong>
@@ -794,12 +743,22 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
               <strong>{pressure}%</strong>
               <small>{getPressureLabel(pressure)}</small>
             </div>
-            <button className="mobile-panel-close" type="button" onClick={() => setMobileMissionOpen(false)}>Use the controls</button>
           </header>
+
+          {!feedback && <div className="chronicle-phone-choices" role="group" aria-label="Choose your answer">
+            <p>Choose an answer. Confirm when you’re ready.</p>
+            {(currentChallenge.task === "timeline" ? TIMELINE_OPTIONS : currentChallenge.task === "evidence" ? EVIDENCE_OPTIONS : themeOrder).map((option, index) => <button type="button" key={option} aria-pressed={pendingChoice === option} disabled={resolving} onClick={() => {
+              setPendingChoice(option);
+              if (currentChallenge.task === "timeline") setTimelineLeverIndex(index);
+              else if (currentChallenge.task === "evidence") setSignalIndex(index);
+              else selectCargo(option);
+            }}><b>{index + 1}</b><span>{option}</span></button>)}
+          </div>}
 
           {!feedback && currentChallenge.task === "timeline" && (
             <TimelineSwitch
               index={timelineLeverIndex}
+              onSelect={(index) => { setTimelineLeverIndex(index); setPendingChoice(TIMELINE_OPTIONS[index]); }}
               onPointerDown={handleTimelinePointerDown}
               onPointerMove={handleTimelinePointerMove}
               onPointerUp={handleTimelinePointerUp}
@@ -810,6 +769,7 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
           {!feedback && currentChallenge.task === "evidence" && (
             <SemaphoreControl
               index={signalIndex}
+              onSelect={(index) => { setSignalIndex(index); setPendingChoice(EVIDENCE_OPTIONS[index]); }}
               onPointerDown={handleSignalPointerDown}
               onPointerMove={handleSignalPointerMove}
               onPointerUp={handleSignalPointerUp}
@@ -829,6 +789,11 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
               onLoad={loadSelectedCargo}
             />
           )}
+
+          {!feedback && <div className={`chronicle-confirmation ${currentChallenge.task === "theme" ? "is-cargo" : ""}`}>
+            <p aria-live="polite">{pendingChoice ? `Selected: ${pendingChoice}` : "Select an answer to continue."}</p>
+            <button type="button" className="chronicle-action-button" disabled={!pendingChoice || resolving} onClick={() => { if (pendingChoice) resolveChoice(pendingChoice); }}>{resolving ? "Checking…" : "Confirm answer"}</button>
+          </div>}
 
           {feedback && (
             <section
@@ -866,9 +831,9 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
           <footer className="chronicle-console-footer">
             <span>
               {currentChallenge.task === "timeline"
-                ? "Keyboard: 1–4 routes the switch"
+                ? "Keyboard: 1–4 selects a track · Enter confirms"
                 : currentChallenge.task === "evidence"
-                  ? "Keyboard: 1–3 clears the signal"
+                  ? "Keyboard: 1–3 selects a signal · Enter confirms"
                   : "Keyboard: 1–5 selects cargo · Enter loads it"}
             </span>
             <span>Streak × {streak}</span>
@@ -931,12 +896,14 @@ function TrainComposition({
 
 function TimelineSwitch({
   index,
+  onSelect,
   onPointerDown,
   onPointerMove,
   onPointerUp,
   disabled,
 }: {
   index: number;
+  onSelect: (index: number) => void;
   onPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onPointerUp: (event: ReactPointerEvent<HTMLDivElement>) => void;
@@ -950,7 +917,7 @@ function TimelineSwitch({
     <section className="switchboard-panel">
       <div className="switchboard-title">
         <span>MECHANICAL ROUTING FRAME</span>
-        <strong>Pull and release the track switch</strong>
+        <strong>Choose a track, then confirm below</strong>
       </div>
 
       <div className="junction-map" aria-hidden="true">
@@ -992,7 +959,7 @@ function TimelineSwitch({
         </small>
 
         <small className="route-readout-instruction">
-          Release the brass lever to route the Chronicle Express onto the selected track.
+          Move the lever or tap a destination. Confirm your answer below.
         </small>
       </div>
 
@@ -1007,7 +974,8 @@ function TimelineSwitch({
         }}
       >
         {TIMELINE_OPTIONS.map((option, optionIndex) => (
-          <div
+          <button
+            type="button" disabled={disabled} aria-pressed={index === optionIndex} onClick={() => onSelect(optionIndex)}
             className={`destination-sign ${
               index === optionIndex ? "is-active" : ""
             }`}
@@ -1023,7 +991,7 @@ function TimelineSwitch({
             {index === optionIndex && (
               <em>TRACK SELECTED</em>
             )}
-          </div>
+          </button>
         ))}
       </div>
 
@@ -1036,7 +1004,14 @@ function TimelineSwitch({
         aria-valuemax={TIMELINE_OPTIONS.length}
         aria-valuenow={index + 1}
         aria-valuetext={TIMELINE_OPTIONS[index]}
-        tabIndex={0}
+        tabIndex={disabled ? -1 : 0}
+        aria-disabled={disabled}
+        onKeyDown={(event) => {
+          if (disabled) return;
+          const next = event.key === "ArrowRight" ? Math.min(index + 1, TIMELINE_OPTIONS.length - 1) : event.key === "ArrowLeft" ? Math.max(index - 1, 0) : event.key === "Home" ? 0 : event.key === "End" ? TIMELINE_OPTIONS.length - 1 : null;
+          if (next !== null) { event.preventDefault(); onSelect(next); }
+        }}
+        onPointerCancel={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -1063,12 +1038,14 @@ function TimelineSwitch({
 
 function SemaphoreControl({
   index,
+  onSelect,
   onPointerDown,
   onPointerMove,
   onPointerUp,
   disabled,
 }: {
   index: number;
+  onSelect: (index: number) => void;
   onPointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
   onPointerUp: (event: ReactPointerEvent<HTMLDivElement>) => void;
@@ -1095,7 +1072,7 @@ function SemaphoreControl({
       <div className="signal-controls">
         <div className="switchboard-title">
           <span>SEMAPHORE VERIFICATION</span>
-          <strong>Set the archive signal, then release</strong>
+          <strong>Set the signal, then confirm below</strong>
         </div>
 
         <div className="signal-control-row">
@@ -1119,7 +1096,15 @@ function SemaphoreControl({
             aria-valuemax={EVIDENCE_OPTIONS.length}
             aria-valuenow={index + 1}
             aria-valuetext={EVIDENCE_OPTIONS[index]}
-            tabIndex={0}
+            tabIndex={disabled ? -1 : 0}
+            aria-orientation="vertical"
+            aria-disabled={disabled}
+            onKeyDown={(event) => {
+              if (disabled) return;
+              const next = event.key === "ArrowDown" ? Math.min(index + 1, EVIDENCE_OPTIONS.length - 1) : event.key === "ArrowUp" ? Math.max(index - 1, 0) : event.key === "Home" ? 0 : event.key === "End" ? EVIDENCE_OPTIONS.length - 1 : null;
+              if (next !== null) { event.preventDefault(); onSelect(next); }
+            }}
+            onPointerCancel={(event) => { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); }}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}

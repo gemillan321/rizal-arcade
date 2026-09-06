@@ -16,7 +16,7 @@ Each completed historical file adds another carriage to the train while the scen
 
 Core mechanics
 
-The game uses three distinct railway-control interactions rather than one repeated multiple-choice interaction.
+Desktop uses three railway-control interactions. Phones show the historical record above large answer buttons and a separate Confirm answer button. Selecting, moving, or releasing a control never submits an answer. On desktop, confirm the timeline or signal choice with the button below the controls; select cargo and press Load to submit it. Number keys select a choice and Enter confirms when focus is outside an interactive control.
 
 Track Routing
 

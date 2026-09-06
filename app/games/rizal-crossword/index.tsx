@@ -51,6 +51,7 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
   const [wrongAttempt, setWrongAttempt] = useState(false);
   const [announcement, setAnnouncement] = useState("The press is ready. Choose a clue and typeset its answer into the crossword.");
   const [clueListOpen, setClueListOpen] = useState(false);
+  const [gridZoomed, setGridZoomed] = useState(false);
   const answerRef = useRef<HTMLInputElement>(null);
   const feedbackRef = useRef<HTMLDivElement>(null);
   const [best, saveBest] = useHighScore("crossword");
@@ -70,7 +71,8 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
   }, [feedback]);
 
   useEffect(() => {
-    if (!feedback && !finished) answerRef.current?.focus({ preventScroll: true });
+    // Let phone players inspect the fitted puzzle before opening the keyboard.
+    if (!feedback && !finished && window.matchMedia("(min-width: 651px)").matches) answerRef.current?.focus({ preventScroll: true });
   }, [feedback, finished, selectedId]);
 
   function chooseEntry(entryId: string) {
@@ -158,6 +160,7 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
     setWrongAttempt(false);
     setAnnouncement("A new edition is on the press. Choose a clue and begin typesetting.");
     setClueListOpen(false);
+    setGridZoomed(false);
   }
 
   function cellLetter(cell: CrosswordCell): string {
@@ -207,7 +210,7 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
         <div className="crossword-pressroom">
           <section className="crossword-broadsheet" aria-label="Interactive crossword printing form">
             <header><span>The Crossword Chronicle</span><strong>National consciousness edition</strong><i>Eight entries · new layout every round</i></header>
-            <div className="crossword-grid-scroll">
+            <div className={`crossword-grid-scroll ${gridZoomed ? "is-zoomed" : ""}`}>
               <div className="crossword-grid" style={gridStyle}>
                 {Array.from({ length: puzzle.rows * puzzle.cols }, (_, index) => {
                   const row = Math.floor(index / puzzle.cols);
@@ -222,6 +225,7 @@ export function RizalCrosswordGame({ onClose }: GameProps) {
                 })}
               </div>
             </div>
+            <button className="crossword-zoom-toggle" type="button" aria-pressed={gridZoomed} onClick={() => setGridZoomed((value) => !value)}>{gridZoomed ? "Fit whole puzzle" : "Enlarge puzzle"}</button>
             <footer><span>THE LIFE AND WORKS OF JOSÉ RIZAL</span><b>{puzzle.entries.map((entry) => archiveLabel(entry.topic)).filter((topic, index, topics) => topics.indexOf(topic) === index).join(" · ")}</b></footer>
           </section>
 

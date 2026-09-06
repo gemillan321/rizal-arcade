@@ -11,7 +11,7 @@ The classroom edition takes the familiar pick-and-play feel of Friv or Y8 and gi
 - **Rizal Codebreaker** — manually decode an Atbash substitution cipher with the supplied alphabet key, then file the archive slip into the correct drawer.
 - **Scholar’s Journey** — study six records along Rizal’s academic route, pack them into a passport tray, then stamp each record at its remembered learning station. Correct placements move the Rizal traveller forward.
 - **Hearts & Horizons** — inspect a portrait dossier, match the woman to the evidence and place in Rizal’s journey, then seal and send the correspondence.
-- **Masterpiece Museum** — inspect an artifact, choose among five genre galleries, attach the historically accurate curatorial plaque, and install a randomized six-exhibit collection.
+- **Masterpiece Museum** — inspect six exhibits and decide whether each proposed label is supported by the archive evidence. Confirm the inspection, then read the accurate interpretation and source.
 - **Global Sojourn — Chart the Journey** — decode travel telegrams and draw Rizal’s routes across an interactive world atlas.
 - **El Fili: Revolution Files** — reconstruct causal chains from *El Filibusterismo* on a gaslit evidence table while managing exposure and limited lamplight clues.
 - **Rizal & the Nation: Crossword Chronicle** — complete randomized, connected newspaper crosswords about the Rizal Law, historical context, heroism, and national consciousness.

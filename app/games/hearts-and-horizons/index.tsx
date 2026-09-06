@@ -37,7 +37,7 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
   const [announcement, setAnnouncement] = useState("Read the dossier, choose an identity seal and a journey postmark, then seal the letter.");
   const [wrongSelection, setWrongSelection] = useState<"identity" | "place" | "both" | null>(null);
   const feedbackRef = useRef<HTMLDivElement>(null);
-  const wrongTimer = useRef<number | null>(null);
+  const finishTimer = useRef<number | null>(null);
   const [best, saveBest] = useHighScore("hearts");
   const { enabled: soundEnabled, play, toggle: toggleSound } = useArcadeSound("/audio/arcade-waltz.mp3");
   const current = deck[round];
@@ -50,8 +50,7 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
     };
   }, [current.womanId, currentProfile]);
   // On phones the desk becomes a one-thing-at-a-time flow instead of three
-  // panels behind manual tabs: it advances on its own as picks are made, and
-  // a wrong seal briefly surfaces whichever choice needs a second look.
+  // panels behind manual tabs. Incorrect choices stay open until corrected.
   const mobileStep: "identity" | "horizon" | "ready" =
     wrongSelection === "identity" || wrongSelection === "both" ? "identity"
     : wrongSelection === "place" ? "horizon"
@@ -64,7 +63,7 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
   }, [phase]);
 
   useEffect(() => () => {
-    if (wrongTimer.current) window.clearTimeout(wrongTimer.current);
+    if (finishTimer.current) window.clearTimeout(finishTimer.current);
   }, []);
 
   function selectIdentity(womanId: HeartsWomanId) {
@@ -112,6 +111,8 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
     const nextLives = lives - 1;
     setLives(nextLives);
     setStreak(0);
+    if (!identityCorrect) setSelectedWoman(null);
+    if (!placeCorrect) setSelectedPlace(null);
     setWrongSelection(!identityCorrect && !placeCorrect ? "both" : identityCorrect ? "place" : "identity");
     setAnnouncement(
       identityCorrect
@@ -121,11 +122,10 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
           : `Neither seal fits this dossier yet. Re-read the evidence. ${nextLives} lives remain.`,
     );
     play("wrong");
-    if (wrongTimer.current) window.clearTimeout(wrongTimer.current);
-    wrongTimer.current = window.setTimeout(() => setWrongSelection(null), 700);
     if (nextLives === 0) {
       saveBest(score);
-      window.setTimeout(() => {
+      setPhase("feedback");
+      finishTimer.current = window.setTimeout(() => {
         setPhase("finished");
         play("finish");
       }, 500);
@@ -218,7 +218,7 @@ export function HeartsGame({ onClose }: { onClose: () => void }) {
             )}
           </div>
 
-          <div className="hearts-actions"><p aria-live="polite">{announcement}</p><button className="button hearts-seal-button" type="button" disabled={phase !== "selecting"} onClick={sealLetter}><span aria-hidden="true">✦</span> Seal & send</button></div>
+          <div className="hearts-actions"><p aria-live="polite">{announcement}</p><button className="button hearts-seal-button" type="button" disabled={phase !== "selecting" || !selectedWoman || !selectedPlace} onClick={sealLetter}><span aria-hidden="true">✦</span> Seal & send</button></div>
           {feedback && <div className="hearts-feedback" ref={feedbackRef} tabIndex={-1}><FeedbackPanel feedback={feedback} onNext={nextDossier} isLast={round === deck.length - 1} /></div>}
         </div>
         <p className="hearts-accuracy-note">Relationship histories can contain later recollections and disputed details. This game uses the course module and named institutional sources, and avoids presenting artistic cameos as documentary likenesses.</p>

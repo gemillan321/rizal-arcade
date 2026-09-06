@@ -2298,3 +2298,40 @@
   .theme-crate { min-height: 62px; }
   .chronicle-console-footer { padding-bottom: 0; font-size: .55rem; }
 }
+
+/* Selecting and submitting are separate actions on every input device. */
+.chronicle-phone-choices { display: none; }
+.chronicle-confirmation { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 12px; padding: 12px; border: 1px solid #c99c4d; border-radius: 8px; background: #102c32; }
+.chronicle-confirmation p { margin: 0; color: #fff0cb; font-size: 15px; }
+.chronicle-confirmation.is-cargo { display: none; }
+.chronicle-confirmation button { min-height: 48px; }
+.chronicle-confirmation button:disabled { opacity: .5; cursor: default; }
+button.destination-sign { text-align: left; cursor: pointer; font: inherit; color: inherit; }
+@media (max-width: 650px) {
+  .chronicle-game { grid-template-rows: 112px minmax(0, 1fr); }
+  .chronicle-world { height: 112px; }
+  .chronicle-scene-caption { padding: 5px 7px; max-width: 210px; }
+  .chronicle-scene-caption > span, .chronicle-scene-caption > small { display: none; }
+  .chronicle-scene-caption strong { font-size: 16px; }
+  .chronicle-progress-board { width: 92px; padding: 5px; }
+  .chronicle-progress-board > span { display: none; }
+  .chronicle-landmark { display: none; }
+  .chronicle-train-wrap { bottom: 15px; }
+  .chronicle-console { display: flex; flex-direction: column; gap: 10px; padding: 10px 10px max(14px, env(safe-area-inset-bottom)); }
+  .chronicle-dispatch { display: block; flex: none; margin: 0; padding: 0; }
+  .chronicle-dispatch .boiler-gauge { display: none; }
+  .dispatch-message { padding: 12px; }
+  .dispatch-message > span { font-size: 12px; }
+  .dispatch-message h2 { font-size: 21px; line-height: 1.15; margin: 7px 0 0; }
+  .chronicle-console > .switchboard-panel, .chronicle-console > .signal-panel, .chronicle-console > .cargo-yard, .chronicle-console-footer { display: none; }
+  .chronicle-phone-choices { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .chronicle-phone-choices > p { color: #f8e8ba; font-size: 14px; margin: 0 0 2px; }
+  .chronicle-phone-choices button { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; border: 2px solid #866f40; border-radius: 8px; padding: 10px 12px; background: #17383d; color: #fff1ce; text-align: left; font-size: 16px; line-height: 1.2; font-weight: 750; }
+  .chronicle-phone-choices button > b { display: grid; place-items: center; width: 26px; height: 26px; flex: none; border: 1px solid #a6854c; border-radius: 50%; font-size: 13px; }
+  .chronicle-phone-choices button[aria-pressed="true"] { background: #ead090; color: #172d32; border-color: #ffe7ac; }
+  .chronicle-confirmation, .chronicle-confirmation.is-cargo { display: grid; grid-template-columns: minmax(0, 1fr); justify-content: stretch; gap: 8px; margin: 0; padding: 10px; flex: none; }
+  .chronicle-confirmation p { font-size: 13px; }
+  .chronicle-confirmation button { width: 100%; font-size: 16px; }
+  .chronicle-resolution { flex: none; margin-top: 0; }
+  .resolution-copy p { font-size: 16px; line-height: 1.4; }
+}

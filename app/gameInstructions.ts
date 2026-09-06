@@ -63,8 +63,8 @@ export const gameInstructions: Record<InstructionGameId, GameInstruction> = {
     topic: "Rizal’s documented relationships and the women he met",
     goal: "Use each anonymous three-clue dossier to identify the woman and connect her with the correct place in Rizal’s journey.",
     steps: [
-      "Read all three pieces of evidence in the center dossier.",
-      "Choose an identity seal on the left and a journey postmark on the right.",
+      "Read all three pieces of written evidence in the dossier.",
+      "Choose an identity seal, then choose the journey postmark. On a phone, the next choice opens automatically.",
       "Press Seal & Send after both choices are selected.",
     ],
     scoring: "Complete six dossiers. A wrong identity, place, or both costs one of four lives; correct streaks earn bonus points.",
@@ -73,14 +73,14 @@ export const gameInstructions: Record<InstructionGameId, GameInstruction> = {
   museum: {
     title: "Masterpiece Museum",
     topic: "Rizal’s essays, letters, annotations, poems, plays, and visual art",
-    goal: "Build a six-exhibit museum by placing each work in the right gallery and attaching the label that explains its significance.",
+    goal: "Inspect six museum exhibits and catch labels that misrepresent Rizal’s works by checking each claim against the archive evidence.",
     steps: [
       "Inspect the artifact title, date, object type, and three evidence clues.",
-      "Choose its gallery destination, then choose the correct curatorial plaque.",
-      "Press Install Exhibit after both parts of the display are selected.",
+      "Read the proposed plaque. Choose Keep the label if the evidence supports it, or Replace the label if it changes the history.",
+      "Press Confirm inspection, then read the accurate label and explanation before moving to the next exhibit.",
     ],
-    scoring: "Complete six exhibits. A wrong gallery, plaque, or both costs one of four lives; correct streaks earn bonus points.",
-    tip: "Genre tells you where a work belongs; the evidence tells you which interpretation belongs on its plaque.",
+    scoring: "Inspect six exhibits with four lives. A wrong inspection costs one life and reveals the correction; correct streaks earn bonus points.",
+    tip: "Watch for labels that distort a work’s purpose or confuse its author. Read all three clues before deciding.",
   },
   global: {
     title: "Global Sojourn — Chart the Journey",
@@ -100,8 +100,8 @@ export const gameInstructions: Record<InstructionGameId, GameInstruction> = {
     goal: "Reconstruct Rizal’s final years by filing each historical record under the correct timeline stage, evidence category, or Rizalian theme.",
     steps: [
       "Read the archive card and note whether it is a Timeline File, Evidence Check, or Rizalian Theme.",
-      "Select the classification that best fits the record.",
-      "Review the historical explanation before opening the next file.",
+      "Select the classification that best fits the record. On a phone, tap an answer; on desktop, use the railway controls or number keys.",
+      "Press Confirm answer (or load the selected cargo on desktop), then read the explanation. Releasing a lever never submits an answer.",
     ],
     scoring: "Classify ten randomized files. Each correct answer earns 100 points, while consecutive correct answers add a streak bonus.",
     tip: "For Evidence Check files, distinguish carefully between claims the module supports, debates, or contradicts.",
@@ -128,6 +128,6 @@ export const gameInstructions: Record<InstructionGameId, GameInstruction> = {
       "Solve all eight entries before five incorrect checks use up the press’s ink; each round draws from fifty clues and builds a new grid.",
     ],
     scoring: "A correct word earns 100 points plus a streak bonus. A wrong check uses one of five ink ribbons; five letter reveals are available and each costs 10 points.",
-    tip: "Move to another clue when stuck. A confirmed crossing letter is stronger evidence than an early guess.",
+    tip: "The whole puzzle fits on a phone. Use Enlarge puzzle for bigger cells, or Browse all clues to select a clue without tapping the grid.",
   },
 };
