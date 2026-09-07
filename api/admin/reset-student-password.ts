@@ -1,10 +1,10 @@
-import { handleApiError, json, requireAdmin, temporaryPassword } from "../_lib/supabaseAdmin.js";
+import { handleApiError, json, normalizeStudentId, requireAdmin, temporaryPassword } from "../_lib/supabaseAdmin.js";
 
 export async function POST(request: Request) {
   try {
     const { supabase } = await requireAdmin(request);
     const body = await request.json() as { studentId?: unknown };
-    const studentId = typeof body.studentId === "string" ? body.studentId.trim().toUpperCase() : "";
+    const studentId = typeof body.studentId === "string" ? normalizeStudentId(body.studentId) : "";
     if (!studentId) return json({ error: "Enter a Student ID." }, 400);
     const { data: profile, error } = await supabase
       .from("rizal_arcade_profiles")
