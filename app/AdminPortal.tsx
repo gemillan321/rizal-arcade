@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { getAccessToken, getSupabaseClient, type ArcadeProfile } from "./auth";
 import { loadLeaderboard, type LeaderboardEntry, type LeaderboardGame } from "./leaderboard";
 import { parseRosterFile, studentDisplayName, type ParsedRoster } from "./roster";
@@ -95,6 +95,7 @@ function AdminSectionRoster({ sections }: { sections: AdminSection[] }) {
   const [busyId, setBusyId] = useState("");
   const [message, setMessage] = useState("");
   const [revealed, setRevealed] = useState<Credential | null>(null);
+  const resetInFlight = useRef(false);
   const loading = Boolean(sectionId && loadKey !== sectionId);
 
   useEffect(() => {
@@ -115,6 +116,8 @@ function AdminSectionRoster({ sections }: { sections: AdminSection[] }) {
   }, [sectionId]);
 
   async function resetOne(student: SectionStudent) {
+    if (resetInFlight.current) return;
+    resetInFlight.current = true;
     setBusyId(student.id); setMessage(""); setRevealed(null);
     try {
       const result = await adminRequest("/api/admin/reset-student-password", { studentId: student.student_id });
@@ -122,7 +125,7 @@ function AdminSectionRoster({ sections }: { sections: AdminSection[] }) {
       setStudents((current) => current.map((item) => (item.id === student.id ? { ...item, must_change_password: true, active: true } : item)));
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "The password could not be reset.");
-    } finally { setBusyId(""); }
+    } finally { resetInFlight.current = false; setBusyId(""); }
   }
 
   return (
@@ -143,7 +146,7 @@ function AdminSectionRoster({ sections }: { sections: AdminSection[] }) {
                 <td>{student.roster_email ?? ""}</td>
                 <td>{student.active ? "Active" : "Inactive"}</td>
                 <td>{student.must_change_password ? "Pending first login" : "Completed"}</td>
-                <td><button type="button" className="button button-dark" disabled={busyId === student.id} onClick={() => resetOne(student)}>{busyId === student.id ? "Resetting…" : "Reset password"}</button></td>
+                <td><button type="button" className="button button-dark" disabled={Boolean(busyId)} onClick={() => resetOne(student)}>{busyId === student.id ? "Resetting…" : "Reset password"}</button></td>
               </tr>)}
             </tbody>
           </table>
