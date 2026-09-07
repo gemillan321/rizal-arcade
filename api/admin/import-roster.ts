@@ -64,6 +64,7 @@ export async function POST(request: Request) {
 
     const credentials: Array<{ studentId: string; displayName: string; sectionCode: string; temporaryPassword: string }> = [];
     const errors: Array<{ studentId: string; error: string }> = [];
+    const skipped: Array<{ studentId: string; reason: string }> = [];
     let createdCount = 0;
     let recovered = 0;
     let updated = 0;
@@ -99,42 +100,65 @@ export async function POST(request: Request) {
 
         const password = temporaryPassword();
         const loginEmail = studentAuthEmail(student.studentId);
-        let authUserId = "";
-        let createdAuthUser = false;
         const { data: created, error: createError } = await supabase.auth.admin.createUser({
           email: loginEmail,
           password,
           email_confirm: true,
           user_metadata: { student_id: student.studentId, display_name: profile.display_name },
         });
+
         if (created.user) {
-          authUserId = created.user.id;
-          createdAuthUser = true;
-        } else if (createError) {
-          const orphan = await findAuthUserByEmail(supabase, loginEmail);
-          if (!orphan) throw new Error(`Could not create ${student.studentId}: ${createError.message}`);
-          authUserId = orphan.id;
-          const { error: resetError } = await supabase.auth.admin.updateUserById(authUserId, { password });
-          if (resetError) throw new Error(`Could not recover ${student.studentId}: ${resetError.message}`);
+          // We just created this auth user, so `password` is already its real password. Insert the profile now;
+          // rizal_arcade_profiles.student_id is unique, so this still fails safely if another request somehow beat
+          // us to this student_id in between.
+          const authUserId = created.user.id;
+          const { error: profileError } = await supabase.from("rizal_arcade_profiles").insert({ id: authUserId, ...profile, must_change_password: true });
+          if (profileError) {
+            if (profileError.code === "23505") {
+              skipped.push({ studentId: student.studentId, reason: "Already imported by a concurrent request." });
+            } else {
+              await supabase.auth.admin.deleteUser(authUserId);
+              throw new Error(`Could not save ${student.studentId}: ${profileError.message}`);
+            }
+          } else {
+            credentials.push({ studentId: student.studentId, displayName: profile.display_name, sectionCode: section.section_code, temporaryPassword: password });
+            createdCount += 1;
+          }
+          continue;
         }
 
-        const { error: profileError } = await supabase.from("rizal_arcade_profiles").insert({ id: authUserId, ...profile, must_change_password: true });
-        if (profileError) {
-          if (profileError.code === "23505") {
-            // Another concurrent import already created this student (e.g. the same roster submitted twice at once).
-            // Do not delete the auth user or the profile it just created — just skip; the other request already
-            // returned credentials for this student.
-          } else {
-            if (createdAuthUser) await supabase.auth.admin.deleteUser(authUserId);
-            throw new Error(`Could not save ${student.studentId}: ${profileError.message}`);
+        if (!createError) throw new Error(`Could not create ${student.studentId}: the account could not be created.`);
+        const orphan = await findAuthUserByEmail(supabase, loginEmail);
+        if (!orphan) throw new Error(`Could not create ${student.studentId}: ${createError.message}`);
+
+        // Someone already holds this login email — either a genuine orphan (an auth user left over from a previous
+        // failed import, with no profile) or a concurrent request creating this exact student right now. Claim the
+        // profile row FIRST, before touching the password: rizal_arcade_profiles.student_id is unique, so only the
+        // request whose insert actually commits can be sure its password is the one that ends up live on the
+        // account. A losing request must never overwrite a password it will never get to show anyone.
+        const { error: claimError } = await supabase.from("rizal_arcade_profiles").insert({ id: orphan.id, ...profile, must_change_password: true });
+        if (claimError) {
+          if (claimError.code === "23505") {
+            skipped.push({ studentId: student.studentId, reason: "Already imported by a concurrent request." });
+            continue;
           }
-        } else {
-          credentials.push({ studentId: student.studentId, displayName: profile.display_name, sectionCode: section.section_code, temporaryPassword: password });
-          createdCount += 1;
+          throw new Error(`Could not save ${student.studentId}: ${claimError.message}`);
         }
+        // We won the claim, so it is now safe to make `password` the account's real password.
+        const { error: resetError } = await supabase.auth.admin.updateUserById(orphan.id, { password });
+        if (resetError) throw new Error(`Profile saved for ${student.studentId} but the password could not be set: ${resetError.message}. Use "Reset password" to issue new credentials.`);
+        credentials.push({ studentId: student.studentId, displayName: profile.display_name, sectionCode: section.section_code, temporaryPassword: password });
+        createdCount += 1;
       } catch (studentError) {
         errors.push({ studentId: student.studentId, error: studentError instanceof Error ? studentError.message : "This student could not be imported." });
       }
+    }
+
+    const messageParts: string[] = [];
+    if (errors.length) messageParts.push(`${errors.length} of ${students.length} students could not be imported. Fix and re-import just those rows — everyone else above was saved.`);
+    if (skipped.length) messageParts.push(`${skipped.length} student${skipped.length === 1 ? "" : "s"} ${skipped.length === 1 ? "was" : "were"} already imported by an overlapping request — no new credentials were issued for them here; check that request's results or use "Reset password" if needed.`);
+    if (!messageParts.length) {
+      messageParts.push(credentials.length ? "Credentials were generated or safely refreshed. Download them now; passwords will not be shown again." : "All students already completed setup, so their profiles were updated without changing passwords.");
     }
 
     return json({
@@ -145,9 +169,8 @@ export async function POST(request: Request) {
       updated,
       credentials,
       errors,
-      message: errors.length
-        ? `${errors.length} of ${students.length} students could not be imported. Fix and re-import just those rows — everyone else above was saved.`
-        : credentials.length ? "Credentials were generated or safely refreshed. Download them now; passwords will not be shown again." : "All students already completed setup, so their profiles were updated without changing passwords.",
+      skipped,
+      message: messageParts.join(" "),
     });
   } catch (error) {
     return handleApiError(error);
