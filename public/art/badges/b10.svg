@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><symbol id="frame" viewBox="0 0 200 200">
+    <circle cx="100" cy="100" r="94" fill="currentColor" stroke="#8a6a24" stroke-width="3"></circle>
+    <circle cx="100" cy="100" r="88" fill="none" stroke="#c39b3f" stroke-width="2"></circle>
+    <circle cx="100" cy="100" r="80" fill="none" stroke="#c39b3f" stroke-width="3" stroke-dasharray="2 7" opacity="0.8"></circle>
+    <circle cx="100" cy="100" r="71" fill="none" stroke="#8a6a24" stroke-width="1.5"></circle>
+  </symbol>
+<symbol id="banner" viewBox="0 0 200 200">
+    <polygon points="42,164 158,164 150,188 50,188" fill="#c39b3f" stroke="#8a6a24" stroke-width="2"></polygon>
+  </symbol></defs>
+    <use href="#frame" width="200" height="200" color="#14171f"></use>
+    <g stroke="#c39b3f" stroke-width="3" opacity="0.85">
+      <line x1="100" y1="132" x2="44" y2="132"></line>
+      <line x1="100" y1="132" x2="48" y2="110"></line>
+      <line x1="100" y1="132" x2="60" y2="92"></line>
+      <line x1="100" y1="132" x2="78" y2="80"></line>
+      <line x1="100" y1="132" x2="122" y2="80"></line>
+      <line x1="100" y1="132" x2="140" y2="92"></line>
+      <line x1="100" y1="132" x2="152" y2="110"></line>
+      <line x1="100" y1="132" x2="156" y2="132"></line>
+    </g>
+    <path d="M64 132 A36 36 0 0 1 136 132" fill="#c39b3f" opacity="0.35"></path>
+    <polygon points="94,64 106,64 110,132 90,132" fill="#e8dcbd"></polygon>
+    <line x1="54" y1="135" x2="146" y2="135" stroke="#e8dcbd" stroke-width="3.5"></line>
+    <ellipse cx="68" cy="152" rx="7" ry="4.5" fill="#c39b3f" opacity="0.75"></ellipse>
+    <ellipse cx="86" cy="159" rx="7" ry="4.5" fill="#c39b3f" opacity="0.6"></ellipse>
+    <ellipse cx="114" cy="159" rx="7" ry="4.5" fill="#c39b3f" opacity="0.6"></ellipse>
+    <ellipse cx="132" cy="152" rx="7" ry="4.5" fill="#c39b3f" opacity="0.75"></ellipse>
+    <use href="#banner" width="200" height="200"></use>
+    <text x="100" y="182" text-anchor="middle" font-family="Cormorant Garamond, serif" font-size="17" font-weight="700" letter-spacing="2" fill="#2a2118">X</text>
+  </svg>

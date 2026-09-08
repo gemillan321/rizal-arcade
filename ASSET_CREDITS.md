@@ -29,3 +29,6 @@ The generated `el-fili-revolution-table.webp` is original atmosphere art for Rev
 ## Fonts
 
 Cormorant Garamond and DM Sans are self-hosted from the Google Fonts collection under the SIL Open Font License 1.1. Their license texts are included beside the font files in `public/fonts/`.
+# Game completion medals
+
+`public/art/badges/*.svg`: supplied by the project owner from their Claude Design export, “Rizal Arcade Badge System”. Extracted as standalone SVGs with original paths, colors, and numerals preserved. These are original supplied design assets, not historical artifacts. No third-party design runtime or external font requests are needed to render them.

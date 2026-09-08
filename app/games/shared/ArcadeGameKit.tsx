@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { BadgeAwardNotice } from "../../BadgeCollection";
 import { loadLeaderboard, submitLeaderboardScore, type LeaderboardGame, type LeaderboardState } from "../../leaderboard";
 
 export type GameId = LeaderboardGame;
@@ -147,23 +148,30 @@ export function LeaderboardPanel({ game, score, compact = false }: { game: GameI
   const [board, setBoard] = useState<LeaderboardState | null>(null);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
-  const submittedScore = useRef<number | null>(null);
+  const [saveFailed, setSaveFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     let active = true;
     async function refresh() {
-      if (score !== undefined && submittedScore.current !== score) {
-        submittedScore.current = score;
+      if (score !== undefined) {
         setSaving(true);
+        setSaved(false);
+        setSaveFailed(false);
+        setMessage("");
         try {
           const next = await submitLeaderboardScore(game, score);
           if (active) {
             setBoard(next);
+            setSaved(true);
             setMessage("Your personal best is saved to your section leaderboard.");
           }
         } catch (error) {
+          const next = await loadLeaderboard(game);
           if (active) {
-            setBoard(await loadLeaderboard(game));
+            setBoard(next);
+            setSaveFailed(true);
             setMessage(error instanceof Error ? error.message : "The score could not be saved.");
           }
         } finally {
@@ -176,7 +184,7 @@ export function LeaderboardPanel({ game, score, compact = false }: { game: GameI
     }
     refresh();
     return () => { active = false; };
-  }, [game, score]);
+  }, [game, score, attempt]);
 
   const boardMessage = board?.status === "failed"
     ? "Your section leaderboard is temporarily unavailable."
@@ -198,7 +206,9 @@ export function LeaderboardPanel({ game, score, compact = false }: { game: GameI
           <li key={`${entry.player_name}-${entry.achieved_at}`}><span>{String(index + 1).padStart(2, "0")}</span><strong>{entry.player_name}</strong><b>{entry.score}</b></li>
         ))}
       </ol>
+      {saved && score !== undefined && <BadgeAwardNotice key={`${game}-${score}-${attempt}`} game={game} />}
       {message && <p className="score-message" aria-live="polite">{message}</p>}
+      {saveFailed && <button className="button button-outline" type="button" disabled={saving} onClick={() => setAttempt((value) => value + 1)}>Retry saving score</button>}
     </section>
   );
 }
