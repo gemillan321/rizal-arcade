@@ -14,6 +14,17 @@ function normalizeCodeAnswer(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
 
+const ATBASH_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const ATBASH_MIRROR = atbashText(ATBASH_ALPHABET);
+// Two 13-letter groups instead of one 26-letter row: at phone widths a single
+// row shrinks each letter past legibility, so the key splits in half and each
+// half keeps its own aligned CODE/TEXT pair of rows.
+const ATBASH_GROUPS = [0, 13].map((start) => ({
+  code: ATBASH_ALPHABET.slice(start, start + 13).split(""),
+  text: ATBASH_MIRROR.slice(start, start + 13).split(""),
+}));
+const ATBASH_FULL_MAPPING = ATBASH_ALPHABET.split("").map((letter, index) => `${letter} = ${ATBASH_MIRROR[index]}`).join(", ");
+
 type MobileCodebreakerPanel = "decode" | "clues";
 
 type ArchiveGroup = CodebreakerGroup;
@@ -152,10 +163,16 @@ export function CodebreakerGame({ onClose }: { onClose: () => void }) {
           />
           <form className={`cipher-workbench ${answerWrong ? "answer-wrong" : ""} ${mobilePanel === "decode" ? "is-mobile-active" : ""}`} onSubmit={submitDecode}>
             <div className="cipher-readout"><small>Encrypted transmission</small><strong>{encoded}</strong></div>
-            <div className="cipher-key" aria-label="Atbash substitution key">
+            <div className="cipher-key" aria-label={`Atbash substitution key, full mapping: ${ATBASH_FULL_MAPPING}`}>
               <span>Substitution formula</span>
-              <div><b>CODE</b><code>ABCDEFGHIJKLMNOPQRSTUVWXYZ</code></div>
-              <div><b>TEXT</b><code>ZYXWVUTSRQPONMLKJIHGFEDCBA</code></div>
+              <div className="cipher-key-table" aria-hidden="true">
+                {ATBASH_GROUPS.map((group, groupIndex) => (
+                  <div className="cipher-key-group" key={groupIndex}>
+                    <div className="cipher-key-row"><b>CODE</b><div className="cipher-key-letters">{group.code.map((letter, index) => <span key={index}>{letter}</span>)}</div></div>
+                    <div className="cipher-key-row"><b>TEXT</b><div className="cipher-key-letters">{group.text.map((letter, index) => <span key={index}>{letter}</span>)}</div></div>
+                  </div>
+                ))}
+              </div>
               <p><strong>A = Z</strong>, <strong>B = Y</strong>, <strong>C = X</strong> … Decode every letter manually.</p>
             </div>
             <label className="decode-answer" htmlFor={`decode-answer-${current.id}`}>
