@@ -57,6 +57,8 @@ The generated site is written to `vercel-dist/`. The public landing page builds 
 
 The site can reuse an existing Supabase project; a second project is not required.
 
+For an existing classroom database, run `supabase/repair_score_recording.sql` to enable all ten games, including Dapitan and El Fili. This transactional migration preserves existing accounts and scores. Do not rerun the initial schema or older game migrations on a live classroom database: the initial schema deletes scores, and older migrations replace the supported game list.
+
 1. Open the Supabase SQL Editor and run [`supabase/rizal_arcade_scores.sql`](supabase/rizal_arcade_scores.sql). This replaces the old prototype nickname leaderboard and removes its unverified scores.
 2. In Supabase Authentication, create the single administrator as an email/password user.
 3. In the SQL Editor, promote that user with `select public.promote_rizal_arcade_admin('professor@school.edu', 'Professor');`, replacing both values.

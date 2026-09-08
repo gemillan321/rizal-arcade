@@ -12,6 +12,7 @@ import {
 } from "react";
 import {
   GameHeader,
+  LeaderboardPanel,
   useArcadeSound,
   useHighScore,
   type Feedback,
@@ -640,6 +641,7 @@ export function DapitanToBagumbayanGame({ onClose }: GameProps) {
               </div>
             </div>
           </section>
+          <LeaderboardPanel game="dapitan" score={score} />
         </main>
       </>
     );

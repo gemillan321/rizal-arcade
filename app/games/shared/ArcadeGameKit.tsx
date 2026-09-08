@@ -147,14 +147,16 @@ export function LeaderboardPanel({ game, score, compact = false }: { game: GameI
   const [board, setBoard] = useState<LeaderboardState | null>(null);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
-  const submittedScore = useRef<number | null>(null);
+  const [saveFailed, setSaveFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let active = true;
     async function refresh() {
-      if (score !== undefined && submittedScore.current !== score) {
-        submittedScore.current = score;
+      if (score !== undefined) {
         setSaving(true);
+        setSaveFailed(false);
+        setMessage("");
         try {
           const next = await submitLeaderboardScore(game, score);
           if (active) {
@@ -162,8 +164,10 @@ export function LeaderboardPanel({ game, score, compact = false }: { game: GameI
             setMessage("Your personal best is saved to your section leaderboard.");
           }
         } catch (error) {
+          const next = await loadLeaderboard(game);
           if (active) {
-            setBoard(await loadLeaderboard(game));
+            setBoard(next);
+            setSaveFailed(true);
             setMessage(error instanceof Error ? error.message : "The score could not be saved.");
           }
         } finally {
@@ -176,7 +180,7 @@ export function LeaderboardPanel({ game, score, compact = false }: { game: GameI
     }
     refresh();
     return () => { active = false; };
-  }, [game, score]);
+  }, [game, score, attempt]);
 
   const boardMessage = board?.status === "failed"
     ? "Your section leaderboard is temporarily unavailable."
@@ -199,6 +203,7 @@ export function LeaderboardPanel({ game, score, compact = false }: { game: GameI
         ))}
       </ol>
       {message && <p className="score-message" aria-live="polite">{message}</p>}
+      {saveFailed && <button className="button button-outline" type="button" disabled={saving} onClick={() => setAttempt((value) => value + 1)}>Retry saving score</button>}
     </section>
   );
 }
