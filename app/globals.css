@@ -1199,15 +1199,14 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
 .cipher-workbench .cipher-readout strong { font-size: clamp(21px, 3vw, 34px); }
 .cipher-key { padding: 12px 14px; border: 2px solid rgba(255,247,219,.45); background: rgba(255,255,255,.06); }
 .cipher-key > span { display: block; margin-bottom: 8px; color: var(--electric); font: 900 8px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .12em; text-transform: uppercase; }
-.cipher-key-table { display: grid; gap: 9px; margin: 4px 0; }
-.cipher-key-group { min-width: 0; display: grid; gap: 3px; }
+.cipher-key-table { display: grid; gap: 4px; margin: 4px 0; }
 .cipher-key-row { min-width: 0; display: grid; grid-template-columns: 38px minmax(0, 1fr); align-items: center; gap: 8px; }
 .cipher-key b { color: var(--brass); font: 900 7px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
-/* Each letter is its own grid cell (not a spaced-out string) so CODE and TEXT
-   stay individually legible and aligned at every width down to 320px, instead
-   of shrinking letter-spacing on a single unbroken 26-character run. */
-.cipher-key-letters { min-width: 0; display: grid; grid-template-columns: repeat(13, minmax(0, 1fr)); gap: 3px; }
-.cipher-key-letters span { display: grid; min-width: 0; place-items: center; padding: 3px 0; border: 1px solid rgba(255,247,219,.3); border-radius: 3px; background: rgba(255,255,255,.05); color: #fff7db; font: 800 clamp(9px, 2.6vw, 14px)/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
+/* Keep the complete Atbash lookup in two continuous, vertically aligned rows.
+   Equal grid columns create readable gaps without splitting A-Z into separate
+   tables or relying on fragile letter-spacing. */
+.cipher-key-letters { min-width: 0; display: grid; grid-template-columns: repeat(26, minmax(0, 1fr)); column-gap: clamp(1px, .28vw, 3px); }
+.cipher-key-letters span { min-width: 0; color: #fff7db; font: 800 clamp(8px, 1.5vw, 12px)/1.15 ui-monospace, SFMono-Regular, Consolas, monospace; text-align: center; }
 .cipher-key p { margin: 9px 0 0; color: rgba(255,247,219,.72); font-size: 10px; }
 .cipher-key p strong { color: #fff7db; }
 .decode-answer { display: grid; gap: 6px; }
@@ -1251,7 +1250,7 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .portrait-hint { font-size: clamp(8px, 1.35vw, 11px) !important; }
   .memory-card-front em { font-size: 5.5px; }
   .manual-code-grid { grid-template-columns: minmax(0, 1.12fr) minmax(245px, .88fr); }
-  .cipher-key-letters span { font-size: clamp(8px, 1.6vw, 12px); }
+  .cipher-key-letters span { font-size: clamp(8px, 1.45vw, 11px); }
   .manual-file-stage { grid-template-columns: .58fr 1.42fr; }
   .manual-file-stage .filing-station { grid-template-columns: .8fr 1.2fr; }
 }
@@ -3511,7 +3510,19 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .global-telegram li { min-height: 0; align-items: center; padding: 6px 8px; }
   .global-telegram li p { font-size: 12px; line-height: 1.3; }
   .global-telegram-help { display: none; }
-  .global-arrival-scene { bottom: 31px; max-height: calc(100% - 40px); }
+  /* The map is intentionally shallow on phones. Keep the action in its own
+     fixed grid row and let only the feedback copy scroll; otherwise long copy
+     pushes "Open next telegram" below the clipped map surface. */
+  .global-arrival-scene {
+    top: 4px;
+    bottom: 4px;
+    height: auto;
+    max-height: none;
+    overflow: hidden;
+    grid-template-rows: minmax(0, 1fr) 36px;
+  }
+  .global-arrival-scene > div:nth-child(2) { min-height: 0; max-height: 100%; overflow-y: auto; overscroll-behavior: contain; }
+  .global-arrival-scene > button { min-height: 36px; align-self: stretch; }
 
   /* Game 9: case, loose evidence, and causal chain are three focused panels. */
   .game-revolution.is-playing { overflow: hidden; }

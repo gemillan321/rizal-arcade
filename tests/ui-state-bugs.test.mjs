@@ -56,30 +56,42 @@ test("Global Sojourn's compass score readout is never crossed out by its own dec
   );
 });
 
-test("Codebreaker's substitution key renders every letter as its own cell instead of a compressed string", () => {
-  // Regression: CODE and TEXT each rendered as a single unbroken 26-character
-  // <code> string relying only on `letter-spacing` for separation, which read as
-  // a near-solid block (and got even tighter under a phone-width letter-spacing
-  // override). The key now maps each letter into its own grid cell across two
-  // 13-letter groups, so CODE/TEXT stay aligned and legible without ever
-  // shrinking past readability or overflowing at 320px.
+test("Codebreaker's substitution key keeps one continuous aligned A-Z lookup", () => {
+  // Regression: the first spacing fix split the lookup into two boxed 13-letter
+  // tables. That made users jump between separate CODE/TEXT pairs instead of
+  // reading one direct A-Z-to-Z-A mapping. The key must remain two continuous
+  // rows while equal grid columns supply the spacing and vertical alignment.
   assert.doesNotMatch(
     codebreakerSource,
     /<code>ABCDEFGHIJKLMNOPQRSTUVWXYZ<\/code>/,
     "the full alphabet must not render as one unbroken string",
   );
-  assert.match(codebreakerSource, /ATBASH_GROUPS\s*=\s*\[0,\s*13\]\.map/, "expected the key to split into two 13-letter groups");
-  assert.match(codebreakerSource, /className="cipher-key-letters"/, "expected a per-letter grid container");
+  assert.doesNotMatch(codebreakerSource, /ATBASH_GROUPS/, "the mapping must not split into multiple lookup tables");
+  assert.match(codebreakerSource, /ATBASH_CODE_LETTERS\s*=\s*ATBASH_ALPHABET\.split\(""\)/);
+  assert.match(codebreakerSource, /ATBASH_TEXT_LETTERS\s*=\s*ATBASH_MIRROR\.split\(""\)/);
   assert.match(
     codebreakerSource,
-    /group\.code\.map\(\(letter, index\) => <span key=\{index\}>\{letter\}<\/span>\)/,
-    "expected each CODE letter to render as its own <span> cell",
+    /ATBASH_CODE_LETTERS\.map\(\(letter\) => <span key=\{letter\}>\{letter\}<\/span>\)/,
+    "expected each CODE letter to render in the first continuous row",
   );
+  assert.match(codebreakerSource, /ATBASH_TEXT_LETTERS\.map\(\(letter\) => <span key=\{letter\}>\{letter\}<\/span>\)/);
+  assert.match(css, /\.cipher-key-letters\s*\{[^}]*grid-template-columns:\s*repeat\(26,/s, "expected 26 equal lookup columns");
   // The decorative letter grid is aria-hidden; the complete mapping must still
   // reach assistive tech via the container's aria-label.
   assert.match(codebreakerSource, /ATBASH_FULL_MAPPING\s*=\s*ATBASH_ALPHABET\.split\(""\)\.map/, "expected a computed full-mapping string");
   assert.match(codebreakerSource, /aria-label=\{`Atbash substitution key, full mapping: \$\{ATBASH_FULL_MAPPING\}`\}/);
   assert.match(codebreakerSource, /className="cipher-key-table" aria-hidden="true"/, "the letter grid itself must be aria-hidden");
+});
+
+test("Global Sojourn keeps the next-telegram action visible in the shallow phone map", () => {
+  // Regression: the arrival card was scrollable as one block inside the phone
+  // map. Its copy consumed the available height and placed the action below the
+  // clipped surface. The action now owns a fixed second grid row while only the
+  // copy column can scroll.
+  const phoneSafeguards = css.slice(css.indexOf("/* Game 7: the map shrinks"));
+  assert.match(phoneSafeguards, /\.global-arrival-scene\s*\{[^}]*top:\s*4px;[^}]*bottom:\s*4px;[^}]*overflow:\s*hidden;[^}]*grid-template-rows:\s*minmax\(0,\s*1fr\)\s*36px/s);
+  assert.match(phoneSafeguards, /\.global-arrival-scene > div:nth-child\(2\)\s*\{[^}]*overflow-y:\s*auto/s);
+  assert.match(phoneSafeguards, /\.global-arrival-scene > button\s*\{[^}]*min-height:\s*36px/s);
 });
 
 test("Global Sojourn's traveler token never covers a destination pin or the Manila label while idle", () => {

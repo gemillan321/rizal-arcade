@@ -7,6 +7,7 @@ import { heartsChallenges, heartsProfilesById } from "../app/heartsChallenges.ts
 import { masterpieceChallenges } from "../app/masterpieceChallenges.ts";
 import { crosswordClues } from "../app/games/rizal-crossword/content.ts";
 import { dapitanChallenges, EVIDENCE_OPTIONS, TIMELINE_OPTIONS } from "../app/games/dapitan-to-bagumbayan/content.ts";
+import { globalDestinationsById, globalSojournChallenges } from "../app/games/global-sojourn/content.ts";
 
 const cli = process.env.AGENT_BROWSER_CLI;
 assert.ok(cli, "Set AGENT_BROWSER_CLI to the agent-browser JS entry point");
@@ -154,25 +155,57 @@ for (const [w,h] of [[320,568],[360,640],[390,844],[430,932]]) {
 }
 run('set','viewport','390','844');
 run('screenshot',`${output}/global-sojourn-phone.png`);
-console.log('PASS Global Sojourn: idle traveler never covers a destination pin or the Manila label at 4 phone widths, including a Hong Kong round');
+const globalMission = text('#global-telegram-title');
+const globalChallenge = globalSojournChallenges.find(challenge => challenge.mission === globalMission);
+assert.ok(globalChallenge, `expected to find the active Global Sojourn challenge for: ${globalMission}`);
+clickText('.global-mobile-destinations button strong', globalDestinationsById[globalChallenge.destinationId].shortPlace);
+run('wait','.global-arrival-scene');
+for (const [w,h] of [[320,568],[360,640],[390,844],[430,932]]) {
+  run('set','viewport',String(w),String(h));
+  const arrival = evaluate(`(() => {
+    const surface = document.querySelector('.global-atlas-surface').getBoundingClientRect();
+    const scene = document.querySelector('.global-arrival-scene').getBoundingClientRect();
+    const button = document.querySelector('.global-arrival-scene > button');
+    const action = button.getBoundingClientRect();
+    return {
+      visible: button.checkVisibility(),
+      sceneFits: scene.top >= surface.top - 1 && scene.bottom <= surface.bottom + 1,
+      actionFits: action.top >= scene.top - 1 && action.bottom <= scene.bottom + 1,
+    };
+  })()`);
+  assert.ok(arrival.visible, `${w}px: next-telegram action must be visible`);
+  assert.ok(arrival.sceneFits, `${w}px: arrival panel must remain inside the map surface`);
+  assert.ok(arrival.actionFits, `${w}px: next-telegram action must not be clipped out of the arrival panel`);
+}
+run('set','viewport','390','844');
+run('screenshot',`${output}/global-sojourn-arrival-phone.png`);
+click('.global-arrival-scene > button');
+run('wait','#global-telegram-title');
+console.log('PASS Global Sojourn: map markers remain readable and the next-telegram action is visible/clickable at 4 phone widths');
 
-// Game 3: the substitution key must render 26 individually legible letter
-// cells (two 13-letter rows) with no clipping or horizontal scroll, replacing
-// the old single-string-plus-letter-spacing layout.
+// Game 3: the substitution key must remain one continuous CODE row directly
+// above one continuous TEXT row, with all 26 pairs vertically aligned.
 openGame('Rizal Roots: Codebreaker','codebreaker');
 for (const [w,h] of [[320,568],[360,640],[390,844],[430,932]]) {
   layout('codebreaker',w,h);
   const key = evaluate(`(() => {
     const letters = [...document.querySelectorAll('.cipher-key-letters span')];
+    const rows = [...document.querySelectorAll('.cipher-key-letters')];
     const frame = document.querySelector('.cipher-key');
-    return { letterCount: letters.length, overflows: frame.scrollWidth > frame.clientWidth + 1 };
+    const centers = row => [...row.children].map(el => { const r = el.getBoundingClientRect(); return r.left + r.width / 2; });
+    const codeCenters = rows[0] ? centers(rows[0]) : [];
+    const textCenters = rows[1] ? centers(rows[1]) : [];
+    const maxPairDrift = Math.max(0, ...codeCenters.map((x,index) => Math.abs(x - textCenters[index])));
+    return { letterCount: letters.length, rowCount: rows.length, maxPairDrift, overflows: frame.scrollWidth > frame.clientWidth + 1 };
   })()`);
   assert.equal(key.letterCount, 52, `${w}px: expected 26 CODE + 26 TEXT letter cells, got ${key.letterCount}`);
+  assert.equal(key.rowCount, 2, `${w}px: expected exactly one CODE row and one TEXT row`);
+  assert.ok(key.maxPairDrift < .75, `${w}px: CODE/TEXT pairs must align vertically; max drift was ${key.maxPairDrift}px`);
   assert.equal(key.overflows, false, `${w}px: substitution key must not overflow horizontally`);
 }
 run('set','viewport','390','844');
 run('screenshot',`${output}/codebreaker-phone.png`);
-console.log('PASS Codebreaker: substitution key renders 52 aligned letter cells with no overflow at 4 phone widths');
+console.log('PASS Codebreaker: one continuous 26-pair lookup stays aligned with no overflow at 4 phone widths');
 }
 
 if (process.env.TEST_FROM !== 'controls') {
