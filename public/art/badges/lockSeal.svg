@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60"><defs><symbol id="frame" viewBox="0 0 200 200">
+    <circle cx="100" cy="100" r="94" fill="currentColor" stroke="#8a6a24" stroke-width="3"></circle>
+    <circle cx="100" cy="100" r="88" fill="none" stroke="#c39b3f" stroke-width="2"></circle>
+    <circle cx="100" cy="100" r="80" fill="none" stroke="#c39b3f" stroke-width="3" stroke-dasharray="2 7" opacity="0.8"></circle>
+    <circle cx="100" cy="100" r="71" fill="none" stroke="#8a6a24" stroke-width="1.5"></circle>
+  </symbol>
+<symbol id="banner" viewBox="0 0 200 200">
+    <polygon points="42,164 158,164 150,188 50,188" fill="#c39b3f" stroke="#8a6a24" stroke-width="2"></polygon>
+  </symbol></defs>
+    <circle cx="30" cy="30" r="26" fill="#6b6156" stroke="#4b453d" stroke-width="3"></circle>
+    <circle cx="30" cy="30" r="20" fill="none" stroke="#8d8375" stroke-width="1.5" stroke-dasharray="2 5"></circle>
+    <circle cx="30" cy="25" r="7" fill="#2f2b26"></circle>
+    <polygon points="26,28 34,28 37,44 23,44" fill="#2f2b26"></polygon>
+  </svg>

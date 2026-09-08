@@ -94,3 +94,6 @@ The arcade uses locally hosted public-domain or CC0 historical visuals, includin
 - [NHCP Registry: La Liga Filipina](https://philhistoricsites.nhcp.gov.ph/registry_database/la-liga-filipina/)
 
 This is an educational prototype, not an official publication of the NHCP or any school.
+# Completion badges
+
+The badge collection recognizes completed rounds saved to each student's Supabase account. See [game badge setup and testing](docs/game-badges.md) for the additive migration, award rules, and test-branch instructions.

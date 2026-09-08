@@ -10,6 +10,7 @@ const compiled = ts.transpileModule(source, {
 }).outputText;
 const board = { entries: [], mode: "section", status: "ok", sectionLabel: "Test section" };
 const flush = () => new Promise((resolve) => setImmediate(resolve));
+const BadgeAwardNotice = () => null;
 
 function setup(submit) {
   const state = [];
@@ -37,6 +38,7 @@ function setup(submit) {
     react: hooks,
     "react/jsx-runtime": jsxRuntime,
     "../../leaderboard": { loadLeaderboard: async () => board, submitLeaderboardScore: submit },
+    "../../BadgeCollection": { BadgeAwardNotice },
   })[name], compiledModule, compiledModule.exports);
   return {
     state,
@@ -52,6 +54,12 @@ function findButton(node) {
   return [node.props?.children].flat(Infinity).map(findButton).find(Boolean);
 }
 
+function findAwardNotice(node) {
+  if (!node || typeof node !== "object") return undefined;
+  if (node.type === BadgeAwardNotice) return node;
+  return [node.props?.children].flat(Infinity).map(findAwardNotice).find(Boolean);
+}
+
 test("a rejected save can retry the same game and score successfully", async () => {
   const calls = [];
   const harness = setup(async (...args) => {
@@ -62,6 +70,7 @@ test("a rejected save can retry the same game and score successfully", async () 
   harness.render();
   await flush();
   const retry = findButton(harness.render());
+  assert.equal(findAwardNotice(harness.render()), undefined);
   assert.ok(retry);
   assert.equal(retry.props.disabled, false);
   retry.props.onClick();
@@ -69,6 +78,7 @@ test("a rejected save can retry the same game and score successfully", async () 
   await flush();
   assert.deepEqual(calls, [["revolution", 1275], ["revolution", 1275]]);
   assert.equal(findButton(harness.render()), undefined);
+  assert.equal(findAwardNotice(harness.render()).props.game, "revolution");
   assert.match(harness.state[1], /personal best is saved/);
   assert.equal(harness.state[2], false);
 });
