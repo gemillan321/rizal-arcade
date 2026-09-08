@@ -10,7 +10,7 @@ The Supabase score trigger creates each award in the same transaction as the sco
 2. Apply `supabase/add_game_badges.sql` once to the Supabase project used by the testing environment. It is additive and safe to rerun. It creates badge storage, student-only read security, a score trigger, and a backfill from existing saved scores.
 3. Run `supabase/verify_game_badges.sql` as postgres. The verification requires one eligible student and rolls back all test score/award writes.
 
-The production database integration was tested in a rollback-only transaction on September 8, 2026. All assertions passed. The persistent production migration remains pending explicit user approval; the preview alone does not create the table. Until the migration is applied, score saves continue to work and badge loading shows an error with a retry button.
+The production migration was activated on September 8, 2026 after user approval, creating 65 awards for 10 students from existing saved results. The migration was first verified in a rollback-only transaction. The testing preview now uses the active badge storage; deploying the frontend does not require running the migration again.
 
 Historical first-completion dates were not stored. Backfilled awards use the earliest retained personal-best timestamp, which can be later than the original completion. New awards record their first save date. Device-local scores are deliberately not imported because they are not tied to an account.
 
