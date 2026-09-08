@@ -695,6 +695,8 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
 .lily-pad span { position: relative; z-index: 2; display: block; font-size: clamp(13px, 1.5vw, 18px); font-weight: 850; line-height: 1.2; text-align: center; text-wrap: balance; }
 .lily-pad.correct-pad { background: radial-gradient(circle at 36% 30%, #8bea55, #258449 68%); box-shadow: 0 0 0 8px var(--brass), 0 13px 0 rgba(5,68,58,.45); }
 .lily-pad.wrong-pad { filter: grayscale(.75) brightness(.72); }
+/* Keyboard focus must never read as the brass "correct answer revealed" ring above, so it gets its own color (matching the plain white focus rings used elsewhere in the arcade, e.g. .global-port, .scholar-stop). */
+.lily-pad:focus-visible { outline-color: #fff; }
 .frog-avatar { position: absolute; z-index: 5; width: 92px; height: 73px; left: 50%; top: 82%; border: 5px solid #07341e; border-radius: 52% 52% 45% 45%; background: #76df3d; box-shadow: inset 0 -13px 0 #42a62e, 0 10px 0 rgba(4,75,47,.35); transform: translate(-50%, -50%); transition: left .58s cubic-bezier(.22,.88,.27,1.2), top .58s cubic-bezier(.22,.88,.27,1.2), transform .58s; }
 .frog-avatar::before { content: ""; position: absolute; left: 50%; top: 17px; width: 49px; height: 27px; border-radius: 45%; background: #d2f397; transform: translateX(-50%); }
 .frog-eye { position: absolute; z-index: 2; top: -22px; width: 34px; height: 36px; border: 5px solid #07341e; border-radius: 50%; background: #b8ef75; }
@@ -1613,6 +1615,8 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
 .identity-panel button { grid-template-columns: 47px minmax(0, 1fr); }
 .identity-panel button small { grid-column: 2; margin-top: -18px; }
 .hearts-choice-panel button:hover:not(:disabled) { transform: translateY(-3px); }
+/* Keyboard focus must never read as this game's "current stage" gold (the route trail, the routeCode badge below), so it gets the plain white ring used elsewhere in the arcade instead of the site-wide brass default. */
+.hearts-choice-panel button:focus-visible { outline-color: #fff; }
 .hearts-choice-panel button.is-selected { color: #fff1ce; background: var(--heart-wine); transform: translateY(-3px) rotate(-1deg); }
 .hearts-choice-panel button strong { overflow-wrap: anywhere; font-size: 12px; line-height: 1.05; }
 .hearts-choice-panel button small { color: inherit; font: 750 7px/1.1 ui-monospace, SFMono-Regular, Consolas, monospace; text-transform: uppercase; opacity: .72; }
@@ -2365,7 +2369,8 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   background: radial-gradient(circle, rgba(255,239,199,.97) 0 50%, rgba(225,185,92,.96) 51% 64%, rgba(76,45,24,.9) 65% 68%, rgba(255,239,199,.96) 69%);
   box-shadow: 4px 5px 0 rgba(3,20,27,.65);
 }
-.global-compass-score::before, .global-compass-score::after { content: ""; position: absolute; inset: 7px 42px; background: rgba(116,56,34,.48); transform: rotate(45deg); }
+/* The compass-rose crest is decorative, so it must stay clear of the score readout it sits behind — leave its middle transparent instead of crossing straight through the digits. */
+.global-compass-score::before, .global-compass-score::after { content: ""; position: absolute; inset: 7px 42px; background: linear-gradient(to bottom, rgba(116,56,34,.48) 0 28%, transparent 28% 72%, rgba(116,56,34,.48) 72% 100%); transform: rotate(45deg); }
 .global-compass-score::after { transform: rotate(-45deg); }
 .global-compass-score span, .global-compass-score strong, .global-compass-score small { position: relative; z-index: 1; }
 .global-compass-score span { color: #8a3424; font: 900 8px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
@@ -3833,13 +3838,13 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
 /* Keep the audio icon visible despite the legacy phone HUD span rule. */
 .game-hud .sound-toggle > span { display: block; border: 0; padding: 0; }
 @media (max-width: 650px) {
-  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword) .game-header { position: sticky; grid-template-columns: 43px minmax(0, 1fr) 40px; grid-template-rows: 28px 22px; align-content: center; gap: 0 8px; }
-  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword) .game-header > .icon-button { grid-column: 1; grid-row: 1 / 3; }
-  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword) .game-header-title { grid-column: 2; grid-row: 1; }
-  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword) .game-header-title strong { font-size: 16px; }
-  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword) .game-hud { grid-column: 2; grid-row: 2; gap: 10px; }
-  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword) .game-hud > span { display: flex; flex-direction: row; gap: 4px; min-width: 0; border: 0; padding: 0; background: none; }
-  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword) .game-hud > span > small { font-size: 9px; letter-spacing: 0; }
-  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword) .game-hud > span > strong { font-size: 11px; background: none; color: #fff7db; }
-  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword) .game-hud > .sound-toggle { position: absolute; top: 13px; right: 9px; }
+  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-header { position: sticky; grid-template-columns: 43px minmax(0, 1fr) 40px; grid-template-rows: 28px 22px; align-content: center; gap: 0 8px; }
+  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-header > .icon-button { grid-column: 1; grid-row: 1 / 3; }
+  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-header-title { grid-column: 2; grid-row: 1; }
+  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-header-title strong { font-size: 16px; }
+  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud { grid-column: 2; grid-row: 2; gap: 10px; }
+  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud > span { display: flex; flex-direction: row; gap: 4px; min-width: 0; border: 0; padding: 0; background: none; }
+  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud > span > small { font-size: 9px; letter-spacing: 0; }
+  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud > span > strong { font-size: 11px; background: none; color: #fff7db; }
+  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud > .sound-toggle { position: absolute; top: 13px; right: 9px; }
 }

@@ -172,6 +172,7 @@ for (const [title,id] of [
 ]) {
   openGame(title,id);
   assert.ok(evaluate(`document.querySelector('.game-overlay.is-playing').innerText.length > 100`));
+  if (id === 'scholar') assert.equal(hud('Lives'), '♥♥♥♥', 'Scholar’s Journey must keep its Lives counter visible on phone, not just Route/Score');
 }
 console.log('PASS Other six games: instructions and gameplay launch on phone');
 }
