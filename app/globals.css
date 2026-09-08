@@ -1199,9 +1199,15 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
 .cipher-workbench .cipher-readout strong { font-size: clamp(21px, 3vw, 34px); }
 .cipher-key { padding: 12px 14px; border: 2px solid rgba(255,247,219,.45); background: rgba(255,255,255,.06); }
 .cipher-key > span { display: block; margin-bottom: 8px; color: var(--electric); font: 900 8px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .12em; text-transform: uppercase; }
-.cipher-key > div { min-width: 0; display: grid; grid-template-columns: 38px minmax(0, 1fr); align-items: center; gap: 8px; margin: 4px 0; }
+.cipher-key-table { display: grid; gap: 9px; margin: 4px 0; }
+.cipher-key-group { min-width: 0; display: grid; gap: 3px; }
+.cipher-key-row { min-width: 0; display: grid; grid-template-columns: 38px minmax(0, 1fr); align-items: center; gap: 8px; }
 .cipher-key b { color: var(--brass); font: 900 7px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
-.cipher-key code { overflow: hidden; font: 800 clamp(8px, 1.15vw, 13px)/1.2 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .075em; white-space: nowrap; }
+/* Each letter is its own grid cell (not a spaced-out string) so CODE and TEXT
+   stay individually legible and aligned at every width down to 320px, instead
+   of shrinking letter-spacing on a single unbroken 26-character run. */
+.cipher-key-letters { min-width: 0; display: grid; grid-template-columns: repeat(13, minmax(0, 1fr)); gap: 3px; }
+.cipher-key-letters span { display: grid; min-width: 0; place-items: center; padding: 3px 0; border: 1px solid rgba(255,247,219,.3); border-radius: 3px; background: rgba(255,255,255,.05); color: #fff7db; font: 800 clamp(9px, 2.6vw, 14px)/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
 .cipher-key p { margin: 9px 0 0; color: rgba(255,247,219,.72); font-size: 10px; }
 .cipher-key p strong { color: #fff7db; }
 .decode-answer { display: grid; gap: 6px; }
@@ -1245,7 +1251,7 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .portrait-hint { font-size: clamp(8px, 1.35vw, 11px) !important; }
   .memory-card-front em { font-size: 5.5px; }
   .manual-code-grid { grid-template-columns: minmax(0, 1.12fr) minmax(245px, .88fr); }
-  .cipher-key code { font-size: clamp(7px, 1.35vw, 11px); letter-spacing: .035em; }
+  .cipher-key-letters span { font-size: clamp(8px, 1.6vw, 12px); }
   .manual-file-stage { grid-template-columns: .58fr 1.42fr; }
   .manual-file-stage .filing-station { grid-template-columns: .8fr 1.2fr; }
 }
@@ -2555,32 +2561,54 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
 .global-visited-stamp b { font: 900 7px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
 @keyframes global-stamp-in { from { transform: translate(-50%,-50%) scale(2.3) rotate(-20deg); opacity: 0; } }
 
+/* Idle, the traveler renders as a small position marker rather than the full
+   ship: it always sits exactly on the player's currentPosition (Manila at the
+   start, then whichever port was last visited), so a large icon there reliably
+   covers the Manila origin pin/label and, when a round's option happens to be
+   geographically close (e.g. Hong Kong from Manila), the option's own pin and
+   label too. The full ship returns only for the brief .is-traveling animation
+   between ports, after a destination is already chosen and no longer needs to
+   stay readable underneath it. */
 .global-traveler {
   --traveler-x: 83%;
   --traveler-y: 60%;
   position: absolute;
-  z-index: 12;
+  /* Below .global-origin-pin (3) and .global-port (6): idle, this marker always
+     sits exactly on the player's current map position, so a pin or the Manila
+     origin marker that lands on the same spot must paint over it, not the
+     other way around — otherwise the marker hides the very thing it's next to. */
+  z-index: 2;
   left: var(--traveler-x);
   top: var(--traveler-y);
-  width: 60px;
-  height: 60px;
+  width: 20px;
+  height: 20px;
   display: grid;
   place-items: center;
   padding: 0;
   color: #163537;
-  border: 3px solid #fff3c9;
-  border-radius: 50% 50% 50% 9px;
+  border: 2px solid #fff3c9;
+  border-radius: 50% 50% 50% 6px;
   background: radial-gradient(circle at 35% 30%, #fff2bd, var(--atlas-gold) 58%, #a84b31);
-  box-shadow: 0 0 0 7px rgba(229,185,79,.24), 4px 6px 0 rgba(3,20,27,.7);
+  box-shadow: 0 0 0 4px rgba(229,185,79,.24), 2px 3px 0 rgba(3,20,27,.7);
   transform: translate(-50%,-50%) rotate(-12deg);
-  transition: left .9s cubic-bezier(.25,.8,.2,1), top .9s cubic-bezier(.25,.8,.2,1), transform .2s ease;
+  transition: left .9s cubic-bezier(.25,.8,.2,1), top .9s cubic-bezier(.25,.8,.2,1), transform .2s ease, width .18s ease, height .18s ease, box-shadow .18s ease;
   touch-action: none;
 }
-.global-traveler:hover:not(:disabled), .global-traveler:focus-visible { transform: translate(-50%,-50%) rotate(-5deg) scale(1.12); }
+.global-traveler:hover:not(:disabled), .global-traveler:focus-visible { z-index: 13; transform: translate(-50%,-50%) rotate(-5deg) scale(1.12); }
 .global-traveler:focus-visible { outline: 4px solid #fff; outline-offset: 5px; }
-.global-traveler > span { font-size: 29px; line-height: 1; transform: rotate(12deg); }
-.global-traveler small { position: absolute; top: calc(100% + 4px); padding: 2px 6px; color: #fff1cd; border-radius: 999px; background: rgba(3,20,27,.88); font: 900 8px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
-.global-traveler.is-traveling { animation: global-ship-bob .28s ease-in-out infinite alternate; }
+.global-traveler > span { font-size: 11px; line-height: 1; transform: rotate(12deg); }
+.global-traveler small { display: none; position: absolute; top: calc(100% + 4px); padding: 2px 6px; color: #fff1cd; border-radius: 999px; background: rgba(3,20,27,.88); font: 900 8px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.global-traveler.is-traveling {
+  z-index: 12;
+  width: 60px;
+  height: 60px;
+  border-width: 3px;
+  border-radius: 50% 50% 50% 9px;
+  box-shadow: 0 0 0 7px rgba(229,185,79,.24), 4px 6px 0 rgba(3,20,27,.7);
+  animation: global-ship-bob .28s ease-in-out infinite alternate;
+}
+.global-traveler.is-traveling > span { font-size: 29px; }
+.global-traveler.is-traveling small { display: block; }
 @keyframes global-ship-bob { to { transform: translate(-50%,-57%) rotate(3deg); } }
 
 .global-map-announcement {
@@ -2759,8 +2787,8 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .global-lens-port { min-width: 76px; min-height: 30px; grid-template-columns: 20px minmax(0,1fr); padding: 3px 5px 3px 3px; }
   .global-lens-port > b { width: 20px; height: 20px; font-size: 9px; }
   .global-lens-port > span { font-size: 9px; }
-  .global-traveler { width: 45px; height: 45px; border-width: 2px; box-shadow: 0 0 0 5px rgba(229,185,79,.2), 2px 3px 0 rgba(3,20,27,.7); }
-  .global-traveler > span { font-size: 21px; }
+  .global-traveler.is-traveling { width: 45px; height: 45px; border-width: 2px; box-shadow: 0 0 0 5px rgba(229,185,79,.2), 2px 3px 0 rgba(3,20,27,.7); }
+  .global-traveler.is-traveling > span { font-size: 21px; }
   .global-map-announcement { bottom: 6px; width: calc(100% - 18px); min-height: 23px; padding: 5px 8px; font-size: 8px; }
   .global-arrival-scene { bottom: 36px; width: calc(100% - 14px); max-height: calc(100% - 47px); overflow-y: auto; grid-template-columns: 48px minmax(0,1fr); gap: 8px; padding: 9px; border-width: 2px; }
   .global-arrival-stamp { width: 44px; height: 44px; border-width: 4px; font-size: 9px; }
@@ -3432,9 +3460,9 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .global-port { width: 25px; height: 25px; box-shadow: 0 0 0 3px rgba(55,212,196,.2), 2px 2px 0 rgba(3,20,27,.68); }
   .global-port-beacon { font-size: 12px; }
   .global-port-anchor { width: 18px; height: 18px; font-size: 8px; opacity: .78; }
-  .global-traveler { width: 35px; height: 35px; box-shadow: 0 0 0 3px rgba(229,185,79,.2), 2px 2px 0 rgba(3,20,27,.7); }
-  .global-traveler > span { font-size: 17px; }
-  .global-traveler small { top: calc(100% + 2px); font-size: 7px; }
+  .global-traveler.is-traveling { width: 35px; height: 35px; box-shadow: 0 0 0 3px rgba(229,185,79,.2), 2px 2px 0 rgba(3,20,27,.7); }
+  .global-traveler.is-traveling > span { font-size: 17px; }
+  .global-traveler.is-traveling small { top: calc(100% + 2px); font-size: 7px; }
   .global-map-announcement { bottom: 4px; width: calc(100% - 10px); font-size: 8px; }
   .global-mobile-destinations {
     flex: 0 0 auto;

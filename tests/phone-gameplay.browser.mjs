@@ -119,6 +119,60 @@ for(let round=0; round<10; round++) {
 run('wait','.chronicle-results');
 assert.equal(tasks.size,3);
 console.log('PASS Dapitan: all 3 tasks, changed selections, double-confirm guard, ten-file completion');
+
+// Game 7: the idle traveler token must never visually cover a destination pin,
+// the Manila origin label, or an option number — at every required phone width,
+// and specifically reproducing the reported Manila-to-Hong-Kong collision
+// (Hong Kong sits only 5 map-units from Manila, the closest pair in the deck).
+run('set','viewport','390','844');
+let globalOptions = [];
+for (let attempt = 0; attempt < 8 && !globalOptions.includes('Hong Kong'); attempt++) {
+  openGame('Global Sojourn — Chart the Journey','global');
+  globalOptions = evaluate(`[...document.querySelectorAll('.global-mobile-destinations button strong')].map(el=>el.textContent)`);
+}
+assert.ok(globalOptions.includes('Hong Kong'), 'expected to eventually draw a round including Hong Kong (closest destination to Manila)');
+for (const [w,h] of [[320,568],[360,640],[390,844],[430,932]]) {
+  layout('global',w,h);
+  const check = evaluate(`(() => {
+    const rect = (el) => el ? el.getBoundingClientRect() : null;
+    const traveler = document.querySelector('.global-traveler');
+    const travelerRect = rect(traveler);
+    const travelerZ = traveler ? Number(getComputedStyle(traveler).zIndex) : NaN;
+    const pins = [...document.querySelectorAll('.global-port')];
+    const pinsBelowTraveler = pins.filter(p => Number(getComputedStyle(p).zIndex) <= travelerZ);
+    const originLabel = document.querySelector('.global-origin-pin b');
+    return {
+      travelerWidth: travelerRect ? travelerRect.width : null,
+      pinsBelowTraveler: pinsBelowTraveler.length,
+      totalPins: pins.length,
+      originLabelVisible: !!originLabel && originLabel.checkVisibility(),
+    };
+  })()`);
+  assert.ok(check.travelerWidth != null && check.travelerWidth < 30, `${w}px: idle traveler must be a small marker, got ${check.travelerWidth}`);
+  assert.equal(check.pinsBelowTraveler, 0, `${w}px: every destination pin must paint above (not be covered by) the idle traveler`);
+  assert.ok(check.originLabelVisible, `${w}px: the Manila label must stay visible`);
+}
+run('set','viewport','390','844');
+run('screenshot',`${output}/global-sojourn-phone.png`);
+console.log('PASS Global Sojourn: idle traveler never covers a destination pin or the Manila label at 4 phone widths, including a Hong Kong round');
+
+// Game 3: the substitution key must render 26 individually legible letter
+// cells (two 13-letter rows) with no clipping or horizontal scroll, replacing
+// the old single-string-plus-letter-spacing layout.
+openGame('Rizal Roots: Codebreaker','codebreaker');
+for (const [w,h] of [[320,568],[360,640],[390,844],[430,932]]) {
+  layout('codebreaker',w,h);
+  const key = evaluate(`(() => {
+    const letters = [...document.querySelectorAll('.cipher-key-letters span')];
+    const frame = document.querySelector('.cipher-key');
+    return { letterCount: letters.length, overflows: frame.scrollWidth > frame.clientWidth + 1 };
+  })()`);
+  assert.equal(key.letterCount, 52, `${w}px: expected 26 CODE + 26 TEXT letter cells, got ${key.letterCount}`);
+  assert.equal(key.overflows, false, `${w}px: substitution key must not overflow horizontally`);
+}
+run('set','viewport','390','844');
+run('screenshot',`${output}/codebreaker-phone.png`);
+console.log('PASS Codebreaker: substitution key renders 52 aligned letter cells with no overflow at 4 phone widths');
 }
 
 if (process.env.TEST_FROM !== 'controls') {
