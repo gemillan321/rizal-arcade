@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+const arcadeSource = await readFile(new URL("../app/RizalArcade.tsx", import.meta.url), "utf8");
 const codebreakerSource = await readFile(new URL("../app/games/codebreaker/index.tsx", import.meta.url), "utf8");
 const sharedGameSource = await readFile(new URL("../app/games/shared/ArcadeGameKit.tsx", import.meta.url), "utf8");
 
@@ -32,6 +33,14 @@ test("game progress is separated from the navigation row", () => {
   assert.match(css, /\.game-header\.has-status\s*\{[^}]*height:\s*96px;[^}]*padding-bottom:\s*36px/s);
   assert.match(css, /@media \(max-width: 700px\) \{[\s\S]*?\.game-header\.has-status\s*\{[^}]*height:\s*84px;[^}]*padding-bottom:\s*36px/s);
   assert.match(css, /\.game-hud\s*\{[^}]*min-height:\s*36px;[^}]*border-top:\s*2px/s);
+});
+
+test("private-network dev previews can launch every game without weakening production auth", () => {
+  assert.match(arcadeSource, /function isLocalPreviewHost\(hostname: string\)/);
+  assert.match(arcadeSource, /env\?: \{ DEV\?: boolean \}/);
+  assert.match(arcadeSource, /\^192\\\.168\\\./);
+  assert.match(arcadeSource, /if \(!devMode\) return false/);
+  assert.match(arcadeSource, /isLocalPreviewHost\(window\.location\.hostname\)/);
 });
 
 test("Hearts & Horizons choice buttons never light up in the same gold used for the active-stage trail", () => {

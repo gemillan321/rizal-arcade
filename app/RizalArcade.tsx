@@ -150,6 +150,15 @@ function GameOverlay({ game, onClose }: { game: GameId; onClose: () => void }) {
   );
 }
 
+function isLocalPreviewHost(hostname: string) {
+  if (["localhost", "127.0.0.1"].includes(hostname)) return true;
+  const devMode = Boolean((import.meta as ImportMeta & { env?: { DEV?: boolean } }).env?.DEV);
+  if (!devMode) return false;
+  return /^10\./.test(hostname)
+    || /^192\.168\./.test(hostname)
+    || /^172\.(1[6-9]|2\d|3[01])\./.test(hostname);
+}
+
 function LeaderboardDrawer({ onClose }: { onClose: () => void }) {
   const [game, setGame] = useState<GameId>("values");
   const drawerRef = useRef<HTMLElement>(null);
@@ -180,7 +189,7 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
   const closeLeaderboard = useCallback(() => setShowLeaderboard(false), []);
   const closeSources = useCallback(() => setShowSources(false), []);
   const launchGame = useCallback((game: GameId) => {
-    const localPreview = typeof window !== "undefined" && ["localhost", "127.0.0.1"].includes(window.location.hostname);
+    const localPreview = typeof window !== "undefined" && isLocalPreviewHost(window.location.hostname);
     if (game === "global" || game === "dapitan" || localPreview) { setActiveGame(game); return; }
     if (!profile) { onRequestLogin(); return; }
     setActiveGame(game);
