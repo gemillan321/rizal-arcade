@@ -658,15 +658,15 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   background: rgba(6, 25, 35, .98);
   box-shadow: 0 7px 0 rgba(6,25,35,.18);
 }
-.game-header.has-status { padding-bottom: 28px; }
+.game-header.has-status { height: 96px; padding-bottom: 36px; }
 .game-header .icon-button { border: 2px solid #fff7db; color: #fff7db; background: var(--burgundy); box-shadow: 3px 3px 0 var(--brass); }
 .game-header-title span { color: var(--electric); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
 .game-header-title strong { color: #fff7db; font-size: 25px; }
-.game-hud { min-height: 28px; gap: clamp(14px, 2.6vw, 34px); }
+.game-hud { min-height: 36px; gap: clamp(14px, 2.6vw, 34px); padding-block: 6px; border-top: 2px solid rgba(255,247,219,.28); background: rgba(0,0,0,.2); }
 .game-hud > span { min-width: 0; display: flex; flex-direction: row; align-items: baseline; gap: 6px; padding: 0; border: 0; border-radius: 0; background: transparent; }
 .game-hud > span + span { padding-left: clamp(14px, 2.6vw, 34px); border-left: 1px solid rgba(255,247,219,.18); }
-.game-hud > span > small { color: var(--electric); font: 800 8px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .13em; text-transform: uppercase; }
-.game-hud > span > strong { padding: 0; border: 0; color: #fff7db; background: transparent; font: 900 12px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.game-hud > span > small { color: var(--electric); font: 800 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .13em; text-transform: uppercase; }
+.game-hud > span > strong { padding: 0; border: 0; color: #fff7db; background: transparent; font: 900 14px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
 .play-layout { padding-top: 50px; }
 
 /* River Quest */
@@ -908,15 +908,15 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .manifesto { padding-block: 70px; }
   .manifesto > img { width: calc(100% - 12px); box-shadow: 8px 9px 0 var(--burgundy); }
   .game-header { height: 72px; grid-template-columns: 43px minmax(0, 1fr) 40px; gap: 8px; padding: 0 9px; }
-  .game-header.has-status { padding-bottom: 24px; }
+  .game-header.has-status { height: 84px; padding-bottom: 36px; }
   .game-header-title { min-width: 0; }
   .game-header-title span { display: none; }
   .game-header-title strong { overflow: hidden; font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
-  .game-hud { min-height: 24px; gap: 9px; padding: 3px 8px; overflow: hidden; }
+  .game-hud { min-height: 36px; gap: 9px; padding: 6px 8px; overflow: hidden; }
   .game-hud > span { min-width: 0; display: flex; gap: 4px; padding: 0; }
   .game-hud > span + span { padding-left: 9px; }
-  .game-hud > span > small { font-size: 7px; letter-spacing: .04em; }
-  .game-hud > span > strong { max-width: 105px; overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+  .game-hud > span > small { font-size: 9px; letter-spacing: .04em; }
+  .game-hud > span > strong { max-width: 105px; overflow: hidden; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
   .river-game { min-height: calc(100vh - 72px); padding-inline: 9px; }
   .river-question { padding: 21px 17px; border-width: 3px; }
   .river-question h2 { font-size: 32px; }
@@ -1241,6 +1241,7 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
 
 @media (max-width: 900px) and (min-width: 651px) {
   .game-header { height: 76px; padding-inline: 12px; }
+  .game-header.has-status { height: 92px; padding-bottom: 36px; }
   .river-game,
   .memory-game,
   .decoder-game { height: calc(100svh - 76px); min-height: 620px; }
@@ -3878,5 +3879,5 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud { gap: 9px; }
   :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud > span { display: flex; flex-direction: row; gap: 4px; min-width: 0; border: 0; padding: 0; background: none; }
   :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud > span > small { font-size: 9px; letter-spacing: 0; }
-  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud > span > strong { font-size: 11px; background: none; color: #fff7db; }
+  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud > span > strong { font-size: 13px; background: none; color: #fff7db; }
 }

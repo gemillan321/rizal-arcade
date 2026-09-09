@@ -29,7 +29,9 @@ test("game progress is separated from the navigation row", () => {
   assert.match(sharedGameSource, /status\.length > 0 && <div className="game-hud" aria-label="Current game status">/);
   assert.doesNotMatch(sharedGameSource, /<div className="game-hud">\s*\{onToggleSound/);
   assert.match(css, /\.game-hud\s*\{[^}]*position:\s*absolute;[^}]*bottom:\s*0;[^}]*border-top:/s);
-  assert.match(css, /\.game-header\.has-status\s*\{[^}]*padding-bottom:\s*24px/s);
+  assert.match(css, /\.game-header\.has-status\s*\{[^}]*height:\s*96px;[^}]*padding-bottom:\s*36px/s);
+  assert.match(css, /@media \(max-width: 700px\) \{[\s\S]*?\.game-header\.has-status\s*\{[^}]*height:\s*84px;[^}]*padding-bottom:\s*36px/s);
+  assert.match(css, /\.game-hud\s*\{[^}]*min-height:\s*36px;[^}]*border-top:\s*2px/s);
 });
 
 test("Hearts & Horizons choice buttons never light up in the same gold used for the active-stage trail", () => {
