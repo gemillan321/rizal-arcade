@@ -4,6 +4,7 @@ import test from "node:test";
 
 const css = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
 const codebreakerSource = await readFile(new URL("../app/games/codebreaker/index.tsx", import.meta.url), "utf8");
+const sharedGameSource = await readFile(new URL("../app/games/shared/ArcadeGameKit.tsx", import.meta.url), "utf8");
 
 test("River Quest's keyboard focus ring never reads as the brass 'correct answer' reveal", () => {
   // Regression: the site-wide `button:focus-visible` rule outlines in var(--brass),
@@ -17,18 +18,18 @@ test("River Quest's keyboard focus ring never reads as the brass 'correct answer
 });
 
 test("Scholar's Journey keeps its full HUD (including Lives) visible on phone widths", () => {
-  // Regression: the legacy `.game-hud > span { display: none }` rule at max-width:
-  // 700px only re-shows the first and last stat (`:first-child`/`:last-child`),
-  // and every GameHeader always renders a sound-toggle button before the stat
-  // spans, so no span is ever truly :first-child. That silently hid Scholar's
-  // Journey's middle stat — its Lives counter — on phones. Hearts, Museum,
-  // Dapitan, and Crossword already got an explicit phone-HUD fix restoring every
-  // stat; Scholar's Journey needs the same fix, not a bespoke Lives implementation.
-  const phoneSafeguards = css.slice(css.indexOf("/* Final phone safeguards."));
-  const hudFixRule = /:is\(([^)]*)\)\s*\.game-hud > span\s*\{\s*display:\s*flex/;
-  const match = phoneSafeguards.match(hudFixRule);
-  assert.ok(match, "expected a phone-HUD fix restoring every .game-hud > span");
-  assert.ok(match[1].includes("game-scholar"), "Scholar's Journey (.game-scholar) must be included in the phone HUD fix");
+  // Every status item now lives in the same compact phone rail. There is no
+  // first/last-child exception that can silently hide the middle Lives item.
+  const phoneStatusRule = css.match(/@media \(max-width: 700px\) \{[\s\S]*?\.game-hud > span\s*\{([^}]*)\}/)?.[1] ?? "";
+  assert.match(phoneStatusRule, /display:\s*flex/);
+  assert.doesNotMatch(phoneStatusRule, /display:\s*none/);
+});
+
+test("game progress is separated from the navigation row", () => {
+  assert.match(sharedGameSource, /status\.length > 0 && <div className="game-hud" aria-label="Current game status">/);
+  assert.doesNotMatch(sharedGameSource, /<div className="game-hud">\s*\{onToggleSound/);
+  assert.match(css, /\.game-hud\s*\{[^}]*position:\s*absolute;[^}]*bottom:\s*0;[^}]*border-top:/s);
+  assert.match(css, /\.game-header\.has-status\s*\{[^}]*padding-bottom:\s*24px/s);
 });
 
 test("Hearts & Horizons choice buttons never light up in the same gold used for the active-stage trail", () => {

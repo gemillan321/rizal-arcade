@@ -235,13 +235,13 @@ export function Results({ game, title, score, best, maxScore, onReplay, onClose 
 
 export function GameHeader({ title, status, onClose, soundEnabled, onToggleSound }: { title: string; status: Array<{ label: string; value: string }>; onClose: () => void; soundEnabled?: boolean; onToggleSound?: () => void }) {
   return (
-    <header className="game-header">
+    <header className={`game-header ${status.length ? "has-status" : ""}`}>
       <button className="icon-button" data-dialog-close type="button" onClick={onClose} aria-label="Close game">×</button>
       <div className="game-header-title"><span>Rizal Arcade</span><strong>{title}</strong></div>
-      <div className="game-hud">
-        {onToggleSound && <button className="sound-toggle" type="button" onClick={onToggleSound} aria-pressed={soundEnabled} aria-label={`${soundEnabled ? "Mute" : "Turn on"} game audio`}><span aria-hidden="true">{soundEnabled ? "♪" : "×"}</span><small>Audio</small></button>}
+      {onToggleSound && <button className="sound-toggle" type="button" onClick={onToggleSound} aria-pressed={soundEnabled} aria-label={`${soundEnabled ? "Mute" : "Turn on"} game audio`}><span aria-hidden="true">{soundEnabled ? "♪" : "×"}</span><small>Audio</small></button>}
+      {status.length > 0 && <div className="game-hud" aria-label="Current game status">
         {status.map((item) => <span key={item.label}><small>{item.label}</small><strong>{item.value}</strong></span>)}
-      </div>
+      </div>}
     </header>
   );
 }

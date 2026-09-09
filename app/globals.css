@@ -213,12 +213,13 @@ footer button { border: 0; padding: 0; background: transparent; color: inherit; 
 .game-overlay { position: fixed; z-index: 100; inset: 0; overflow-y: auto; background: var(--paper); color: var(--ink); animation: page-in .28s ease-out both; }
 @keyframes page-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 .game-header { position: sticky; z-index: 15; top: 0; height: 74px; display: grid; grid-template-columns: 52px 1fr auto; gap: 16px; align-items: center; padding: 0 clamp(18px, 4vw, 58px); border-bottom: 1px solid var(--rule); background: rgba(243,236,221,.94); backdrop-filter: blur(12px); }
+.game-header.has-status { padding-bottom: 24px; }
 .icon-button { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid var(--rule); border-radius: 50%; background: transparent; color: inherit; cursor: pointer; font-size: 26px; line-height: 1; }
 .icon-button:hover { background: rgba(23,38,37,.08); }
 .game-header-title { display: flex; flex-direction: column; gap: 2px; }
 .game-header-title span { color: var(--muted); font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: .16em; }
 .game-header-title strong { font-family: var(--font-display), Georgia, serif; font-size: 21px; }
-.game-hud { display: flex; gap: 10px; align-items: center; }
+.game-hud { position: absolute; left: 0; right: 0; bottom: 0; min-height: 24px; display: flex; justify-content: center; align-items: center; gap: 18px; padding: 3px clamp(12px, 4vw, 58px); border-top: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.045); }
 .game-hud span, .game-hud strong { border: 1px solid var(--rule); border-radius: 999px; padding: 8px 12px; font-size: 11px; letter-spacing: .05em; }
 .game-hud strong { border-color: var(--ink); background: var(--ink); color: var(--paper); }
 .play-layout { width: min(1120px, calc(100% - 40px)); margin: 0 auto; padding: 54px 0 80px; }
@@ -657,13 +658,15 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   background: rgba(6, 25, 35, .98);
   box-shadow: 0 7px 0 rgba(6,25,35,.18);
 }
+.game-header.has-status { padding-bottom: 28px; }
 .game-header .icon-button { border: 2px solid #fff7db; color: #fff7db; background: var(--burgundy); box-shadow: 3px 3px 0 var(--brass); }
 .game-header-title span { color: var(--electric); font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
 .game-header-title strong { color: #fff7db; font-size: 25px; }
-.game-hud { gap: 8px; }
-.game-hud > span { min-width: 82px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 11px; border: 2px solid rgba(255,247,219,.4); border-radius: 8px; background: rgba(255,255,255,.06); }
+.game-hud { min-height: 28px; gap: clamp(14px, 2.6vw, 34px); }
+.game-hud > span { min-width: 0; display: flex; flex-direction: row; align-items: baseline; gap: 6px; padding: 0; border: 0; border-radius: 0; background: transparent; }
+.game-hud > span + span { padding-left: clamp(14px, 2.6vw, 34px); border-left: 1px solid rgba(255,247,219,.18); }
 .game-hud > span > small { color: var(--electric); font: 800 8px/1 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .13em; text-transform: uppercase; }
-.game-hud > span > strong { padding: 0; border: 0; color: #fff7db; background: transparent; font: 900 15px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.game-hud > span > strong { padding: 0; border: 0; color: #fff7db; background: transparent; font: 900 12px/1 ui-monospace, SFMono-Regular, Consolas, monospace; }
 .play-layout { padding-top: 50px; }
 
 /* River Quest */
@@ -904,16 +907,16 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .coming-grid article { min-height: 310px; }
   .manifesto { padding-block: 70px; }
   .manifesto > img { width: calc(100% - 12px); box-shadow: 8px 9px 0 var(--burgundy); }
-  .game-header { height: 72px; grid-template-columns: 43px minmax(0, 1fr) auto; gap: 8px; padding-inline: 9px; }
+  .game-header { height: 72px; grid-template-columns: 43px minmax(0, 1fr) 40px; gap: 8px; padding: 0 9px; }
+  .game-header.has-status { padding-bottom: 24px; }
   .game-header-title { min-width: 0; }
   .game-header-title span { display: none; }
   .game-header-title strong { overflow: hidden; font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
-  .game-hud { gap: 4px; }
-  .game-hud > span { display: none; }
-  .game-hud > span:first-child,
-  .game-hud > span:last-child { min-width: 54px; display: flex; padding: 6px 5px; }
-  .game-hud > span > small { font-size: 6px; }
-  .game-hud > span > strong { font-size: 12px; }
+  .game-hud { min-height: 24px; gap: 9px; padding: 3px 8px; overflow: hidden; }
+  .game-hud > span { min-width: 0; display: flex; gap: 4px; padding: 0; }
+  .game-hud > span + span { padding-left: 9px; }
+  .game-hud > span > small { font-size: 7px; letter-spacing: .04em; }
+  .game-hud > span > strong { max-width: 105px; overflow: hidden; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
   .river-game { min-height: calc(100vh - 72px); padding-inline: 9px; }
   .river-question { padding: 21px 17px; border-width: 3px; }
   .river-question h2 { font-size: 32px; }
@@ -1266,8 +1269,8 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
 }
 
 @media (max-width: 650px) {
-  .game-hud .sound-toggle { display: grid; width: 40px; min-width: 40px; height: 40px; padding: 0; }
-  .game-hud .sound-toggle > small { display: none; }
+  .game-header > .sound-toggle { display: grid; width: 40px; min-width: 40px; height: 40px; padding: 0; }
+  .game-header > .sound-toggle > small { display: none; }
   .river-game { height: auto; min-height: calc(100svh - 72px); grid-template-rows: 76px auto 390px; overflow-y: auto; }
   .river-course { height: 76px; }
   .course-frog { font-size: 22px; }
@@ -3867,16 +3870,13 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   .crossword-announcement { max-height: none; overflow: visible; font-size: 12px; }
 }
 
-/* Keep the audio icon visible despite the legacy phone HUD span rule. */
-.game-hud .sound-toggle > span { display: block; border: 0; padding: 0; }
+/* Audio remains a navigation action; progress lives in the separate status rail. */
+.game-header > .sound-toggle > span { display: block; border: 0; padding: 0; }
 @media (max-width: 650px) {
-  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-header { position: sticky; grid-template-columns: 43px minmax(0, 1fr) 40px; grid-template-rows: 28px 22px; align-content: center; gap: 0 8px; }
-  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-header > .icon-button { grid-column: 1; grid-row: 1 / 3; }
-  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-header-title { grid-column: 2; grid-row: 1; }
+  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-header { position: sticky; grid-template-columns: 43px minmax(0, 1fr) 40px; gap: 8px; }
   :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-header-title strong { font-size: 16px; }
-  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud { grid-column: 2; grid-row: 2; gap: 10px; }
+  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud { gap: 9px; }
   :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud > span { display: flex; flex-direction: row; gap: 4px; min-width: 0; border: 0; padding: 0; background: none; }
   :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud > span > small { font-size: 9px; letter-spacing: 0; }
   :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud > span > strong { font-size: 11px; background: none; color: #fff7db; }
-  :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud > .sound-toggle { position: absolute; top: 13px; right: 9px; }
 }
