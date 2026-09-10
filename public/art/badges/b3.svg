@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><symbol id="frame" viewBox="0 0 200 200">
+    <circle cx="100" cy="100" r="94" fill="currentColor" stroke="#8a6a24" stroke-width="3"></circle>
+    <circle cx="100" cy="100" r="88" fill="none" stroke="#c39b3f" stroke-width="2"></circle>
+    <circle cx="100" cy="100" r="80" fill="none" stroke="#c39b3f" stroke-width="3" stroke-dasharray="2 7" opacity="0.8"></circle>
+    <circle cx="100" cy="100" r="71" fill="none" stroke="#8a6a24" stroke-width="1.5"></circle>
+  </symbol>
+<symbol id="banner" viewBox="0 0 200 200">
+    <polygon points="42,164 158,164 150,188 50,188" fill="#c39b3f" stroke="#8a6a24" stroke-width="2"></polygon>
+  </symbol></defs>
+    <use href="#frame" width="200" height="200" color="#5c3b22"></use>
+    <rect x="76" y="48" width="9" height="9" fill="#c39b3f"></rect>
+    <rect x="95" y="48" width="9" height="9" fill="none" stroke="#c39b3f" stroke-width="2"></rect>
+    <rect x="114" y="48" width="9" height="9" fill="#c39b3f"></rect>
+    <line x1="100" y1="146" x2="100" y2="114" stroke="#c39b3f" stroke-width="5"></line>
+    <line x1="66" y1="114" x2="134" y2="114" stroke="#c39b3f" stroke-width="5"></line>
+    <line x1="66" y1="114" x2="66" y2="100" stroke="#c39b3f" stroke-width="5"></line>
+    <line x1="134" y1="114" x2="134" y2="100" stroke="#c39b3f" stroke-width="5"></line>
+    <line x1="100" y1="114" x2="100" y2="94" stroke="#c39b3f" stroke-width="5"></line>
+    <circle cx="66" cy="90" r="11" fill="#e8dcbd" stroke="#8a6a24" stroke-width="2"></circle>
+    <circle cx="134" cy="90" r="11" fill="#e8dcbd" stroke="#8a6a24" stroke-width="2"></circle>
+    <circle cx="100" cy="82" r="13" fill="#e8dcbd" stroke="#8a6a24" stroke-width="2"></circle>
+    <circle cx="100" cy="152" r="9" fill="#e8dcbd"></circle>
+    <polygon points="95,154 105,154 108,166 92,166" fill="#e8dcbd"></polygon>
+    <use href="#banner" width="200" height="200"></use>
+    <text x="100" y="182" text-anchor="middle" font-family="Cormorant Garamond, serif" font-size="17" font-weight="700" letter-spacing="2" fill="#2a2118">III</text>
+  </svg>

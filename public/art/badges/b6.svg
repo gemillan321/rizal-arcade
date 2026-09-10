@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><symbol id="frame" viewBox="0 0 200 200">
+    <circle cx="100" cy="100" r="94" fill="currentColor" stroke="#8a6a24" stroke-width="3"></circle>
+    <circle cx="100" cy="100" r="88" fill="none" stroke="#c39b3f" stroke-width="2"></circle>
+    <circle cx="100" cy="100" r="80" fill="none" stroke="#c39b3f" stroke-width="3" stroke-dasharray="2 7" opacity="0.8"></circle>
+    <circle cx="100" cy="100" r="71" fill="none" stroke="#8a6a24" stroke-width="1.5"></circle>
+  </symbol>
+<symbol id="banner" viewBox="0 0 200 200">
+    <polygon points="42,164 158,164 150,188 50,188" fill="#c39b3f" stroke="#8a6a24" stroke-width="2"></polygon>
+  </symbol></defs>
+    <use href="#frame" width="200" height="200" color="#2a2a26"></use>
+    <polygon points="56,82 100,54 144,82" fill="#e8dcbd"></polygon>
+    <rect x="62" y="88" width="11" height="44" fill="#e8dcbd"></rect>
+    <rect x="82" y="88" width="11" height="44" fill="#e8dcbd"></rect>
+    <rect x="107" y="88" width="11" height="44" fill="#e8dcbd"></rect>
+    <rect x="127" y="88" width="11" height="44" fill="#e8dcbd"></rect>
+    <rect x="52" y="134" width="96" height="9" fill="#c39b3f"></rect>
+    <rect x="74" y="150" width="52" height="14" fill="none" stroke="#c39b3f" stroke-width="2.5"></rect>
+    <use href="#banner" width="200" height="200"></use>
+    <text x="100" y="182" text-anchor="middle" font-family="Cormorant Garamond, serif" font-size="17" font-weight="700" letter-spacing="2" fill="#2a2118">VI</text>
+  </svg>

@@ -31,6 +31,10 @@ export async function requireAdmin(request: Request) {
   return { supabase, user: data.user };
 }
 
+export function normalizeStudentId(value: string) {
+  return value.trim().toUpperCase().replace(/\s+/g, "");
+}
+
 export function studentAuthEmail(studentId: string) {
   const localPart = studentId.trim().toLowerCase().replace(/[^a-z0-9._-]/g, "");
   if (!localPart) throw new Error("A valid Student ID is required.");

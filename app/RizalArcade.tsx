@@ -4,6 +4,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import BadgeCollection from "./BadgeCollection";
 import AdminPortal from "./AdminPortal";
 import { FirstPasswordPortal, LoginPortal } from "./AuthPortal";
 import { gameInstructions } from "./gameInstructions";
@@ -204,7 +205,7 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
     <main>
       <header className="site-header">
         <a className="brand" href="#top" aria-label="Rizal Arcade home"><span className="brand-mark">RA</span><span>Rizal Arcade</span><small>Est. 1861</small></a>
-        <nav aria-label="Primary navigation"><a href="#games">Games</a><button className="nav-link" type="button" onClick={openLeaderboard}>Leaderboard</button><a href="#classroom">Classroom</a><button className="nav-link" type="button" onClick={() => setShowSources(true)}>Sources</button>{profile ? <><button className="player-chip" type="button" onClick={profile.role === "admin" ? onOpenAdmin : openLeaderboard}><span>{profile.display_name}</span><small>{profile.role === "admin" ? "Admin" : profile.section?.section_code}</small></button><button className="nav-signout" type="button" onClick={onSignOut}>Sign out</button></> : <button className="nav-cta" type="button" onClick={onRequestLogin}>Sign in</button>}</nav>
+        <nav aria-label="Primary navigation"><a href="#games">Games</a><a href="#badges">Badges</a><button className="nav-link" type="button" onClick={openLeaderboard}>Leaderboard</button><a href="#classroom">Classroom</a><button className="nav-link" type="button" onClick={() => setShowSources(true)}>Sources</button>{profile ? <><button className="player-chip" type="button" onClick={profile.role === "admin" ? onOpenAdmin : openLeaderboard}><span>{profile.display_name}</span><small>{profile.role === "admin" ? "Admin" : profile.section?.section_code}</small></button><button className="nav-signout" type="button" onClick={onSignOut}>Sign out</button></> : <button className="nav-cta" type="button" onClick={onRequestLogin}>Sign in</button>}</nav>
       </header>
 
       <section className="hero" id="top">
@@ -245,6 +246,8 @@ function ArcadeHome({ profile, onRequestLogin, onSignOut, onOpenAdmin }: { profi
           ))}
         </div>
       </section>
+
+      <BadgeCollection key={profile?.id ?? "guest"} profile={profile} refreshKey={activeGame ?? "home"} onPlay={launchGame} onSignIn={onRequestLogin} />
 
       <section className="leaderboard-band">
         <div><span className="score-live-dot" /><p>Classroom high scores</p><h2>Make history.<br />Make the board.</h2></div>
@@ -309,7 +312,7 @@ export default function RizalArcade() {
 
   return (
     <>
-      <ArcadeHome profile={auth?.profile ?? null} onRequestLogin={() => setShowLogin(true)} onSignOut={signOut} onOpenAdmin={() => setShowAdmin(true)} />
+      <ArcadeHome key={auth?.profile.id ?? "guest"} profile={auth?.profile ?? null} onRequestLogin={() => setShowLogin(true)} onSignOut={signOut} onOpenAdmin={() => setShowAdmin(true)} />
       {showLogin && <LoginPortal onClose={() => setShowLogin(false)} onAuthenticated={(snapshot) => { setAuth(snapshot); setShowLogin(false); if (snapshot.profile.role === "admin") setShowAdmin(true); }} />}
     </>
   );

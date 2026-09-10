@@ -1362,6 +1362,13 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
 .credential-result p { margin: 0; }
 .credential-result .credential-table { grid-column: 1 / -1; max-height: 360px; }
 .credential-result code, .reset-result code { padding: 5px 8px; border-radius: 4px; color: #fff7db; background: var(--indigo); font-size: 13px; }
+.regen-toggle { display: grid; grid-template-columns: auto 1fr; align-items: start; gap: 12px; margin-top: 6px; padding: 14px 16px; border: 2px dashed var(--burgundy); border-radius: 7px; background: #fff7db; font-size: 12px; line-height: 1.5; color: #56625e; }
+.regen-toggle input { margin-top: 3px; }
+.import-error-list { margin-top: 26px; padding: 18px 20px; border: 3px solid var(--burgundy); border-radius: 9px; background: #fdeceb; }
+.import-error-list p.eyebrow { margin: 0 0 8px; color: var(--burgundy); }
+.import-error-list ul { margin: 0 0 10px; padding-left: 20px; }
+.import-error-list li { margin-bottom: 4px; }
+.import-error-list > p:last-child { margin: 0; color: #56625e; font-size: 12px; }
 .admin-message { max-width: 1100px; margin: 28px auto 0; padding: 14px 17px; border-left: 5px solid var(--electric); background: #d6fbef; font-weight: 700; }
 .admin-filters { display: grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap: 18px; margin: 30px 0; }
 .admin-leaderboard { list-style: none; margin: 0; padding: 0; border: 4px solid var(--night); border-radius: 9px; color: #fff7db; background: var(--indigo); box-shadow: 8px 9px 0 var(--burgundy); }
@@ -3880,4 +3887,42 @@ footer { grid-template-columns: 1.1fr minmax(200px, 2fr) auto auto auto; border-
   :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud > span { display: flex; flex-direction: row; gap: 4px; min-width: 0; border: 0; padding: 0; background: none; }
   :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud > span > small { font-size: 9px; letter-spacing: 0; }
   :is(.game-hearts, .game-museum, .game-dapitan, .game-crossword, .game-scholar) .game-hud > span > strong { font-size: 13px; background: none; color: #fff7db; }
+}
+/* Student medal collection */
+.badge-collection { padding: 76px max(24px, calc((100vw - 1240px) / 2)); background: #e7dcc4; color: #2a2118; scroll-margin-top: 90px; }
+.badge-laureate { display: flex; align-items: center; gap: 34px; margin: 30px 0; padding: 30px; background: #f5eddc; border: 1px solid #b7a16e; border-radius: 18px; }
+.badge-laureate > .badge-medal { width: 180px; flex: 0 0 180px; }
+.badge-laureate h3 { font-family: var(--font-display), Georgia, serif; font-size: clamp(28px, 3.5vw, 42px); line-height: 1.1; margin: 8px 0; }
+.badge-laureate p { margin: 10px 0; }
+.badge-laureate .button { margin-top: 12px; }
+.badge-laureate.is-complete { border-color: #8a6a24; background: #f9edc8; }
+.badge-count { font-weight: 700; color: #1f4235; }
+.badge-laureate progress { display: block; width: min(360px, 100%); height: 9px; accent-color: #1f4235; }
+.badge-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px; }
+.badge-card { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 24px 12px 18px; border: 1px solid #c3b18b; border-radius: 12px; background: #f2e9d5; }
+.badge-card.is-earned { background: #faf1db; border-color: #9d7b36; }
+.badge-medal { position: relative; display: block; width: 132px; max-width: 100%; }
+.badge-medal > img { display: block; width: 100%; height: auto; }
+.badge-medal.is-locked > img:first-child { filter: grayscale(.8) sepia(.16) brightness(.86) contrast(.9); opacity: .7; }
+.badge-medal > .badge-lock { position: absolute; right: -3px; bottom: 0; width: 34%; height: auto; }
+.badge-game { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; line-height: 1.5; margin: 18px 0 6px; color: #68553b; }
+.badge-card h3 { font-family: var(--font-display), Georgia, serif; font-size: 22px; line-height: 1.15; margin: 0 0 10px; }
+.badge-state, .badge-card time { font-size: 12px; margin: 4px 0; color: #60533e; }
+.badge-card.is-earned .badge-state { color: #1f4235; font-weight: 700; }
+.badge-card button { margin-top: auto; padding: 18px 4px 4px; min-height: 44px; color: #7a2230; font-size: 12px; font-weight: 700; background: none; border: 0; cursor: pointer; }
+.badge-award { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; padding: 18px; margin: 16px 0; border: 1px solid #b7a16e; border-radius: 12px; color: #2a2118; background: #f5eddc; }
+.badge-award .badge-medal { width: 76px; flex: 0 0 76px; }
+.badge-award > div { flex: 1; min-width: 150px; }
+.badge-award h3 { font-family: var(--font-display), Georgia, serif; font-size: 24px; margin: 4px 0; }
+.badge-award p { margin: 4px 0; font-size: 13px; }
+.badge-master-earned { color: #1f4235; font-weight: 700; }
+@media (max-width: 1000px) { .badge-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 650px) {
+  .badge-collection { padding: 44px 18px; }
+  .badge-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .badge-laureate { flex-direction: column; text-align: center; padding: 24px 18px; gap: 16px; }
+  .badge-laureate > .badge-medal { width: 148px; flex-basis: auto; }
+  .badge-laureate progress { margin: auto; }
+  .badge-card h3 { font-size: 20px; }
+  .badge-card { padding: 18px 10px 12px; }
 }
